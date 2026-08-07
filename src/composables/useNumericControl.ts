@@ -1,7 +1,7 @@
 import type { JsonSchema } from '@jsonforms/core'
 import { computed } from 'vue'
 import { isEmpty } from 'radash'
-import { useQuasarControl, type Options } from '../utils'
+import { useUiControl, type Options } from '../utils'
 
 export const resolveNumericStep = (
   schema: JsonSchema | undefined,
@@ -56,10 +56,10 @@ export const createNumericAdaptTarget = (clearValue: unknown) => {
   }
 }
 
-type QuasarControlInput = Parameters<typeof useQuasarControl>[0]
+type UiControlInput = Parameters<typeof useUiControl>[0]
 
 type UseNumericControlOptions = {
-  jsonFormsControl: QuasarControlInput
+  jsonFormsControl: UiControlInput
   clearValue: unknown
   debounceWait?: number
 }
@@ -70,7 +70,7 @@ export const useNumericControl = ({
   debounceWait,
 }: UseNumericControlOptions) => {
   const adaptTarget = createNumericAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const step = computed(() => {
     const options = control.appliedOptions.value as Options | undefined

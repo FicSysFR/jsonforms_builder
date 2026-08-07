@@ -2,59 +2,46 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-field.q-custom(
-      v-bind="quasarProps('q-field')"
-      @focus="handleFocus"
-      @blur="handleBlur"
-      :id="control.key"
-      :label="computedLabel"
+    u-radio-group(
+      v-bind="uiProps('radioGroup')"
+      :model-value="modelValue"
+      :items="control.options"
       :class="styles.control.input"
-      :hint="control.description"
-      :required="control.required"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :disable="disable"
-      borderless
-      hide-bottom-space
-      stack-label
-      dense
+      :disabled="disable"
+      :orientation="appliedOptions.vertical ? 'vertical' : 'horizontal'"
+      :color="control.errors ? 'error' : undefined"
+      value-key="value"
+      label-key="label"
+      @update:model-value="onChange"
     )
-      q-option-group.q-py-sm(
-        v-bind="quasarProps('q-option-group')"
-        type="radio"
-        @update:model-value="onChange"
-        @focus="isFocused = true"
-        @blur="isFocused = false"
-        :id="control.id + '_q-option-group'"
-        :model-value="modelValue"
-        :class="styles.control.input"
-        :disable="disable"
-        :options="control.options"
-        inline
-        dense
-      )
 </template>
 
 <script lang="ts">
-import { and, ControlElement, isEnumControl, JsonFormsRendererRegistryEntry, optionIs, rankWith } from '@jsonforms/core'
-import { rendererProps, RendererProps, useJsonFormsEnumControl } from '@jsonforms/vue'
-import { QField, QOptionGroup } from 'quasar'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, isEnumControl, optionIs } from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { determineClearValue } from '../utils'
+import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
+import URadioGroup from '@nuxt/ui/components/RadioGroup.vue'
 import { ControlWrapper } from '../common'
+import { determineClearValue } from '../utils'
 import { useRadioGroupControl } from '../composables'
 
+/**
+ * RadioGroupControlRenderer
+ *
+ * Rend les enums marqués `options.format: "radio"` avec un `URadioGroup`.
+ *
+ * Disposition horizontale par défaut (équivalent de l'`inline` de `q-option-group`) ;
+ * `options.vertical: true` bascule en colonne quand les libellés sont longs.
+ */
 const controlRenderer = defineComponent({
   name: 'RadioGroupControlRenderer',
   components: {
     ControlWrapper,
-    QField,
-    QOptionGroup,
+    URadioGroup,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -83,11 +70,3 @@ export const entry: JsonFormsRendererRegistryEntry = {
   ), // Matches enum controls with option format set to 'radio'
 }
 </script>
-
-<style lang="scss">
-.q-custom {
-  .q-field__control {
-    color: inherit;
-  }
-}
-</style>

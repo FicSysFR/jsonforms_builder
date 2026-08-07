@@ -1,11 +1,8 @@
 import { computeLabel, ControlElement, DispatchPropsOfControl, DispatchPropsOfMultiEnumControl, isDescriptionHidden, JsonFormsSubStates, JsonSchema, UISchemaElement } from '@jsonforms/core'
-import cloneDeep from 'lodash/cloneDeep'
-import debounce from 'lodash/debounce'
-import get from 'lodash/get'
-import isPlainObject from 'lodash/isPlainObject'
-import merge from 'lodash/merge'
+import { debounce, get, isObject } from 'radash'
+import { defu } from 'defu'
 import { computed, ComputedRef, inject, ref } from 'vue'
-import { useStyles } from '../styles'
+import { useTheme } from '../theme'
 import { IsDynamicPropertyContext } from './inject'
 
 /**
@@ -36,12 +33,10 @@ export const useControlAppliedOptions = <
 >(
   input: I,
 ) => {
+  // `defu(override, base)` : les options du uischema priment sur la config globale.
+  // defu ne mute jamais ses entrées, ce qui remplace le couple cloneDeep + merge de la v1.
   return computed(() =>
-    merge(
-      {},
-      cloneDeep(input.control.value.config),
-      cloneDeep(input.control.value.uischema.options),
-    ),
+    defu({} as Record<string, any>, input.control.value.uischema.options ?? {}, input.control.value.config ?? {}),
   )
 }
 
@@ -54,11 +49,7 @@ export const useLayoutAppliedOptions = <
   input: I,
 ) => {
   return computed(() =>
-    merge(
-      {},
-      cloneDeep(input.layout.value.config),
-      cloneDeep(input.layout.value.uischema.options),
-    ),
+    defu({} as Record<string, any>, input.layout.value.uischema.options ?? {}, input.layout.value.config ?? {}),
   )
 }
 
@@ -78,7 +69,26 @@ export const useComputedLabel = <
   })
 }
 
-export const useQuasarLabel = <
+/**
+ * Extrait un sac de props destiné à un composant Nuxt UI depuis les options du uischema.
+ *
+ * Remplace le `quasarProps('q-input')` de la v1. Le uischema peut ainsi piloter finement
+ * n'importe quel composant sans que la librairie ait à exposer une prop dédiée :
+ *
+ * ```json
+ * { "type": "Control", "scope": "#/properties/name",
+ *   "options": { "input": { "size": "lg", "ui": { "base": "font-mono" } } } }
+ * ```
+ */
+const createUiProps = (appliedOptions: ComputedRef<Record<string, any>>) => {
+  return (path: string): Record<string, any> => {
+    const props = get(appliedOptions.value, path)
+
+    return props && isObject(props) ? (props as Record<string, any>) : {}
+  }
+}
+
+export const useUiLabel = <
   T extends {
     uischema: UISchemaElement,
     config: any,
@@ -89,29 +99,20 @@ export const useQuasarLabel = <
 >(
   input: I,
 ) => {
-  const styles = useStyles(input.label.value.uischema)
+  const styles = useTheme(input.label.value.uischema)
   const appliedOptions = computed(() =>
-    merge(
-      {},
-      cloneDeep(input.label.value.config),
-      cloneDeep(input.label.value.uischema.options),
-    ),
+    defu({} as Record<string, any>, input.label.value.uischema.options ?? {}, input.label.value.config ?? {}),
   )
-  const quasarProps = (path: string) => {
-    const props = get(appliedOptions.value, path)
-
-    return props && isPlainObject(props) ? props : {}
-  }
 
   return {
     ...input,
     appliedOptions,
-    quasarProps,
+    uiProps: createUiProps(appliedOptions),
     styles,
   }
 }
 
-export const useQuasarControl = <
+export const useUiControl = <
   T extends {
     schema: NonNullable<JsonSchema>
     uischema: ControlElement
@@ -136,11 +137,11 @@ export const useQuasarControl = <
 ) => {
   const touched = ref(false)
 
+  const handleChange = (input as DispatchPropsOfControl).handleChange
   const changeEmitter =
-    typeof debounceWait === 'number' &&
-      (input as DispatchPropsOfControl).handleChange
-      ? debounce((input as DispatchPropsOfControl).handleChange, debounceWait)
-      : (input as DispatchPropsOfControl).handleChange
+    typeof debounceWait === 'number' && handleChange
+      ? debounce({ delay: debounceWait }, handleChange)
+      : handleChange
 
   const onChange = (value: any) => {
     if (changeEmitter) {
@@ -166,7 +167,11 @@ export const useQuasarControl = <
       : ''
   })
 
-  const persistentHint = (): boolean => {
+  /**
+   * La description ne s'affiche que lorsqu'elle est pertinente : masquée au repos si
+   * `showUnfocusedDescription` est absent, révélée au focus.
+   */
+  const showDescription = (): boolean => {
     return !isDescriptionHidden(
       input.control.value.visible,
       input.control.value.description,
@@ -194,13 +199,7 @@ export const useQuasarControl = <
 
   const computedLabel = useComputedLabel(input, appliedOptions)
 
-  const styles = useStyles(input?.control?.value?.uischema)
-
-  const quasarProps = (path: string) => {
-    const props = get(appliedOptions.value, path)
-
-    return props && isPlainObject(props) ? props : {}
-  }
+  const styles = useTheme(input?.control?.value?.uischema)
 
   const overwrittenControl = computed(() => {
     return {
@@ -222,6 +221,9 @@ export const useQuasarControl = <
     )
   })
 
+  /** `disabled` au sens Nuxt UI : désactivé sauf si l'on est simplement en lecture seule. */
+  const isDisabled = computed(() => !input.control.value.enabled && !isReadonly.value)
+
   return {
     ...input,
     control: overwrittenControl,
@@ -231,8 +233,8 @@ export const useQuasarControl = <
     controlWrapper,
     computedLabel,
     touched,
-    quasarProps,
-    persistentHint,
+    uiProps: createUiProps(appliedOptions),
+    showDescription,
     handleBlur,
     handleFocus,
     onChange,
@@ -240,38 +242,20 @@ export const useQuasarControl = <
     isHovered,
     isClearable,
     isReadonly,
+    isDisabled,
   }
 }
 
-export const useQuasarLayout = <I extends { layout: any }>(input: I) => {
+export const useUiLayout = <I extends { layout: any }>(input: I) => {
   const appliedOptions = computed(() =>
-    merge(
-      {},
-      structuredClone(input.layout.value.config),
-      structuredClone(input.layout.value.uischema.options),
-    ),
+    defu({} as Record<string, any>, input.layout.value.uischema.options ?? {}, input.layout.value.config ?? {}),
   )
 
   return {
     ...input,
-    styles: useStyles(input.layout.value.uischema),
+    styles: useTheme(input.layout.value.uischema),
     appliedOptions,
-  }
-}
-
-export const useVanillaLabel = <I extends { label: any }>(input: I) => {
-  const appliedOptions = computed(() =>
-    merge(
-      {},
-      cloneDeep(input.label.value.config),
-      cloneDeep(input.label.value.uischema.options),
-    )
-  )
-
-  return {
-    ...input,
-    styles: useStyles(input.label.value.uischema),
-    appliedOptions,
+    uiProps: createUiProps(appliedOptions),
   }
 }
 

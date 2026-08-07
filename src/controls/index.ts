@@ -9,6 +9,8 @@ export { default as RadioGroupControlRenderer } from './radio-group.vue'
 export { default as numericControlRenderer } from './numeric.vue'
 export { default as TextareaControlRenderer } from './textarea.vue'
 export { default as AutocompleteControlRenderer } from './autocomplete.vue'
+export { default as ArrayControlRenderer } from './array.vue'
+export { default as OneOfControlRenderer } from './one-of.vue'
 
 import { entry as inputControlRendererEntry } from './input.vue'
 import { entry as booleanControlRendererEntry } from './boolean.vue'
@@ -20,6 +22,8 @@ import { entry as radioGroupControlRenderer } from './radio-group.vue'
 import { entry as numericControlRendererEntry } from './numeric.vue'
 import { entry as textareaControlRendererEntry } from './textarea.vue'
 import { entry as autocompleteControlRendererEntry } from './autocomplete.vue'
+import { entry as arrayControlRendererEntry } from './array.vue'
+import { entry as oneOfControlRendererEntry } from './one-of.vue'
 
 export const controlsRenderers = [
   inputControlRendererEntry,
@@ -32,4 +36,6 @@ export const controlsRenderers = [
   numericControlRendererEntry,
   textareaControlRendererEntry,
   autocompleteControlRendererEntry,
+  arrayControlRendererEntry,
+  oneOfControlRendererEntry,
 ]

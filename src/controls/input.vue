@@ -2,37 +2,24 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-input(
-      v-bind="quasarProps('q-input')"
-      @update:model-value="onChange"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-      :model-value="modelValue"
+    u-input(
+      v-bind="uiProps('input')"
       :id="control.id + '-input'"
-      :label="computedLabel"
+      :model-value="modelValue"
       :class="styles.control.input"
-      clear-icon="mdi-close"
-      :disable="!control.enabled && !isReadonly"
-      :placeholder="appliedOptions.placeholder"
+      :disabled="isDisabled"
       :readonly="isReadonly"
+      :placeholder="appliedOptions.placeholder"
       :autofocus="appliedOptions.focus"
-      :hint="control.description"
-      :required="control.required"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :hide-bottom-space="!!control.description"
       :maxlength="maxLength"
-      :counter="counter"
-      :clearable="isClearable"
-      :debounce="100"
-      outlined
-      stack-label
-      dense
+      :color="control.errors ? 'error' : undefined"
+      @update:model-value="onChange"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
 </template>
 
@@ -40,16 +27,24 @@
 import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isStringControl } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import UInput from '@nuxt/ui/components/Input.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QInput } from 'quasar'
 import { useStringControl } from '../composables'
 
+/**
+ * InputControlRenderer
+ *
+ * Rend les propriétés `type: "string"` avec un `UInput`.
+ *
+ * Options du uischema reconnues : `placeholder`, `focus`, `restrict` (applique le
+ * `maxLength` du schéma), et `input` pour passer n'importe quelle prop à `UInput`.
+ */
 const controlRenderer = defineComponent({
   name: 'InputControlRenderer',
   components: {
     ControlWrapper,
-    QInput,
+    UInput,
   },
   props: {
     ...rendererProps<ControlElement>(),

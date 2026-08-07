@@ -2,63 +2,53 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-select(
-      v-bind="quasarProps('q-select')"
-      @update:model-value="onChange"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-      :id="control.id"
+    u-select-menu(
+      v-bind="uiProps('selectMenu')"
+      :id="control.id + '-input'"
       :model-value="control.data"
-      :label="computedLabel"
+      :items="selectItems"
       :class="styles.control.input"
-      clear-icon="mdi-close"
-      :disable="!control.enabled && !isReadonly"
-      :readonly="isReadonly"
-      :required="control.required"
+      :disabled="isDisabled"
       :placeholder="appliedOptions.placeholder"
-      :hide-bottom-space="!!control.description"
-      :options="control.options || suggestions"
-      option-value="value"
-      option-label="label"
-      :hint="control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
       :multiple="isArrayControl"
-      :clearable="isClearable"
-      :debounce="100"
-      emit-value
-      outlined
-      stack-label
-      dense
+      :color="control.errors ? 'error' : undefined"
+      value-key="value"
+      label-key="label"
+      @update:model-value="onChange"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
-    template(#no-option)
-      q-item
-        q-item-section
-          q-item-label Aucun résultat
+      template(#empty)
+        span.text-sm.text-muted Aucun résultat
 </template>
 
 <script lang="ts">
-import { and, ControlElement, hasOption, isEnumControl, isPrimitiveArrayControl, isStringControl, JsonFormsRendererRegistryEntry, or, rankWith } from '@jsonforms/core'
-import { rendererProps, RendererProps, useJsonFormsEnumControl } from '@jsonforms/vue'
-import { QItem, QItemLabel, QItemSection, QSelect } from 'quasar'
-import { defineComponent } from 'vue'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, or, hasOption, isEnumControl, isPrimitiveArrayControl, isStringControl } from '@jsonforms/core'
+import { computed, defineComponent } from 'vue'
+import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
+import USelectMenu from '@nuxt/ui/components/SelectMenu.vue'
 import { ControlWrapper } from '../common'
-import { useEnumSuggestionControl } from '../composables'
 import { determineClearValue } from '../utils'
+import { useEnumSuggestionControl } from '../composables'
 
+/**
+ * EnumAndSuggestionControlRenderer
+ *
+ * Rend les enums, et les chaînes portant une liste `options.suggestion`, avec un
+ * `USelectMenu` (recherche intégrée).
+ *
+ * En v1 le slot `#no-option` était déclaré *à côté* du `q-select` et non dedans :
+ * il ne s'affichait donc jamais. Ici `#empty` est bien imbriqué.
+ */
 const controlRenderer = defineComponent({
   name: 'EnumAndSuggestionControlRenderer',
   components: {
     ControlWrapper,
-    QSelect,
-    QItem,
-    QItemSection,
-    QItemLabel,
+    USelectMenu,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -67,10 +57,28 @@ const controlRenderer = defineComponent({
     const jsonFormsControl = useJsonFormsEnumControl(props)
     const clearValue = determineClearValue(undefined)
 
-    return useEnumSuggestionControl({
+    const control = useEnumSuggestionControl({
       jsonFormsControl,
       clearValue,
     })
+
+    /**
+     * Les enums fournissent `control.options` ({ label, value }) ; les suggestions
+     * arrivent en chaînes brutes qu'il faut normaliser à la même forme.
+     */
+    const selectItems = computed(() => {
+      const options = control.control.value.options
+      if (options?.length) {
+        return options
+      }
+
+      return (control.suggestions.value ?? []).map((suggestion) => ({
+        label: suggestion,
+        value: suggestion,
+      }))
+    })
+
+    return { ...control, selectItems }
   },
 })
 

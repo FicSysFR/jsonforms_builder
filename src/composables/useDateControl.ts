@@ -1,11 +1,18 @@
-import { computed, ref } from 'vue'
-import { useQuasarControl } from '../utils'
+import { computed } from 'vue'
+import { useUiControl } from '../utils'
 import type { useJsonFormsControl } from '@jsonforms/vue'
 import { isEmpty } from 'radash'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import type { ManipulateType } from 'dayjs'
-import type { QPopupProxy } from 'quasar'
+import {
+  CalendarDate,
+  CalendarDateTime,
+  Time,
+  parseDate,
+  parseDateTime,
+  parseTime,
+} from '@internationalized/date'
 
 dayjs.extend(customParseFormat)
 
@@ -121,8 +128,6 @@ export const detectDateUnitFromPosition = (
     }
   }
 
-  console.log('Detected format char:', formatChar)
-
   // Mapper le caractère de format vers l'unité dayjs
   switch (formatChar) {
     case 'Y':
@@ -149,15 +154,93 @@ type DateKeyboardEvent = {
   }
 }
 
+/**
+ * Granularité `UInputDate` correspondant à un format JSON Schema.
+ *
+ * `date` → jour seul ; `date-time` → jusqu'à la minute, ou la seconde si le motif
+ * demandé en contient une.
+ */
+export const resolveDateGranularity = (
+  format: string | undefined,
+  pattern: string,
+): 'day' | 'minute' | 'second' => {
+  if (format !== 'date-time') {
+    return 'day'
+  }
+
+  return pattern.includes('s') ? 'second' : 'minute'
+}
+
+/**
+ * Convertit la valeur stockée (chaîne au motif du schéma) vers l'objet attendu par
+ * `UInputDate` / `UInputTime`, qui travaillent en `@internationalized/date`.
+ *
+ * Renvoie `undefined` si la valeur est absente ou non parsable — le champ s'affiche
+ * alors vide plutôt que de lever.
+ */
+export const toDateValue = (
+  value: unknown,
+  pattern: string,
+  format: string | undefined,
+): CalendarDate | CalendarDateTime | Time | undefined => {
+  if (isEmpty(value) || typeof value !== 'string') {
+    return undefined
+  }
+
+  const parsed = dayjs(value, pattern, true)
+  if (!parsed.isValid()) {
+    return undefined
+  }
+
+  try {
+    if (format === 'time') {
+      return parseTime(parsed.format(DEFAULT_TIME_FORMAT))
+    }
+
+    if (format === 'date-time') {
+      return parseDateTime(parsed.format(DEFAULT_DATETIME_FORMAT))
+    }
+
+    return parseDate(parsed.format(DEFAULT_DATE_FORMAT))
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Chemin retour : l'objet du composant vers la chaîne au motif attendu par le schéma.
+ */
+export const fromDateValue = (
+  value: CalendarDate | CalendarDateTime | Time | null | undefined,
+  pattern: string,
+  format: string | undefined,
+): string | undefined => {
+  if (!value) {
+    return undefined
+  }
+
+  const iso = value.toString()
+  const sourcePattern =
+    format === 'time'
+      ? DEFAULT_TIME_FORMAT
+      : format === 'date-time'
+        ? DEFAULT_DATETIME_FORMAT
+        : DEFAULT_DATE_FORMAT
+
+  // `Time` sérialise en `HH:mm:ss[.SSS]` : on tronque aux secondes avant de reparser.
+  const normalized = format === 'time' ? iso.slice(0, 8) : iso
+  const parsed = dayjs(normalized, sourcePattern, false)
+
+  return parsed.isValid() ? parsed.format(pattern) : undefined
+}
+
 export const useDateControl = ({
   jsonFormsControl,
   clearValue,
   debounceWait = 100,
 }: UseDateControlOptions) => {
   const adaptTarget = (value: unknown) => (isEmpty(value) ? clearValue : value)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
-
-  const popupProxy = ref<QPopupProxy | null>(null)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const rawFormat = computed(
     () =>
@@ -190,24 +273,39 @@ export const useDateControl = ({
 
   const inputType = computed(() => resolveDateInputType(rawFormat.value))
 
+  const granularity = computed(() =>
+    resolveDateGranularity(rawFormat.value, optionPattern.value),
+  )
+
+  /** Valeur exposée à `UInputDate` / `UInputTime`. */
+  const dateValue = computed(() =>
+    toDateValue(control.control.value.data, optionPattern.value, rawFormat.value),
+  )
+
+  /** Retour du composant : on repasse en chaîne au motif du schéma avant de propager. */
+  const onChangeDateValue = (
+    value: CalendarDate | CalendarDateTime | Time | null | undefined,
+  ) => {
+    control.onChange(
+      adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)),
+    )
+  }
+
   const normalizeValue = (value: string, pattern = patternDefault.value) => {
     return normalizeDateValue(value, pattern)
   }
 
   const onBlur = () => {
     control.isFocused.value = false
-    console.log('controlData', controlData.value)
+    control.touched.value = true
 
     const normalized = normalizeValue(controlData.value)
     const date = dayjs(normalized, patternDefault.value, true)
 
+    // Une saisie partielle laissée en l'état au blur est effacée plutôt que conservée invalide.
     if (!date.isValid()) {
       control.onChange(adaptTarget(undefined))
-      console.log('Invalid date on blur, clearing value', controlData.value)
-      return
     }
-
-    // this.onChange(this.adaptTarget(this.controlData))
   }
 
   const onChangeDate = (value: string) => {
@@ -223,45 +321,19 @@ export const useDateControl = ({
     const neededDigits = countPatternDigits(optionPattern.value)
     const currentDigits = value.replace(/\D/g, '').length
 
-    console.log('aaaa', {
-      optpat: optionPattern.value.replace(/[^YMDHms]/g, ''),
-      curdig: value.replace(/\D/g, ''),
-    })
-
     if (currentDigits < neededDigits) {
-      console.log(
-        'Waiting for complete input, current digits:',
-        currentDigits,
-        'needed:',
-        neededDigits,
-      )
       return
     }
-
-    console.log('Processing complete input value:', value)
 
     // 3️⃣ Là seulement on normalise / parse / format
     const normalized = normalizeValue(value)
     const date = dayjs(normalized, optionPattern.value, true)
 
     if (!date.isValid()) {
-      console.log('Invalid date entered, ignoring:', {
-        value,
-        normalized,
-        patternDefault: patternDefault.value,
-      })
       return
     }
 
     control.onChange(date.format(optionPattern.value))
-    console.log('d', {
-      value,
-      date,
-      optionPattern: optionPattern.value,
-      patternDefault: patternDefault.value,
-      format: date.format(optionPattern.value),
-    })
-    // this.popupProxy?.hide()
   }
 
   const changeValueAtPosition = (increment: number, cursorPosition: number) => {
@@ -279,25 +351,25 @@ export const useDateControl = ({
     const newDate = currentDate.add(increment, dateUnit)
 
     control.onChange(newDate.format(optionPattern.value))
-    //console.log(`Value changed by ${increment} ${dateUnit} to`, newDate.format(this.optionPattern))
   }
 
-  const keydownHandler = (ev: DateKeyboardEvent, pos: number) => {
+  /** Neutralise le keydown pour que seul le keyup incrémente (évite le double pas en répétition). */
+  const keydownHandler = (ev: DateKeyboardEvent) => {
     ev.preventDefault()
-    console.log('keydown prevented', ev, pos)
   }
 
+  /** ↑ / ↓ incrémentent le segment de date sous le curseur. */
   const keyupHandler = (ev: DateKeyboardEvent, pos: number) => {
     ev.preventDefault()
-    const cursorPosition = ev.target.selectionStart ?? 0
-    changeValueAtPosition(pos, cursorPosition)
-    console.log('keyup', ev, pos, 'cursor at:', cursorPosition)
+    changeValueAtPosition(pos, ev.target.selectionStart ?? 0)
   }
 
   return {
     ...control,
     adaptTarget,
-    popupProxy,
+    granularity,
+    dateValue,
+    onChangeDateValue,
     optionPattern,
     controlData,
     maskPattern,

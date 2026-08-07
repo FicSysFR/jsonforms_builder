@@ -8,38 +8,166 @@
 
 ![JSONForms Builder banner](static/banner.jpg)
 
-Form Builder pour JSONForms utilisant le Framework Quasar.
+Renderers [JSONForms](https://jsonforms.io/) pour Vue 3, bâtis sur **Nuxt UI 4** et **Tailwind CSS 4** — plus un **builder visuel** pour composer `{ schema, uischema }` sans écrire de JSON.
 
-## Prérequis
+> **v2 — changement de socle.** La v1 reposait sur Quasar. La v2 rend en composants `U*` de Nuxt UI et hérite donc automatiquement du thème de l'application hôte. La branche `v1-quasar` conserve l'ancienne implémentation ; `@tacxou/jsonforms_builder@1.x` reste installable.
 
-Ce projet utilise **Bun** comme gestionnaire de packages obligatoire. 
-
-### Installation de Bun
+## Installation
 
 ```bash
-# Installer Bun
-curl -fsSL https://bun.sh/install | bash
-
-# Ou avec Homebrew sur macOS
-brew install bun
+bun add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 ```
 
-### Utilisation
+`@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue` et `vue` sont des **peerDependencies** : la librairie n'embarque aucun composant Nuxt UI, elle les importe depuis l'installation de l'application.
+
+## Utilisation
+
+```vue
+<template lang="pug">
+  json-forms(
+    :data="data"
+    :schema="schema"
+    :uischema="uischema"
+    :renderers="renderers"
+    validation-mode="ValidateAndShow"
+    @change="onChange"
+  )
+</template>
+
+<script setup lang="ts">
+import { JsonForms } from '@jsonforms/vue'
+import { nuxtUiRenderers } from '@tacxou/jsonforms_builder'
+
+const renderers = Object.freeze(nuxtUiRenderers)
+</script>
+```
+
+- `nuxtUiRenderers` — contrôles, layouts et éléments additionnels.
+- `allRenderers` — idem, plus l'éditeur de texte riche (`UEditor`).
+
+### Builder visuel
+
+```vue
+<template lang="pug">
+  form-builder(v-model="definition")
+</template>
+
+<script setup lang="ts">
+import { FormBuilder, type FormDefinition } from '@tacxou/jsonforms_builder'
+
+const definition = ref<Partial<FormDefinition>>({})
+</script>
+```
+
+Palette, arbre réordonnable par glisser-déposer, inspecteur de propriétés, aperçu live et export JSON. L'édition brute du JSON est laissée à l'application hôte (Monaco, CodeMirror…).
+
+## Renderers
+
+| Schéma / option | Composant Nuxt UI |
+|---|---|
+| `string` | `UInput` |
+| `string` + `options.multi` | `UTextarea` |
+| `string` + `format: password` | `UInput` + bascule de visibilité |
+| `string` + `options.wysiwyg` | `UEditor` + `UEditorToolbar` |
+| `number` / `integer` | `UInputNumber` |
+| `number` + `options.slider` | `USlider` |
+| `boolean` | `UCheckbox` (`USwitch` via `options.toggle`) |
+| `enum` | `USelectMenu` |
+| `enum` + `options.format: radio` | `URadioGroup` |
+| `string` + `options.api` | `UInputMenu` (recherche distante) |
+| `format: date` / `date-time` / `time` | `UInputDate` / `UInputTime` |
+| `array` | cartes répétables (ajout, réordonnancement, suppression) |
+| `oneOf` | sélecteur de variante + sous-formulaire |
+| `Group` | `UCard` titrée |
+| `Categorization` | `UTabs` (`UStepper` via `options.variant: "stepper"`) |
+| `Label` | titre + `USeparator` |
+
+### Personnalisation
+
+Deux niveaux, du plus large au plus ciblé :
+
+```ts
+// 1. Thème global, injecté une fois pour toute l'arborescence.
+provide('styles', { control: { input: 'font-mono' } })
+```
+
+```json
+// 2. Par élément, via les options du uischema — `<slot>` est le composant visé.
+{
+  "type": "Control",
+  "scope": "#/properties/name",
+  "options": { "input": { "size": "lg", "ui": { "base": "tracking-wide" } } }
+}
+```
+
+## Intégration
+
+### Déclarer la librairie à Tailwind (obligatoire)
+
+Tailwind 4 génère ses utilitaires en scannant les sources du projet, et **ignore tout ce
+qui se trouve hors de sa racine** — donc `node_modules`. Sans la ligne ci-dessous, les
+classes employées par les renderers apparaissent bien dans le DOM mais ne correspondent à
+aucune règle CSS : bordures et fonds de sélection disparaissent, l'espacement se décale.
+
+```css
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@source "../node_modules/@tacxou/jsonforms_builder/dist";
+```
+
+> Si votre thème de marque est déclaré dans un bloc `@theme`, utilisez **`@theme static`**.
+> Tailwind élague les variables qu'aucune source ne référence directement, et une couleur
+> consommée uniquement par le CSS généré de Nuxt UI (`--ui-primary: var(--color-ma-couleur-500)`)
+> tombe silencieusement — le thème repasse alors aux couleurs par défaut.
+
+### Nuxt
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@nuxt/ui'],
+  vite: {
+    optimizeDeps: {
+      // La librairie conserve des imports vers les SFC de `@nuxt/ui` : le pré-bundleur
+      // esbuild ne sait pas les compiler, il faut donc l'en exclure.
+      exclude: ['@tacxou/jsonforms_builder'],
+      // `ajv` est du CommonJS. Sans pré-bundling, son export par défaut n'est pas exposé
+      // et `@jsonforms/core` échoue à l'import.
+      include: ['ajv', 'ajv-formats', '@jsonforms/core', '@jsonforms/vue'],
+    },
+  },
+})
+```
+
+### Vue + Vite (sans Nuxt)
+
+```ts
+import ui from '@nuxt/ui/vite'
+
+export default defineConfig({
+  plugins: [vue(), ui({ colorMode: true })],
+})
+```
+
+Le renderer WYSIWYG exige en plus de **dédupliquer ProseMirror** — ses plugins sont identifiés par identité d'objet, et deux copies dans l'arbre de dépendances lèvent `Adding different instances of a keyed plugin` :
+
+```ts
+resolve: {
+  dedupe: ['@tiptap/core', '@tiptap/pm', '@tiptap/vue-3', 'prosemirror-state', 'prosemirror-view', 'prosemirror-model'],
+}
+```
+
+Voir `playground/vite.config.ts` pour une configuration complète et commentée (y compris les stubs `#imports` requis par `@nuxt/icon` hors Nuxt).
+
+## Développement
+
+Ce projet utilise **Bun** exclusivement ; `npm`, `yarn` et `pnpm` sont bloqués par le script `preinstall`.
 
 ```bash
-# Installation des dépendances (OBLIGATOIRE d'utiliser Bun)
 bun install
-
-# Démarrage du serveur de développement
-bun run start:dev
-
-# Build du projet
-bun run build
-
-# Tests
+bun run start:dev   # playground : galerie d'exemples + builder
+bun run build       # build de la librairie (es + cjs + déclarations)
 bun test
 ```
 
 ![Alt](https://repobeats.axiom.co/api/embed/a6c9d83d94634994e69a4302a2329c934a2cbcd6.svg "Repobeats analytics image")
-
-**Note importante :** Ce projet est configuré pour utiliser exclusivement Bun. L'utilisation de npm, yarn ou pnpm sera bloquée par le script `preinstall`.

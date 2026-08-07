@@ -1,15 +1,12 @@
 <template lang="pug">
-  .q-col-gutter-sm(
+  div(
     v-if="layout.visible"
-
-    :class="[layoutClassObject.root, layout.direction]"
+    :class="[layoutClassObject.root, columnsClass]"
   )
-    .col(
+    .min-w-0(
       v-for="(element, index) in layout.uischema.elements"
-
       :key="`${layout.path}-${index}`"
-      :class="['col-xs-12', `col-md-${12 / layout.uischema.elements.length}`, layoutClassObject.item, layout.direction === 'column' ? 'q-pb-sm' : 'q-pr-sm']"
-      style="max-width: 100%;"
+      :class="layoutClassObject.item"
     )
       dispatch-renderer(
         :schema="layout.schema"
@@ -23,38 +20,33 @@
 
 <script lang="ts">
 import { isLayout, JsonFormsRendererRegistryEntry, Layout, rankWith } from '@jsonforms/core'
-import { defineComponent } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { DispatchRenderer, rendererProps, useJsonFormsLayout, type RendererProps } from '@jsonforms/vue'
-import { useQuasarLayout } from '../utils'
+import { useUiLayout } from '../utils'
 
 /**
- * VerticalAndHorizontalLayoutRenderer Component
+ * Classes de colonnes, en dur et non construites dynamiquement.
  *
- * A Vue 3 component that renders JSONForms vertical and horizontal layout elements using
- * Quasar's grid system. This renderer organizes form elements in either vertical stacks
- * or horizontal rows with responsive column distribution.
+ * Tailwind analyse les sources statiquement : une classe assemblée à l'exécution
+ * (`md:grid-cols-${n}`, comme le faisait la v1 avec `col-md-${12 / n}`) n'est jamais
+ * générée dans la feuille finale. D'où cette table de correspondance explicite.
+ */
+const COLUMN_CLASSES: Record<number, string> = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 md:grid-cols-2',
+  3: 'grid-cols-1 md:grid-cols-3',
+  4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+  5: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-5',
+  6: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6',
+}
+
+/**
+ * LayoutRenderer
  *
- * Features:
- * - Supports both vertical and horizontal layout directions
- * - Responsive grid layout with automatic column distribution
- * - Quasar CSS grid integration with gutter spacing
- * - Recursive rendering of nested layout elements
- * - Visibility control based on JSONForms schema
- * - Dynamic styling based on layout direction
+ * Rend les `VerticalLayout` et `HorizontalLayout` avec une grille CSS Tailwind.
  *
- * Usage:
- * This component is automatically selected by JSONForms when encountering VerticalLayout
- * or HorizontalLayout UI elements. It should not be used directly but rather through
- * the JSONForms rendering system.
- *
- * Example UI Schema:
- * {
- *   type: "VerticalLayout", // or "HorizontalLayout"
- *   elements: [
- *     { type: "Control", scope: "#/properties/name" },
- *     { type: "Control", scope: "#/properties/email" }
- *   ]
- * }
+ * En vertical, une colonne. En horizontal, autant de colonnes que d'éléments
+ * (plafonné à 6), qui retombent sur une seule colonne en mobile.
  */
 const layoutRenderer = defineComponent({
   name: 'LayoutRenderer',
@@ -64,35 +56,31 @@ const layoutRenderer = defineComponent({
   props: {
     ...rendererProps<Layout>(),
   },
-  /**
-   * Setup function that initializes the layout renderer with JSONForms integration
-   *
-   * @param props - Renderer properties containing layout configuration
-   * @returns Combined functionality from useQuasarLayout and useJsonFormsLayout hooks
-   */
   setup(props: RendererProps<Layout>) {
-    return useQuasarLayout(useJsonFormsLayout(props))
-  },
-  computed: {
-    /**
-     * Computed layout class object based on direction
-     *
-     * @returns Appropriate style classes for horizontal or vertical layouts
-     */
-    layoutClassObject(): any {
-      return this.layout.direction === 'row' ? this.styles.horizontalLayout : this.styles.verticalLayout
-    },
+    const renderedProps = useUiLayout(useJsonFormsLayout(props))
+
+    const layoutClassObject = computed(() =>
+      renderedProps.layout.value.direction === 'row'
+        ? renderedProps.styles.horizontalLayout
+        : renderedProps.styles.verticalLayout,
+    )
+
+    const columnsClass = computed(() => {
+      if (renderedProps.layout.value.direction !== 'row') {
+        return ''
+      }
+
+      const count = renderedProps.layout.value.uischema.elements?.length ?? 1
+
+      return COLUMN_CLASSES[Math.min(Math.max(count, 1), 6)]
+    })
+
+    return { ...renderedProps, layoutClassObject, columnsClass }
   },
 })
 
 export default layoutRenderer
 
-/**
- * JSONForms Renderer Registry Entry
- *
- * Registers the LayoutRenderer component with JSONForms rendering system.
- * The tester function determines when this renderer should be used for any layout type.
- */
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: layoutRenderer,
   tester: rankWith(1, isLayout), // Matches UI elements with layout types (VerticalLayout/HorizontalLayout)

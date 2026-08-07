@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/*
+ * Tailwind 4 découvre ses classes en scannant les sources du projet, et ignore tout ce
+ * qui sort de sa racine. Sans cette ligne, les utilitaires employés par les renderers
+ * (`border-primary`, `bg-primary/5`, `text-dimmed`…) ne sont jamais générés : les classes
+ * apparaissent bien dans le DOM, mais ne correspondent à aucune règle CSS.
+ *
+ * Une application qui consomme le paquet publié vise sa `dist` :
+ *   @source "../node_modules/@tacxou/jsonforms_builder/dist";
+ */
+@source "../../src";
+
+/*
+ * Le playground reprend le thème réel de QualiRail (apps/web/src/assets/css/main.css)
+ * afin de vérifier que les renderers héritent des couleurs de marque du consommateur
+ * sans une seule ligne de CSS propre à la librairie.
+ */
+@theme static {
+  --color-amot-50: #f7fbe9;
+  --color-amot-100: #eef7c8;
+  --color-amot-200: #ddef98;
+  --color-amot-300: #c5e25f;
+  --color-amot-400: #aacf30;
+  --color-amot-500: #8cb800;
+  --color-amot-600: #7aa000;
+  --color-amot-700: #658600;
+  --color-amot-800: #4f6800;
+  --color-amot-900: #425600;
+  --color-amot-950: #233000;
+
+  --color-cobalt-50: #eff6fc;
+  --color-cobalt-100: #d9ebf8;
+  --color-cobalt-200: #b3d4f0;
+  --color-cobalt-300: #7ab3e3;
+  --color-cobalt-400: #4a92d4;
+  --color-cobalt-500: #2a7cc8;
+  --color-cobalt-600: #0053a1;
+  --color-cobalt-700: #004485;
+  --color-cobalt-800: #00366b;
+  --color-cobalt-900: #002d57;
+  --color-cobalt-950: #001a33;
+}
+
+:root {
+  --ui-radius: 0.375rem;
+}
+
+/* Thème sombre : primary = cobalt, comme côté QualiRail. */
+.dark {
+  --ui-color-primary-50: var(--color-cobalt-50);
+  --ui-color-primary-100: var(--color-cobalt-100);
+  --ui-color-primary-200: var(--color-cobalt-200);
+  --ui-color-primary-300: var(--color-cobalt-300);
+  --ui-color-primary-400: var(--color-cobalt-400);
+  --ui-color-primary-500: var(--color-cobalt-500);
+  --ui-color-primary-600: var(--color-cobalt-600);
+  --ui-color-primary-700: var(--color-cobalt-700);
+  --ui-color-primary-800: var(--color-cobalt-800);
+  --ui-color-primary-900: var(--color-cobalt-900);
+  --ui-color-primary-950: var(--color-cobalt-950);
+  --ui-primary: var(--ui-color-primary-500);
+  --ui-text-inverted: #ffffff;
+}

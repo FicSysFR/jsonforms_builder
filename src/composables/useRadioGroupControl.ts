@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { isEmpty } from 'radash'
-import { useQuasarControl } from '../utils'
+import { useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 
 type JsonFormsEnumControl = ReturnType<typeof useJsonFormsEnumControl>
@@ -21,7 +21,7 @@ export const useRadioGroupControl = ({
   debounceWait = 100,
 }: UseRadioGroupControlOptions) => {
   const adaptTarget = createRadioAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const modelValue = computed(() => control.control.value.data)
 

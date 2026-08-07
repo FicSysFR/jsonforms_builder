@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { get, isArray } from 'radash'
-import { useQuasarControl } from '../utils'
+import { useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 import {
   createEnumAdaptTarget,
@@ -133,7 +133,7 @@ export const useAutocompleteControl = ({
   defaultMinLength = 3,
 }: UseAutocompleteControlOptions) => {
   const adaptTarget = createEnumAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const optionsList = ref<any[]>([])
   const abortController = ref<AbortController | null>(null)
@@ -177,14 +177,12 @@ export const useAutocompleteControl = ({
   }
 
   const fetchOptions = async (search: string, uiOptions?: any) => {
-    console.log('[autocomplete] fetchOptions search=', search)
     const apiConfig = extractAutocompleteApiConfig(
       uiOptions,
       control.appliedOptions.value,
     )
 
     if (!apiConfig) {
-      console.log('[autocomplete] no api config, fallback to static options')
       optionsList.value = []
       return
     }
@@ -195,58 +193,56 @@ export const useAutocompleteControl = ({
     abortController.value = new AbortController()
 
     try {
-      console.log('[autocomplete] fetching URL:', request.url)
       const response = await fetch(request.url, {
         signal: abortController.value.signal,
         headers: request.headers,
       })
 
       if (!response.ok) {
-        console.warn('[autocomplete] HTTP error:', response.status)
         throw new Error(`HTTP ${response.status}`)
       }
 
       const data = await response.json()
       const rawItems = apiConfig.itemsPath ? get(data, apiConfig.itemsPath) : data
       const items = isArray(rawItems) ? rawItems : []
-      console.log('[autocomplete] items length:', items.length)
       optionsList.value = resolveFetchedOptions(items, apiConfig)
-      console.log('[autocomplete] optionsList set:', optionsList.value)
     } catch (error) {
-      console.warn('[autocomplete] API error:', error)
+      // Une requête annulée par une frappe suivante n'est pas une erreur à signaler.
+      if ((error as Error)?.name !== 'AbortError') {
+        console.warn('[autocomplete] API error:', error)
+      }
       optionsList.value = []
     }
   }
 
-  const onFilter = (
-    value: string,
-    update: (fn: () => void) => void,
-    abort: () => void,
-  ) => {
-    console.log('[autocomplete] onFilter value=', value)
-    update(async () => {
-      if (!value || value.length < minLength.value) {
-        console.log('[autocomplete] onFilter below minLength, restoring static options')
-        optionsList.value = getStaticOptions(control.control.value)
-        return
-      }
+  /**
+   * Branché sur `@update:search-term` de `UInputMenu` / `USelectMenu`.
+   *
+   * La v1 suivait la signature `(value, update, abort)` de `q-select` ; Nuxt UI émet
+   * simplement le terme saisi, d'où le changement de contrat en v2.
+   */
+  const onSearch = async (value: string) => {
+    if (!value || value.length < minLength.value) {
+      optionsList.value = getStaticOptions(control.control.value)
+      return
+    }
 
-      const uiOptions = control.control.value.uischema.options
-      const apiConfig = extractAutocompleteApiConfig(
-        uiOptions,
-        control.appliedOptions.value,
+    const uiOptions = control.control.value.uischema.options
+    const apiConfig = extractAutocompleteApiConfig(
+      uiOptions,
+      control.appliedOptions.value,
+    )
+
+    // Sans API déclarée, on filtre les options statiques côté client.
+    if (!apiConfig) {
+      optionsList.value = filterOptionsBySearch(
+        getStaticOptions(control.control.value),
+        value,
       )
+      return
+    }
 
-      if (!apiConfig) {
-        console.log('[autocomplete] onFilter using client-side filtering')
-        const staticOptions = getStaticOptions(control.control.value)
-        optionsList.value = filterOptionsBySearch(staticOptions, value)
-        return
-      }
-
-      console.log('[autocomplete] onFilter fetching remote options')
-      await fetchOptions(value, uiOptions)
-    })
+    await fetchOptions(value, uiOptions)
   }
 
   return {
@@ -257,7 +253,7 @@ export const useAutocompleteControl = ({
     suggestions,
     minLength,
     fetchOptions,
-    onFilter,
+    onSearch,
     modelValue,
   }
 }

@@ -1,10 +1,10 @@
 import { computed } from 'vue'
-import { useQuasarControl } from '../utils'
+import { useUiControl } from '../utils'
 
-type QuasarControlInput = Parameters<typeof useQuasarControl>[0]
+type UiControlInput = Parameters<typeof useUiControl>[0]
 
 type UseBooleanControlOptions = {
-  jsonFormsControl: QuasarControlInput
+  jsonFormsControl: UiControlInput
   debounceWait?: number
 }
 
@@ -12,7 +12,7 @@ export const useBooleanControl = ({
   jsonFormsControl,
   debounceWait,
 }: UseBooleanControlOptions) => {
-  const control = useQuasarControl(jsonFormsControl, undefined, debounceWait)
+  const control = useUiControl(jsonFormsControl, undefined, debounceWait)
 
   const modelValue = computed(() => control.control.value.data)
   const disable = computed(() =>

@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { isEmpty } from 'radash'
-import { useQuasarControl } from '../utils'
+import { useUiControl } from '../utils'
 
 export const createStringAdaptTarget = (clearValue: unknown) => {
   return (value: unknown): unknown => {
@@ -19,10 +19,10 @@ export const shouldShowStringCounter = (restrict: boolean): boolean => {
   return restrict
 }
 
-type QuasarControlInput = Parameters<typeof useQuasarControl>[0]
+type UiControlInput = Parameters<typeof useUiControl>[0]
 
 type UseStringControlOptions = {
-  jsonFormsControl: QuasarControlInput
+  jsonFormsControl: UiControlInput
   clearValue: unknown
   debounceWait?: number
 }
@@ -33,7 +33,7 @@ export const useStringControl = ({
   debounceWait = 100,
 }: UseStringControlOptions) => {
   const adaptTarget = createStringAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const restrict = computed(() => Boolean(control.appliedOptions.value?.restrict))
 

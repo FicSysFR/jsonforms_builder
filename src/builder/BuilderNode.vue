@@ -1,0 +1,211 @@
+<template lang="pug">
+  .builder-node
+    //- Zone de dépôt avant l'élément.
+    .h-2.rounded.transition-colors(
+      :class="dropTarget === 'before' ? 'bg-primary/60' : 'bg-transparent'"
+      @dragover.prevent="dropTarget = 'before'"
+      @dragleave="dropTarget = null"
+      @drop.prevent="onDropSibling($event, index)"
+    )
+
+    .rounded-md.border.transition-colors(
+      :class="[isSelected ? 'border-primary bg-primary/5' : 'border-default hover:border-inverted/20']"
+      draggable="true"
+      @click.stop="$emit('select', path)"
+      @dragstart.stop="onDragStart"
+      @dragend="dropTarget = null"
+    )
+      .flex.items-center.gap-2.p-2
+        u-icon.shrink-0.cursor-grab.text-dimmed(name="i-lucide-grip-vertical")
+        u-icon.shrink-0(:name="nodeIcon" :class="isSelected ? 'text-primary' : 'text-muted'")
+        span.truncate.text-sm(v-text="nodeLabel")
+        u-badge(v-if="badge" :label="badge" color="neutral" variant="subtle" size="sm")
+        .flex-1
+        .flex.shrink-0.items-center(class="gap-0.5")
+          u-button(
+            icon="i-lucide-chevron-up"
+            aria-label="Monter"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click.stop="$emit('shift', path, -1)"
+          )
+          u-button(
+            icon="i-lucide-chevron-down"
+            aria-label="Descendre"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click.stop="$emit('shift', path, 1)"
+          )
+          u-button(
+            icon="i-lucide-trash-2"
+            aria-label="Supprimer"
+            color="error"
+            variant="ghost"
+            size="xs"
+            @click.stop="$emit('remove', path)"
+          )
+
+      //- Enfants. La zone en pointillés permet d'alimenter un conteneur encore vide.
+      .space-y-1.border-t.border-default.p-2.pl-6(v-if="children")
+        builder-node(
+          v-for="(child, childIndex) in children"
+          :key="`${path.join('-')}-${childIndex}`"
+          :element="child"
+          :path="[...path, childIndex]"
+          :index="childIndex"
+          :is-last="childIndex === children.length - 1"
+          :selected-path="selectedPath"
+          :schema="schema"
+          @select="$emit('select', $event)"
+          @remove="$emit('remove', $event)"
+          @shift="(p, d) => $emit('shift', p, d)"
+          @drop-item="$emit('drop-item', $event)"
+        )
+
+        .rounded.border.border-dashed.py-2.text-center.text-xs.transition-colors(
+          :class="dropTarget === 'inside' ? 'border-primary text-primary' : 'border-default text-dimmed'"
+          @dragover.prevent="dropTarget = 'inside'"
+          @dragleave="dropTarget = null"
+          @drop.prevent="onDropInside"
+        ) Déposer ici
+
+    //- Zone de dépôt après le dernier frère : sans elle, impossible d'ajouter en fin de liste.
+    .h-2.rounded.transition-colors(
+      v-if="isLast"
+      :class="dropTarget === 'after' ? 'bg-primary/60' : 'bg-transparent'"
+      @dragover.prevent="dropTarget = 'after'"
+      @dragleave="dropTarget = null"
+      @drop.prevent="onDropSibling($event, index + 1)"
+    )
+</template>
+
+<script lang="ts">
+import { computed, defineComponent, ref, type PropType } from 'vue'
+import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/core'
+import UBadge from '@nuxt/ui/components/Badge.vue'
+import UButton from '@nuxt/ui/components/Button.vue'
+import UIcon from '@nuxt/ui/components/Icon.vue'
+import { isSamePath, propertyFromScope, type ElementPath } from './tree'
+import { readDragPayload, writeDragPayload } from './drag'
+
+const NODE_ICONS: Record<string, string> = {
+  Control: 'i-lucide-square-pen',
+  VerticalLayout: 'i-lucide-rows-2',
+  HorizontalLayout: 'i-lucide-columns-2',
+  Group: 'i-lucide-square-dashed',
+  Categorization: 'i-lucide-panels-top-left',
+  Category: 'i-lucide-panel-top',
+  Label: 'i-lucide-heading',
+}
+
+/**
+ * Nœud de l'arbre d'édition du builder.
+ *
+ * Récursif — d'où le `name: 'BuilderNode'` explicite, sans lequel le composant ne
+ * pourrait pas se référencer dans son propre gabarit.
+ */
+export default defineComponent({
+  name: 'BuilderNode',
+  components: {
+    UBadge,
+    UButton,
+    UIcon,
+  },
+  props: {
+    element: {
+      type: Object as PropType<UISchemaElement>,
+      required: true,
+    },
+    path: {
+      type: Array as PropType<ElementPath>,
+      required: true,
+    },
+    index: {
+      type: Number,
+      required: true,
+    },
+    isLast: {
+      type: Boolean,
+      default: false,
+    },
+    selectedPath: {
+      type: Array as PropType<ElementPath | null>,
+      default: null,
+    },
+    /** Schéma courant, uniquement pour afficher le titre lisible d'un `Control`. */
+    schema: {
+      type: Object as PropType<JsonSchema | undefined>,
+      default: undefined,
+    },
+  },
+  emits: ['select', 'remove', 'shift', 'drop-item'],
+  setup(props, { emit }) {
+    /** Quelle zone de dépôt est survolée, pour n'en éclairer qu'une à la fois. */
+    const dropTarget = ref<'before' | 'after' | 'inside' | null>(null)
+
+    const children = computed<UISchemaElement[] | undefined>(
+      () => (props.element as { elements?: UISchemaElement[] }).elements,
+    )
+
+    const isSelected = computed(
+      () => !!props.selectedPath && isSamePath(props.selectedPath, props.path),
+    )
+
+    const nodeIcon = computed(() => NODE_ICONS[props.element.type] ?? 'i-lucide-box')
+
+    const nodeLabel = computed(() => {
+      const element = props.element as ControlElement & { label?: string; text?: string }
+      const property = propertyFromScope(element.scope)
+
+      // Pour un `Control`, le libellé lisible vit dans le schéma (`title`) et non dans
+      // le uischema : sans cette résolution, l'arbre n'afficherait que des noms techniques.
+      const title = property
+        ? (props.schema?.properties?.[property] as JsonSchema | undefined)?.title
+        : undefined
+
+      return element.label ?? element.text ?? title ?? property ?? element.type
+    })
+
+    const badge = computed(() =>
+      props.element.type === 'Control' ? undefined : props.element.type,
+    )
+
+    const onDragStart = (event: DragEvent) => {
+      writeDragPayload(event, { kind: 'move', path: props.path })
+    }
+
+    const dispatchDrop = (event: DragEvent, parentPath: ElementPath, index: number) => {
+      dropTarget.value = null
+
+      const payload = readDragPayload(event)
+      if (!payload) return
+
+      emit('drop-item', { payload, parentPath, index })
+    }
+
+    /** Dépôt entre deux frères : le parent visé est celui de ce nœud. */
+    const onDropSibling = (event: DragEvent, index: number) => {
+      dispatchDrop(event, props.path.slice(0, -1), index)
+    }
+
+    /** Dépôt à l'intérieur de ce conteneur, en dernière position. */
+    const onDropInside = (event: DragEvent) => {
+      dispatchDrop(event, props.path, children.value?.length ?? 0)
+    }
+
+    return {
+      dropTarget,
+      children,
+      isSelected,
+      nodeIcon,
+      nodeLabel,
+      badge,
+      onDragStart,
+      onDropSibling,
+      onDropInside,
+    }
+  },
+})
+</script>

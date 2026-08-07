@@ -2,108 +2,80 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-input(
-      v-bind="quasarProps('q-input')"
-      @keydown.up.stop="keydownHandler($event, 1)"
-      @keydown.down.stop="keydownHandler($event, -1)"
-      @keyup.up.stop="keyupHandler($event, 1)"
-      @keyup.down.stop="keyupHandler($event, -1)"
-      @update:model-value="onChangeDate"
-      @focus="isFocused = true"
-      @blur="onBlur"
-      :id="control.id"
-      :model-value="controlData"
-      :label="controlWrapper.label"
+    u-input-time(
+      v-if="inputType === 'time'"
+      v-bind="uiProps('inputTime')"
+      :id="control.id + '-input'"
+      :model-value="dateValue"
       :class="styles.control.input"
-      clear-icon="mdi-close"
-      :disable="!control.enabled"
-      :placeholder="appliedOptions.placeholder"
+      :disabled="isDisabled"
+      :readonly="isReadonly"
       :autofocus="appliedOptions.focus"
-      :required="control.required"
-      :hide-bottom-space="!!control.description"
-      :hint="control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :clearable="isClearable"
-      :debounce="100"
-      inputmode="numeric"
-      :_step="optionPattern.includes('s') ? 1 : 0"
-      :mask="maskPattern"
-      outlined
-      stack-label
-      dense
+      :granularity="optionPattern.includes('s') ? 'second' : 'minute'"
+      :locale="appliedOptions.locale ?? 'fr-FR'"
+      hour-cycle="24"
+      icon="i-lucide-clock"
+      @update:model-value="onChangeDateValue"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
-      template(#prepend)
-        q-icon.cursor-pointer(v-if="inputType === 'datetime-local'" name="mdi-calendar-clock")
-          q-popup-proxy(ref="popupProxy")
-            q-card.row(flat)
-              .col
-                q-date(
-                  v-bind="quasarProps('q-date')"
-                  @update:model-value="onChangeDate"
-                  :model-value="controlData"
-                  first-day-of-week="1"
-                  :mask="patternDefault"
-                  square
-                )
-              .col
-                q-time(
-                  v-bind="quasarProps('q-time')"
-                  @update:model-value="onChangeDate"
-                  :model-value="controlData"
-                  :with-seconds="optionPattern.includes('s')"
-                  format24h
-                  square
-                )
-        q-icon.cursor-pointer(v-else-if="inputType === 'date'" name="mdi-calendar")
-          q-popup-proxy(ref="popupProxy")
-            q-date(
-              v-bind="quasarProps('q-date')"
-              @update:model-value="onChangeDate"
-              :model-value="controlData"
-              first-day-of-week="1"
-              :mask="patternDefault"
-            )
-        q-icon.cursor-pointer(v-else-if="inputType === 'time'" name="mdi-clock")
-          q-popup-proxy(ref="popupProxy")
-            q-time(
-              v-bind="quasarProps('q-time')"
-              @update:model-value="onChangeDate"
-              :model-value="controlData"
-              :with-seconds="optionPattern.includes('s')"
-              format24h
-              square
-            )
+    u-input-date(
+      v-else
+      v-bind="uiProps('inputDate')"
+      :id="control.id + '-input'"
+      :model-value="dateValue"
+      :class="styles.control.input"
+      :disabled="isDisabled"
+      :readonly="isReadonly"
+      :autofocus="appliedOptions.focus"
+      :granularity="granularity"
+      :locale="appliedOptions.locale ?? 'fr-FR'"
+      hour-cycle="24"
+      :icon="inputType === 'datetime-local' ? 'i-lucide-calendar-clock' : 'i-lucide-calendar'"
+      @update:model-value="onChangeDateValue"
+      @focus="handleFocus"
+      @blur="handleBlur"
+    )
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isDateControl, or, isDateTimeControl, isTimeControl } from '@jsonforms/core'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-import { defineComponent } from 'vue'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, or, isDateControl, isDateTimeControl, isTimeControl } from '@jsonforms/core'
+import { defineComponent, type DefineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import UInputDate from '@nuxt/ui/components/InputDate.vue'
+import UInputTime from '@nuxt/ui/components/InputTime.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QCard, QDate, QIcon, QInput, QPopupProxy, QTime } from 'quasar'
 import { useDateControl } from '../composables'
 
-dayjs.extend(customParseFormat)
-
-const controlRenderer = defineComponent({
+/**
+ * DateControlRenderer
+ *
+ * Rend les formats `date`, `date-time` et `time` avec `UInputDate` / `UInputTime`.
+ *
+ * Ces composants sont *segmentés* : chaque partie (jour, mois, année, heure…) est une
+ * zone d'édition à part entière, avec incrément aux flèches et navigation clavier
+ * fournis nativement — là où la v1 réimplémentait masque, curseur et flèches à la main
+ * par-dessus un `q-input`, doublé d'un `q-popup-proxy` contenant `q-date` / `q-time`.
+ *
+ * Ils travaillent sur des objets `@internationalized/date` et non des chaînes : la
+ * conversion aller-retour vers le motif du schéma est faite par `useDateControl`
+ * (`dateValue` / `onChangeDateValue`).
+ */
+// Annotation explicite : `UInputDate` / `UInputTime` exposent dans leurs props des types
+// internes de `reka-ui` que le générateur de déclarations ne sait pas nommer depuis
+// `dist/` (TS2742). Les consommateurs ne câblent jamais ces props à la main — le renderer
+// est instancié par JSONForms —, la perte d'inférence est donc sans conséquence.
+const controlRenderer: DefineComponent<any, any, any> = defineComponent({
   name: 'DateControlRenderer',
   components: {
     ControlWrapper,
-    QInput,
-    QIcon,
-    QPopupProxy,
-    QCard,
-    QTime,
-    QDate,
+    UInputDate,
+    UInputTime,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -134,25 +106,3 @@ export const entry: JsonFormsRendererRegistryEntry = {
   ), // Matches schema properties with format "date", "date-time" or "time"
 }
 </script>
-
-<style>
-input[type='date']::-webkit-calendar-picker-indicator,
-input[type='time']::-webkit-calendar-picker-indicator,
-input[type='datetime-local']::-webkit-calendar-picker-indicator {
-  display: none;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-input[type='time']::-webkit-inner-spin-button,
-input[type='datetime-local']::-webkit-inner-spin-button {
-  display: none;
-}
-
-input[type='date'],
-input[type='time'],
-input[type='datetime-local'] {
-  appearance: none;
-  -moz-appearance: textfield;
-}
-</style>

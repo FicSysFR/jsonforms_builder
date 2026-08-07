@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 import { isNumber } from 'radash'
-import { useQuasarControl } from '../utils'
+import { useUiControl } from '../utils'
 
-type QuasarControlInput = Parameters<typeof useQuasarControl>[0]
+type UiControlInput = Parameters<typeof useUiControl>[0]
 
 type UseSliderControlOptions = {
-  jsonFormsControl: QuasarControlInput
+  jsonFormsControl: UiControlInput
   clearValue: number
   debounceWait?: number
 }
@@ -43,7 +43,7 @@ export const useSliderControl = ({
   debounceWait,
 }: UseSliderControlOptions) => {
   const adaptTarget = createSliderAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const min = computed(() => resolveSliderMin(control.control.value.schema?.minimum))
   const max = computed(() => resolveSliderMax(control.control.value.schema?.maximum))

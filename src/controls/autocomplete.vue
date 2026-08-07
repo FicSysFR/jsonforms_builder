@@ -2,68 +2,55 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-select(
-      v-bind="quasarProps('q-select')"
-      @update:model-value="onChange"
-      @filter="onFilter"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
+    u-input-menu(
+      v-bind="uiProps('inputMenu')"
       :id="control.id + '-input'"
       :model-value="modelValue"
-      :label="computedLabel"
+      :items="selectOptions"
       :class="styles.control.input"
-      clear-icon="mdi-trash"
-      :disable="!control.enabled && !isReadonly"
-      :readonly="isReadonly"
-      :required="control.required"
+      :disabled="isDisabled"
       :placeholder="appliedOptions.placeholder"
-      :hide-bottom-space="!!control.description"
-      :options="selectOptions"
-      option-value="value"
-      option-label="label"
-      :hint="control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :clearable="isClearable"
-      new-value-mode='add-unique'
-      :input-debounce="300"
-      use-input
-      use-chips
-      hide-dropdown-icon
-      map-options
-      emit-value
-      stack-label
-      outlined
-      dense
+      :color="control.errors ? 'error' : undefined"
+      value-key="value"
+      label-key="label"
+      ignore-filter
+      @update:model-value="onChange"
+      @update:search-term="onSearch"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
-      template(#no-option="{ inputValue }")
-        q-item(v-show='inputValue.length >= minLength')
-          q-item-section
-            q-item-label Aucun résultat
+      template(#empty)
+        span.text-sm.text-muted {{ searchHint }}
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isStringControl, and, hasOption } from '@jsonforms/core'
-import { defineComponent } from 'vue'
-import { rendererProps, RendererProps, useJsonFormsEnumControl } from '@jsonforms/vue'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, hasOption, isStringControl } from '@jsonforms/core'
+import { computed, defineComponent } from 'vue'
+import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
+import UInputMenu from '@nuxt/ui/components/InputMenu.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
 import { useAutocompleteControl } from '../composables'
-import { QItem, QItemLabel, QItemSection, QSelect } from 'quasar'
 
+/**
+ * AutocompleteControlRenderer
+ *
+ * Rend les chaînes portant une configuration `options.api` avec un `UInputMenu`
+ * alimenté à distance.
+ *
+ * `ignore-filter` est indispensable : le filtrage est fait par la source (ou côté
+ * client dans `onSearch`), et laisser `UInputMenu` refiltrer par-dessus masquerait
+ * des résultats pourtant renvoyés par l'API.
+ */
 const controlRenderer = defineComponent({
-  name: 'SuggestionControlRenderer',
+  name: 'AutocompleteControlRenderer',
   components: {
     ControlWrapper,
-    QSelect,
-    QItem,
-    QItemSection,
-    QItemLabel,
+    UInputMenu,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -72,10 +59,16 @@ const controlRenderer = defineComponent({
     const jsonFormsControl = useJsonFormsEnumControl(props)
     const clearValue = determineClearValue(undefined)
 
-    return useAutocompleteControl({
+    const control = useAutocompleteControl({
       jsonFormsControl,
       clearValue,
     })
+
+    const searchHint = computed(() =>
+      `Saisissez au moins ${control.minLength.value} caractère${control.minLength.value > 1 ? 's' : ''}`,
+    )
+
+    return { ...control, searchHint }
   },
 })
 

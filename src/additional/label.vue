@@ -1,85 +1,58 @@
 <template lang="pug">
-  q-toolbar.q-px-none.q-custom-toolbar-label(
-    v-bind="quasarProps('q-toolbar')"
-
-    v-if="label.visible"
-
-    :title="label.text"
-    :style="labelStyle"
-    :class="styles.label.root"
-    :id="label.id"
-  )
-    q-toolbar-title(v-text="label.text")
+  .space-y-2(v-if="label.visible" :id="label.id")
+    component(
+      :is="headingTag"
+      :class="styles.label.root"
+      :style="labelStyle"
+      v-text="label.text"
+    )
+    u-separator(v-if="appliedOptions.separator !== false")
 </template>
 
 <script lang="ts">
 import { JsonFormsRendererRegistryEntry, LabelElement, rankWith, uiTypeIs } from '@jsonforms/core'
-import { defineComponent } from 'vue'
-import { rendererProps, RendererProps, useJsonFormsLabel } from '@jsonforms/vue'
-import { useQuasarLabel } from '../utils'
+import { computed, defineComponent } from 'vue'
+import { rendererProps, useJsonFormsLabel, type RendererProps } from '@jsonforms/vue'
+import USeparator from '@nuxt/ui/components/Separator.vue'
+import { useUiLabel } from '../utils'
 
 /**
- * LabelRenderer Component
+ * LabelRenderer
  *
- * A Vue 3 component that renders JSONForms Label elements using Quasar's q-toolbar component.
- * This renderer displays static text labels within forms, providing visual structure and
- * organization to form layouts.
+ * Rend les éléments `type: "Label"` du uischema : un titre de section, suivi d'un
+ * filet de séparation.
  *
- * Features:
- *  - Renders labels as Quasar toolbar titles
- *  - Supports visibility control via JSONForms schema
- *  - Applies custom styling through the styles system
- *  - Integrates with Quasar's theming and design system
- *
- * Usage:
- *  This component is automatically selected by JSONForms when encountering a Label UI element.
- *  It should not be used directly but rather through the JSONForms rendering system.
- *
- * Example UI Schema:
- *  {
- *    type: "Label",
- *    text: "Personal Information"
- *  }
+ * La v1 détournait un `q-toolbar` pour cet usage — beaucoup de structure pour du texte.
+ * Ici c'est un simple titre, dont le niveau est réglable via `options.level` (h1…h6)
+ * afin de rester correct pour les lecteurs d'écran quand plusieurs sections s'imbriquent.
  */
 const labelRenderer = defineComponent({
-  name: 'LabelAdditionalRenderer',
+  name: 'LabelRenderer',
+  components: {
+    USeparator,
+  },
   props: {
     ...rendererProps<LabelElement>(),
   },
-
-  /**
-   * Setup function that initializes the label renderer with JSONForms integration
-   * @param props - Renderer properties containing label element configuration
-   * @returns Combined functionality from useQuasarLabel and useJsonFormsLabel hooks
-   */
   setup(props: RendererProps<LabelElement>) {
-    return useQuasarLabel(useJsonFormsLabel(props))
-  },
+    const label = useUiLabel(useJsonFormsLabel(props))
 
-  computed: {
-    /**
-     * Computed style for the label component
-     *
-     * @returns CSS properties object with minimum height styling
-     */
-    labelStyle(): Record<string, string> {
-      return {
-        minHeight: '32px',
-      }
-    },
+    const headingTag = computed(() => {
+      const level = Number(label.appliedOptions.value?.level)
+
+      return level >= 1 && level <= 6 ? `h${level}` : 'h3'
+    })
+
+    const labelStyle = computed(() => label.appliedOptions.value?.style ?? {})
+
+    return { ...label, headingTag, labelStyle }
   },
 })
 
 export default labelRenderer
 
-/**
- * JSONForms Renderer Registry Entry
- *
- * Registers the LabelRenderer component with JSONForms rendering system.
- * The tester function determines when this renderer should be used based on UI schema type.
- */
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: labelRenderer,
-  tester: rankWith(1, uiTypeIs('Label')), // Matches UI elements with type "Label"
+  tester: rankWith(1, uiTypeIs('Label')),
 }
 </script>

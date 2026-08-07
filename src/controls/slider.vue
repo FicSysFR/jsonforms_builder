@@ -2,59 +2,48 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-field(
-      v-bind="quasarProps('q-field')"
-      @update:model-value="onChange"
-      :id="control.id + '-input'"
-      :model-value="modelValue"
-      :label="computedLabel"
-      :class="styles.control.input"
-      :disable="!control.enabled && !isReadonly"
-      :hint="control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :hide-bottom-space="!!control.description"
-      :debounce="100"
-      outlined
-      stack-label
-      dense
-    )
-      template(#control)
-        q-slider(
-          v-bind="quasarProps('q-slider')"
-          @update:model-value="onChange"
-          @focus="isFocused = true"
-          @blur="isFocused = false"
-          :model-value="modelValue"
-          :min="min"
-          :max="max"
-          :step="step"
-          label
-          label-always
-          dense
-        )
+    .flex.items-center.gap-4
+      u-slider.flex-1(
+        v-bind="uiProps('slider')"
+        :model-value="modelValue"
+        :class="styles.control.input"
+        :disabled="isDisabled || isReadonly"
+        :min="min"
+        :max="max"
+        :step="step"
+        tooltip
+        @update:model-value="onChange"
+      )
+      span.w-12.shrink-0.text-right.text-sm.tabular-nums.text-muted(v-text="modelValue ?? '—'")
 </template>
 
 <script lang="ts">
-import { isRangeControl, JsonFormsRendererRegistryEntry, rankWith, type ControlElement } from '@jsonforms/core'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isRangeControl } from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import USlider from '@nuxt/ui/components/Slider.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QField, QSlider } from 'quasar'
 import { useSliderControl } from '../composables'
 
+/**
+ * SliderControlRenderer
+ *
+ * Rend les nombres marqués `options.slider` avec un `USlider`.
+ *
+ * `USlider` n'affiche pas la valeur en permanence (contrairement au `label-always` de
+ * Quasar) : on ajoute une pastille numérique à droite pour conserver ce repère,
+ * en plus de l'infobulle au survol.
+ */
 const controlRenderer = defineComponent({
-  name: 'slider-control-renderer',
+  name: 'SliderControlRenderer',
   components: {
     ControlWrapper,
-    QField,
-    QSlider,
+    USlider,
   },
   props: {
     ...rendererProps<ControlElement>(),

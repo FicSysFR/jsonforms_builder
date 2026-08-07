@@ -2,61 +2,51 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-input(
-      v-bind="quasarProps('q-input')"
-      @update:model-value="onChange"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
+    u-input-number(
+      v-bind="uiProps('inputNumber')"
       :id="control.id + '-input'"
-      :model-value="formattedValue"
-      :label="controlWrapper.label"
+      :model-value="control.data"
       :class="styles.control.input"
-      :disable="!control.enabled && !isReadonly"
-      :placeholder="appliedOptions.placeholder"
+      :disabled="isDisabled"
       :readonly="isReadonly"
-      clear-icon="mdi-close"
+      :placeholder="appliedOptions.placeholder"
       :autofocus="appliedOptions.focus"
-      :required="control.required"
-      :hint="control.description"
-      :hide-bottom-space="!!control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
-      :clearable="isClearable"
-      :debounce="100"
+      :min="control.schema.minimum"
+      :max="control.schema.maximum"
       :step="step"
-      type='number'
-      outlined
-      stack-label
-      dense
+      :color="control.errors ? 'error' : undefined"
+      @update:model-value="onChange"
+      @blur="handleBlur"
     )
 </template>
 
 <script lang="ts">
-import {
-  ControlElement,
-  JsonFormsRendererRegistryEntry,
-  rankWith,
-  isIntegerControl,
-  or,
-  isNumberControl,
-} from '@jsonforms/core'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, or, isIntegerControl, isNumberControl } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import UInputNumber from '@nuxt/ui/components/InputNumber.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QInput } from 'quasar'
 import { useNumericControl } from '../composables'
 
+/**
+ * NumericControlRenderer
+ *
+ * Rend les propriétés `type: "number"` et `type: "integer"` avec un `UInputNumber`.
+ *
+ * `UInputNumber` émet directement un nombre (ou `null`), là où le `q-input type="number"`
+ * de la v1 émettait une chaîne qu'il fallait reparser — d'où l'usage de `control.data`
+ * brut plutôt que du `formattedValue` du composable.
+ */
 const controlRenderer = defineComponent({
   name: 'NumericControlRenderer',
   components: {
     ControlWrapper,
-    QInput,
+    UInputNumber,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -64,12 +54,12 @@ const controlRenderer = defineComponent({
   setup(props: RendererProps<ControlElement>) {
     const jsonFormsControl = useJsonFormsControl(props)
     const clearValue = determineClearValue(undefined)
-    const input = useNumericControl({
+
+    return useNumericControl({
       jsonFormsControl,
       clearValue,
+      debounceWait: 100,
     })
-
-    return input
   },
 })
 
@@ -85,16 +75,3 @@ export const entry: JsonFormsRendererRegistryEntry = {
   ), // Matches schema properties with type "number" or "integer"
 }
 </script>
-
-<style>
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-</style>

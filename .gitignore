@@ -2,6 +2,10 @@ dist/
 node_modules/
 coverage/
 
+# Générés par le plugin Vite de Nuxt UI (auto-import des composants `U*`).
+playground/auto-imports.d.ts
+playground/components.d.ts
+
 yarn-debug.log*
 yarn-error.log*
 .env

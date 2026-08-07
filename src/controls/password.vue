@@ -2,60 +2,64 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-input(
-      @update:model-value="onChange"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-      :type="passwordVisible ? 'text' : 'password'"
+    u-input(
+      v-bind="uiProps('input')"
       :id="control.id + '-input'"
+      :type="passwordVisible ? 'text' : 'password'"
       :model-value="modelValue"
-      :label="computedLabel"
       :class="styles.control.input"
-      :disable="!control.enabled && !isReadonly"
+      :disabled="isDisabled"
+      :readonly="isReadonly"
       :placeholder="appliedOptions.placeholder"
       :autofocus="appliedOptions.focus"
-      :required="control.required"
-      :hint="control.description"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :hide-bottom-space="!!control.description"
-      :error-message="control.errors"
       :maxlength="maxLength"
-      :counter="counter"
-      :clearable="isClearable"
-      :debounce="100"
-      outlined
-      stack-label
-      dense
-
-      v-bind="{...quasarProps('q-input'), ...appliedOptions.props}"
+      :color="control.errors ? 'error' : undefined"
+      @update:model-value="onChange"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
-      template(#append)
-        q-icon.cursor-pointer(
-          :name="passwordVisible ? 'mdi-eye-off' : 'mdi-eye'"
+      template(#trailing)
+        u-button(
+          :icon="passwordVisible ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+          :aria-label="passwordVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          :aria-pressed="passwordVisible"
+          color="neutral"
+          variant="link"
+          size="sm"
+          tabindex="-1"
           @click="passwordVisible = !passwordVisible"
         )
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isStringControl, and, formatIs } from '@jsonforms/core'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, formatIs, isStringControl } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import UInput from '@nuxt/ui/components/Input.vue'
+import UButton from '@nuxt/ui/components/Button.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QIcon, QInput } from 'quasar'
 import { usePasswordControl } from '../composables'
 
+/**
+ * PasswordControlRenderer
+ *
+ * Rend les chaînes de `format: "password"` avec un `UInput` masqué et un bouton
+ * de bascule en slot `#trailing`.
+ *
+ * Le bouton est `tabindex="-1"` : on ne veut pas qu'il s'intercale dans la navigation
+ * clavier entre le champ mot de passe et le suivant.
+ */
 const controlRenderer = defineComponent({
   name: 'PasswordControlRenderer',
   components: {
     ControlWrapper,
-    QInput,
-    QIcon,
+    UInput,
+    UButton,
   },
   props: {
     ...rendererProps<ControlElement>(),

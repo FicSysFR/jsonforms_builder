@@ -15,23 +15,12 @@ export const uischema = {
   "scope": "#/properties/exampleRadioEnum",
   "options": {
     "format": "radio",
-    "quasar": {
-      "q-option-group": {
-        "prepend-icon": "mdi-palette",
-        "column": false,
-        "row": true
-      },
-      "v-radio": {
-        "Blue": {
-          "color": "blue"
-        },
-        "Red": {
-          "color": "red"
-        },
-        "Green": {
-          "color": "green"
-        }
-      }
+    // Démonstration de `uiProps` : tout ce qui est sous la clé du composant est
+    // transmis tel quel au `URadioGroup`.
+    "radioGroup": {
+      "color": "primary",
+      "variant": "table",
+      "size": "md"
     }
   }
 }

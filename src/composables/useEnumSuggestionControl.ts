@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { isArray, isEmpty, isString } from 'radash'
-import { determineClearValue, useQuasarControl } from '../utils'
+import { determineClearValue, useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 
 type JsonFormsEnumControl = ReturnType<typeof useJsonFormsEnumControl>
@@ -61,7 +61,7 @@ export const useEnumSuggestionControl = ({
   debounceWait = 100,
 }: UseEnumSuggestionControlOptions) => {
   const adaptTarget = createEnumAdaptTarget(clearValue)
-  const control = useQuasarControl(jsonFormsControl, adaptTarget, debounceWait)
+  const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
   const isArrayControl = computed(() => isArraySchemaControl(control.control.value))
 

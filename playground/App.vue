@@ -1,164 +1,141 @@
 <template lang="pug">
-  q-layout(view="hHh Lpr lff")
-    layout-default-header
-    layout-default-drawer
-    q-page-container.q-mx-md
-      q-splitter(v-model="splitterModel")
-        template(#before)
-          q-card(flat)
-            q-tabs(v-model="tabs" vertical)
-              q-tab(v-for="example in examples" :key="example.name" :name="example.name" :label="example.label")
-        template(#after)
-          q-card(flat bordered square)
-            q-card-section
-              q-select(
-                v-model="locale"
-                label="Select Language"
-                :options="[ { label: 'English', value: 'en' }, { label: 'Français', value: 'fr' } ]"
-                 dense outlined emit-value map-options
-              )
-            q-separator
-            q-card-section.q-pa-none
-              q-form.q-pa-md
-                json-forms(
-                  :key="example.name"
-                  :data="data"
-                  :schema="example.schema"
-                  :uischema="example.uischema"
-                  :renderers="renderers"
-                  :i18n="i18n"
-                  :ajv="ajv"
-                  validationMode="ValidateAndShow"
-                  :additional-errors="additionalErrors"
-                  :config="{ ...example.config }"
-                  @change="onChange"
-                  _readonly
-                )
-            q-separator
-            q-card-section
-              pre(v-text="JSON.stringify(data, null, 2)")
-    layout-default-footer
+u-app
+  .min-h-screen.bg-default.text-default
+    //- `bg-default/75` va en attribut : Pug ne sait pas lire un `/` dans le raccourci
+    //- de classe et recrache le reste de la ligne en texte brut.
+    header.sticky.top-0.z-10.border-b.border-default(class="bg-default/75 backdrop-blur")
+      //- `flex-wrap` + `min-w-0` : dans un panneau étroit la barre d'outils passe à la
+      //- ligne au lieu de pousser la page en débordement horizontal.
+      .flex.flex-wrap.items-center.gap-2.px-4.py-3
+        h1.min-w-0.truncate.text-sm.font-semibold.tracking-tight(
+          title="JSONForms Builder — Nuxt UI Playground"
+        ) JSONForms Builder
+        u-button(
+          :label="mode === 'renderers' ? 'Ouvrir le builder' : 'Retour aux exemples'"
+          :icon="mode === 'renderers' ? 'i-lucide-pencil-ruler' : 'i-lucide-list'"
+          color="neutral"
+          variant="outline"
+          size="sm"
+          @click="mode = mode === 'renderers' ? 'builder' : 'renderers'"
+        )
+        .flex-1
+        u-select(
+          v-model="locale"
+          :items="localeItems"
+          value-key="value"
+          size="sm"
+          class="w-28"
+        )
+        u-button(
+          :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
+          :aria-pressed="isDark"
+          color="neutral"
+          variant="ghost"
+          aria-label="Basculer le thème"
+          @click="toggleDark()"
+        )
+
+    .p-4(v-if="mode === 'builder'")
+      form-builder(v-model="builderDefinition")
+
+    //- Colonne unique par défaut, barre latérale à partir de `lg` : une largeur fixe
+    //- imposée dès le mobile ferait déborder la page horizontalement.
+    .flex.flex-col.items-stretch.gap-4.p-4(class="lg:flex-row lg:items-start" v-else)
+      nav.space-y-1(class="lg:w-56 lg:shrink-0")
+        u-button(
+          v-for="item in examples"
+          :key="item.name"
+          :label="item.label"
+          :color="item.name === example.name ? 'primary' : 'neutral'"
+          :variant="item.name === example.name ? 'soft' : 'ghost'"
+          size="sm"
+          block
+          class="justify-start"
+          @click="selected = item.name"
+        )
+
+      .min-w-0.flex-1.space-y-4
+        u-card
+          json-forms(
+            :key="example.name"
+            :data="data"
+            :schema="example.schema"
+            :uischema="example.uischema"
+            :renderers="renderers"
+            :i18n="i18n"
+            :ajv="ajv"
+            :additional-errors="additionalErrors"
+            :config="{ ...example.config }"
+            validation-mode="ValidateAndShow"
+            @change="onChange"
+          )
+
+        u-card(:ui="{ body: 'p-0' }")
+          template(#header)
+            span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Données
+          pre.overflow-x-auto.p-4.text-xs(v-text="JSON.stringify(data, null, 2)")
 </template>
-<script lang="ts">
-import { defineComponent, provide, ref, computed, getCurrentInstance, watch } from 'vue'
-import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue'
-import { ErrorObject } from 'ajv'
-import { allRenderers, createAjv } from '../src'
-import { getExamples } from './examples/register'
-import { useQuasar } from 'quasar'
-import LayoutDefaultHeader from './components/layout/default/header.vue'
-import LayoutDefaultDrawer from './components/layout/default/drawer.vue'
-import LayoutDefaultFooter from './components/layout/default/footer.vue'
-import { JsonFormsI18nState } from '@jsonforms/core'
+
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { useDark, useToggle } from '@vueuse/core'
+import { JsonForms, type JsonFormsChangeEvent } from '@jsonforms/vue'
+import type { JsonFormsI18nState } from '@jsonforms/core'
+import type { ErrorObject } from 'ajv'
 import { get } from 'radash'
+import { allRenderers, createAjv, FormBuilder, type FormDefinition } from '../src'
+import { getExamples } from './examples/register'
 
 const examples = getExamples()
+const renderers = Object.freeze(allRenderers)
+const additionalErrors: ErrorObject[] = []
+const ajv = createAjv()
 
-export default defineComponent({
-  name: 'App',
-  components: {
-    JsonForms,
-    LayoutDefaultHeader,
-    LayoutDefaultDrawer,
-    LayoutDefaultFooter,
+const localeItems = [
+  { label: 'Français', value: 'fr' },
+  { label: 'English', value: 'en' },
+]
+
+// Hors Nuxt, `useColorMode` n'existe pas : le plugin color-mode de Nuxt UI s'appuie
+// simplement sur `useDark` de VueUse, qui pose la classe `.dark` sur <html>.
+//
+// À appeler avec des parenthèses (`toggleDark()`) : `useToggle` teste `arguments.length`
+// et, s'il reçoit quoi que ce soit — le `MouseEvent` d'un `@click="toggleDark"` —,
+// l'*assigne* au lieu de basculer.
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
+
+const locale = ref<'fr' | 'en'>('fr')
+const data = ref<Record<string, unknown>>({})
+
+/** Bascule entre la galerie de renderers et le builder visuel. */
+const mode = ref<'renderers' | 'builder'>('renderers')
+const builderDefinition = ref<Partial<FormDefinition>>({})
+
+/** L'exemple courant est porté par `?example=` pour garder les liens partageables. */
+const selected = ref(new URLSearchParams(window.location.search).get('example') ?? '')
+
+const example = computed(() => examples.find((e) => e.name === selected.value) ?? examples[0])
+
+watch(
+  example,
+  (current) => {
+    selected.value = current.name
+    const params = new URLSearchParams(window.location.search)
+    params.set('example', current.name)
+    window.history.replaceState({}, '', `?${params.toString()}`)
+    data.value = { ...(current.data ?? {}) }
   },
-  data() {
-    const exampleData = window.localStorage.getItem('form-data')
-    const data = exampleData ? JSON.parse(exampleData) : {}
+  { immediate: true },
+)
 
-    const additionalErrors: ErrorObject[] = []
-    return {
-      data: {},
-      splitterModel: 25,
-      renderers: Object.freeze(allRenderers),
-      examples,
-      additionalErrors,
-      wls: window.location.search,
-    }
-  },
-  setup() {
-    const $q = useQuasar()
-    const drawer = ref($q.screen.width > 700)
-    const instance = getCurrentInstance()
-    const ajv = createAjv()
+const i18n = computed<JsonFormsI18nState>(() => ({
+  locale: locale.value,
+  translate: (key: string, defaultMessage?: string) =>
+    get(get(example.value.i18n, locale.value, {}), key, defaultMessage ?? key),
+}))
 
-    const locale = ref<'fr' | 'en'>('fr')
-
-    const createTranslator = (currentLocale: string) => (key: string, defaultMessage?: string, values?: unknown) => {
-      const proxy = instance?.proxy as { example?: { i18n?: Record<string, unknown> } } | undefined
-      const example = proxy?.example
-      const translations = get(example?.i18n, currentLocale, {})
-      const fallback = defaultMessage ?? key
-
-      return get(translations, key, fallback)
-    }
-
-    const translation = computed(() => createTranslator(locale.value))
-
-    watch(
-      () => $q.screen.lt.sm,
-      (isSmall) => {
-        drawer.value = !isSmall
-      },
-      { immediate: true },
-    )
-
-    provide('drawer', drawer)
-
-    console.log('Ajv instance', ajv)
-
-    return {
-      locale,
-      translation,
-      ajv,
-    }
-  },
-  watch: {
-    wls: {
-      handler() {
-        this.data = { ...(this.example.data || {}) }
-      },
-      immediate: true,
-    },
-  },
-  computed: {
-    exampleQuery() {
-      const params = new URLSearchParams(this.wls)
-      return params.get('example')
-    },
-    tabs: {
-      get() {
-        return this.exampleQuery
-      },
-      set(value: string) {
-        const params = new URLSearchParams(this.wls)
-        params.set('example', value)
-        this.wls = params.toString()
-        window.history.replaceState({}, '', `?${this.wls}`)
-      },
-    },
-    example() {
-      const example = this.examples.find((e) => e.name === this.exampleQuery)
-      if (!example) {
-        console.warn(`Example with name "${this.exampleQuery}" not found. Using default example.`)
-        return this.examples[0]
-      }
-
-      return example
-    },
-    i18n(): JsonFormsI18nState {
-      return {
-        locale: this.locale,
-        translate: this.translation,
-      }
-    },
-  },
-  methods: {
-    onChange(event: JsonFormsChangeEvent) {
-      console.log('ev', event)
-      window.localStorage.setItem('form-data', JSON.stringify(event.data))
-      this.data = event.data
-    },
-  },
-})
+const onChange = (event: JsonFormsChangeEvent) => {
+  data.value = event.data
+}
 </script>

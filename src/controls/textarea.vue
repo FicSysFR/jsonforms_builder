@@ -2,56 +2,52 @@
   control-wrapper(
     v-bind="controlWrapper"
     :styles="styles"
-    :is-focused="isFocused"
-    :applied-options="appliedOptions"
-    v-model:is-hovered="isHovered"
+    :ui-props="uiProps"
+    :show-description="showDescription()"
+    :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    q-input(
-      type="textarea"
-      v-bind="quasarProps('q-input')"
-      @update:model-value="onChange"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-      clear-icon="mdi-close"
+    u-textarea(
+      v-bind="uiProps('textarea')"
       :id="control.id + '-input'"
       :model-value="modelValue"
-      :label="computedLabel"
       :class="styles.control.input"
-      :disable="!control.enabled && !isReadonly"
-      :placeholder="appliedOptions.placeholder"
+      :disabled="isDisabled"
       :readonly="isReadonly"
+      :placeholder="appliedOptions.placeholder"
       :autofocus="appliedOptions.focus"
-      :hint="control.description"
-      :required="control.required"
-      :hide-hint="persistentHint()"
-      :error="control.errors !== ''"
-      :error-message="control.errors"
       :maxlength="maxLength"
-      :clearable="isClearable"
-      :debounce="100"
-      :rows="rows"
-      :min-rows="minRows"
-      :counter="counter"
-      stack-label
-      outlined
-      autogrow
+      :rows="minRows"
+      :maxrows="rows"
+      :color="control.errors ? 'error' : undefined"
+      autoresize
+      @update:model-value="onChange"
+      @focus="handleFocus"
+      @blur="handleBlur"
     )
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isStringControl, and, isMultiLineControl } from '@jsonforms/core'
+import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, isStringControl, isMultiLineControl } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import UTextarea from '@nuxt/ui/components/Textarea.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { QInput } from 'quasar'
 import { useTextareaControl } from '../composables'
 
+/**
+ * TextareaControlRenderer
+ *
+ * Rend les chaînes marquées `multi: true` dans le uischema avec un `UTextarea`.
+ *
+ * `autoresize` remplace l'`autogrow` de Quasar : `rows` fixe la hauteur minimale et
+ * `maxrows` le plafond au-delà duquel le champ défile.
+ */
 const controlRenderer = defineComponent({
-  name: 'StringControlRenderer',
+  name: 'TextareaControlRenderer',
   components: {
     ControlWrapper,
-    QInput,
+    UTextarea,
   },
   props: {
     ...rendererProps<ControlElement>(),

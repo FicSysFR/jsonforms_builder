@@ -1,9 +1,9 @@
 import type { DefineComponent, InjectionKey } from 'vue'
 import { useControlAppliedOptions } from './composition'
-import { Styles } from 'src/styles'
+import type { Theme } from '../theme'
 
 export const IsDynamicPropertyContext: InjectionKey<boolean> = Symbol.for(
-  'jsonforms-vue-quasar:IsDynamicPropertyContext',
+  'jsonforms-vue-nuxtui:IsDynamicPropertyContext',
 )
 
 export type AppliedOptions = ReturnType<typeof useControlAppliedOptions>
@@ -16,7 +16,7 @@ export interface ControlWrapperProps {
   visible?: boolean
   required?: boolean
   isFocused?: boolean
-  styles?: Styles
+  styles?: Theme
   appliedOptions?: AppliedOptions
 }
 
@@ -28,4 +28,4 @@ export type ControlWrapperType = DefineComponent<
 >
 
 export const ControlWrapperSymbol: InjectionKey<ControlWrapperType> =
-  Symbol.for('jsonforms-vue-quasar:ControlWrapper')
+  Symbol.for('jsonforms-vue-nuxtui:ControlWrapper')
