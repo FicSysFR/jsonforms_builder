@@ -1,13 +1,13 @@
 import { Generate, resolveSchema, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
-import type { useJsonFormsAllOfControl } from '@jsonforms/vue'
+import type { useJsonFormsControl } from '@jsonforms/vue'
 import { computed } from 'vue'
 import { useUiControl } from '../utils'
 import { hasRenderableControl } from './useObjectControl'
 
-type JsonFormsAllOfControl = ReturnType<typeof useJsonFormsAllOfControl>
+type JsonFormsControl = ReturnType<typeof useJsonFormsControl>
 
 type UseAllOfControlOptions = {
-  jsonFormsControl: JsonFormsAllOfControl
+  jsonFormsControl: JsonFormsControl
 }
 
 /**

@@ -32,7 +32,7 @@ import { defineComponent } from 'vue'
 import {
   DispatchRenderer,
   rendererProps,
-  useJsonFormsAllOfControl,
+  useJsonFormsControl,
   type RendererProps,
 } from '@jsonforms/vue'
 import { useAllOfControl } from '../composables'
@@ -44,6 +44,11 @@ import { useAllOfControl } from '../composables'
  * **toutes** les branches s'appliquent simultanément. On en déduit une disposition
  * unique (fusion plate, y compris `allOf` imbriqués), puis on redispatche contre le
  * schéma d'origine pour que la résolution JSON Forms reste correcte.
+ *
+ * On utilise `useJsonFormsControl` et non `useJsonFormsAllOfControl` : ce dernier
+ * recompile chaque branche via AJV à chaque évaluation du computed, et AJV *mute*
+ * le schéma. Or le schéma vit dans l'état réactif de JSON Forms — chaque mutation
+ * relançait le rendu (`Maximum recursive updates exceeded`).
  */
 const controlRenderer = defineComponent({
   name: 'AllOfControlRenderer',
@@ -54,7 +59,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    return useAllOfControl({ jsonFormsControl: useJsonFormsAllOfControl(props) })
+    return useAllOfControl({ jsonFormsControl: useJsonFormsControl(props) })
   },
 })
 

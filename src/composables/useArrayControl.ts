@@ -58,9 +58,9 @@ export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean =
   return typeof type === 'string' && PRIMITIVE_TYPES.includes(type)
 }
 
-/** Le schéma d'élément est-il un combinateur (`oneOf` / `anyOf`) ? */
+/** Le schéma d'élément est-il un combinateur (`oneOf` / `anyOf` / `allOf`) ? */
 export const isCombinatorSchema = (schema: JsonSchema | undefined): boolean =>
-  Array.isArray(schema?.oneOf) || Array.isArray(schema?.anyOf)
+  Array.isArray(schema?.oneOf) || Array.isArray(schema?.anyOf) || Array.isArray(schema?.allOf)
 
 /**
  * Suit un `items: { $ref: … }` jusqu'au schéma visé.
@@ -181,8 +181,8 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       } as unknown as UISchemaElement
     }
 
-    // Un élément combinateur se confie tel quel au renderer de `oneOf`/`anyOf` : lui
-    // générer une disposition ici perdrait le sélecteur de variante.
+    // Un élément combinateur se confie tel quel au renderer de `oneOf`/`anyOf`/`allOf` :
+    // lui générer une disposition ici perdrait le sélecteur de variante (ou la fusion).
     if (isCombinatorSchema(control.control.value.schema)) {
       return { type: 'Control', scope: '#' } as unknown as UISchemaElement
     }
