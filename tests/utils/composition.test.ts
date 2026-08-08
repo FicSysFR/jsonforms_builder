@@ -234,3 +234,110 @@ describe('useUiControl clearOnHide', () => {
     expect(handleChange).not.toHaveBeenCalled()
   })
 })
+
+describe('useUiControl readonly / disabled', () => {
+  const mountFlags = (options: {
+    enabled?: boolean
+    schema?: Record<string, unknown>
+    uischemaOptions?: Record<string, unknown>
+    config?: Record<string, unknown>
+  }) => {
+    const app = createApp({})
+    app.provide('jsonforms', { core: { schema: { type: 'object' } } })
+    const scope = effectScope()
+    let result: ReturnType<typeof useUiControl> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        const control = computed(() => ({
+          schema: options.schema ?? { type: 'string' },
+          uischema: {
+            type: 'Control',
+            scope: '#/properties/x',
+            options: options.uischemaOptions ?? {},
+          },
+          path: 'x',
+          config: options.config ?? {},
+          label: 'X',
+          description: '',
+          required: false,
+          enabled: options.enabled ?? true,
+          errors: '',
+          data: 'v',
+          id: '#/properties/x',
+          visible: true,
+        }))
+
+        result = useUiControl({ control, handleChange: vi.fn() })
+      })
+    })
+
+    return { result: result!, scope }
+  }
+
+  it('détecte readonly via uischema.options ou schema.readOnly', () => {
+    const viaOptions = mountFlags({ uischemaOptions: { readonly: true } })
+    expect(viaOptions.result.isReadonly.value).toBe(true)
+    viaOptions.scope.stop()
+
+    const viaSchema = mountFlags({ schema: { type: 'string', readOnly: true } })
+    expect(viaSchema.result.isReadonly.value).toBe(true)
+    viaSchema.scope.stop()
+  })
+
+  it('détecte readonly via config.readonly', () => {
+    const { result, scope } = mountFlags({ config: { readonly: true } })
+    expect(result.isReadonly.value).toBe(true)
+    scope.stop()
+  })
+
+  it('isDisabled seulement si désactivé et non readonly', () => {
+    const disabled = mountFlags({ enabled: false })
+    expect(disabled.result.isDisabled.value).toBe(true)
+    disabled.scope.stop()
+
+    const readonlyDisabled = mountFlags({
+      enabled: false,
+      uischemaOptions: { readonly: true },
+    })
+    expect(readonlyDisabled.result.isReadonly.value).toBe(true)
+    expect(readonlyDisabled.result.isDisabled.value).toBe(false)
+    readonlyDisabled.scope.stop()
+  })
+
+  it('filtre les erreurs avant touch si enableFilterErrorsBeforeTouch', async () => {
+    const app = createApp({})
+    app.provide('jsonforms', { core: { schema: { type: 'object' } } })
+    const scope = effectScope()
+    let result: ReturnType<typeof useUiControl> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        const control = computed(() => ({
+          schema: { type: 'string' },
+          uischema: { type: 'Control', scope: '#/properties/x', options: {} },
+          path: 'x',
+          config: { enableFilterErrorsBeforeTouch: true },
+          label: 'X',
+          description: '',
+          required: true,
+          enabled: true,
+          errors: 'requis',
+          data: undefined,
+          id: '#/properties/x',
+          visible: true,
+        }))
+
+        result = useUiControl({ control, handleChange: vi.fn() })
+      })
+    })
+
+    expect(result!.control.value.errors).toBe('')
+    result!.handleBlur()
+    await nextTick()
+    expect(result!.control.value.errors).toBe('requis')
+    expect(result!.rawErrors.value).toBe('requis')
+
+    scope.stop()
+  })
+})

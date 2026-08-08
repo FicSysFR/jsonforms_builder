@@ -8,7 +8,6 @@
   )
     u-input-time(
       v-if="inputType === 'time'"
-      ref="inputRef"
       v-bind="uiProps('inputTime')"
       :id="control.id + '-input'"
       :model-value="dateValue"
@@ -27,8 +26,7 @@
         u-popover(
           v-if="!isDisabled && !isReadonly"
           v-model:open="pickerOpen"
-          :content="{ align: 'end' }"
-          :reference="popoverReference"
+          :content="{ align: 'end', side: 'bottom', sideOffset: 8 }"
         )
           u-button(
             icon="i-lucide-clock"
@@ -54,7 +52,6 @@
         u-icon(v-else name="i-lucide-clock" class="text-dimmed size-5")
     u-input-date(
       v-else
-      ref="inputRef"
       v-bind="uiProps('inputDate')"
       :id="control.id + '-input'"
       :model-value="dateValue"
@@ -73,8 +70,7 @@
         u-popover(
           v-if="!isDisabled && !isReadonly"
           v-model:open="pickerOpen"
-          :content="{ align: 'end' }"
-          :reference="popoverReference"
+          :content="{ align: 'end', side: 'bottom', sideOffset: 8 }"
         )
           u-button(
             :icon="calendarIcon"
@@ -149,10 +145,6 @@ import { ControlWrapper, TimePicker } from '../common'
 import { determineClearValue } from '../utils'
 import { useDateControl } from '../composables'
 
-type InputExpose = {
-  inputsRef?: Array<{ $el?: HTMLElement } | null | undefined>
-}
-
 /**
  * DateControlRenderer
  *
@@ -165,6 +157,7 @@ type InputExpose = {
  *
  * L'icône ouvre un popover dans une `UCard` : calendrier (`date`), spinners d'heure
  * (`time`), ou les deux côte à côte (`date-time`) — comme `q-date` + `q-time` en v1.
+ * Le popover s'ancre sur le bouton icône (`align: end`) pour rester sous le champ.
  *
  * Ils travaillent sur des objets `@internationalized/date` et non des chaînes : la
  * conversion aller-retour vers le motif du schéma est faite par `useDateControl`
@@ -200,7 +193,6 @@ const controlRenderer: Component = defineComponent({
       debounceWait: 100,
     })
 
-    const inputRef = ref<InputExpose | null>(null)
     const pickerOpen = ref(false)
 
     const calendarIcon = computed(() =>
@@ -218,20 +210,6 @@ const controlRenderer: Component = defineComponent({
     const showSeconds = computed(() => {
       const pattern = control.optionPattern.value
       return typeof pattern === 'string' && pattern.includes('s')
-    })
-
-    /**
-     * Ancre le popover sur le dernier segment du champ (recommandation Nuxt UI) pour
-     * aligner le panneau sur le champ plutôt que sur le seul bouton.
-     */
-    const popoverReference = computed(() => {
-      const inputs = inputRef.value?.inputsRef
-      if (!Array.isArray(inputs) || inputs.length === 0) {
-        return undefined
-      }
-
-      const segments = inputs.filter(Boolean)
-      return segments[segments.length - 1]?.$el
     })
 
     /**
@@ -315,12 +293,10 @@ const controlRenderer: Component = defineComponent({
 
     return {
       ...control,
-      inputRef,
       pickerOpen,
       calendarIcon,
       pickerAriaLabel,
       showSeconds,
-      popoverReference,
       calendarValue,
       timeParts,
       onHourChange,
