@@ -2,7 +2,6 @@ import {
   computeLabel,
   type ControlElement,
   type DispatchPropsOfControl,
-  type DispatchPropsOfMultiEnumControl,
   isDescriptionHidden,
   type JsonFormsSubStates,
   type JsonSchema,
@@ -13,6 +12,9 @@ import { defu } from 'defu'
 import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
 import { IsDynamicPropertyContext } from './inject'
+
+/** Sac d'options libre issu de `uischema.options` / `config` JSON Forms. */
+export type UiOptionBag = Record<string, unknown>
 
 /**
  * Valeur de remplacement quand un champ est masqué par une règle : `default`
@@ -30,7 +32,10 @@ export const resolveClearOnHideValue = (schema?: JsonSchema) => {
  * Vérifie si un champ est en lecture seule en tenant compte de la compatibilité
  * avec les différentes versions de JSON Schema
  */
-const isFieldReadonly = (schema: JsonSchema, uischema: any): boolean => {
+const isFieldReadonly = (
+  schema: JsonSchema,
+  uischema: { options?: Record<string, unknown> },
+): boolean => {
   // Vérification de la propriété readonly dans le uischema (toujours supportée)
   if (uischema?.options?.readonly === true) {
     return true
@@ -39,7 +44,7 @@ const isFieldReadonly = (schema: JsonSchema, uischema: any): boolean => {
   // Vérification de la propriété readOnly dans le schema
   // Cette propriété n'existe que depuis JSON Schema Draft 6
   // En JSON Schema v4, cette propriété n'est pas disponible
-  if (schema && 'readOnly' in schema && (schema as any).readOnly === true) {
+  if (schema && 'readOnly' in schema && schema.readOnly === true) {
     return true
   }
 
@@ -47,7 +52,7 @@ const isFieldReadonly = (schema: JsonSchema, uischema: any): boolean => {
 }
 
 export const useControlAppliedOptions = <
-  T extends { config: any; uischema: UISchemaElement },
+  T extends { config?: UiOptionBag; uischema: UISchemaElement },
   I extends {
     control: ComputedRef<T>
   },
@@ -58,15 +63,15 @@ export const useControlAppliedOptions = <
   // defu ne mute jamais ses entrées, ce qui remplace le couple cloneDeep + merge de la v1.
   return computed(() =>
     defu(
-      {} as Record<string, any>,
-      input.control.value.uischema.options ?? {},
-      input.control.value.config ?? {},
+      {} as UiOptionBag,
+      (input.control.value.uischema.options ?? {}) as UiOptionBag,
+      (input.control.value.config ?? {}) as UiOptionBag,
     ),
   )
 }
 
 export const useLayoutAppliedOptions = <
-  T extends { config: any; uischema: UISchemaElement },
+  T extends { config?: UiOptionBag; uischema: UISchemaElement },
   I extends {
     layout: ComputedRef<T>
   },
@@ -75,9 +80,9 @@ export const useLayoutAppliedOptions = <
 ) => {
   return computed(() =>
     defu(
-      {} as Record<string, any>,
-      input.layout.value.uischema.options ?? {},
-      input.layout.value.config ?? {},
+      {} as UiOptionBag,
+      (input.layout.value.uischema.options ?? {}) as UiOptionBag,
+      (input.layout.value.config ?? {}) as UiOptionBag,
     ),
   )
 }
@@ -109,18 +114,18 @@ export const useComputedLabel = <
  *   "options": { "input": { "size": "lg", "ui": { "base": "font-mono" } } } }
  * ```
  */
-const createUiProps = (appliedOptions: ComputedRef<Record<string, any>>) => {
-  return (path: string): Record<string, any> => {
+const createUiProps = (appliedOptions: ComputedRef<UiOptionBag>) => {
+  return (path: string): UiOptionBag => {
     const props = get(appliedOptions.value, path)
 
-    return props && isObject(props) ? (props as Record<string, any>) : {}
+    return props && isObject(props) ? (props as UiOptionBag) : {}
   }
 }
 
 export const useUiLabel = <
   T extends {
     uischema: UISchemaElement
-    config: any
+    config?: UiOptionBag
   },
   I extends {
     label: ComputedRef<T>
@@ -131,9 +136,9 @@ export const useUiLabel = <
   const styles = useTheme(input.label.value.uischema)
   const appliedOptions = computed(() =>
     defu(
-      {} as Record<string, any>,
-      input.label.value.uischema.options ?? {},
-      input.label.value.config ?? {},
+      {} as UiOptionBag,
+      (input.label.value.uischema.options ?? {}) as UiOptionBag,
+      (input.label.value.config ?? {}) as UiOptionBag,
     ),
   )
 
@@ -150,33 +155,34 @@ export const useUiControl = <
     schema: NonNullable<JsonSchema>
     uischema: ControlElement
     path: string
-    config: any
+    config?: UiOptionBag
     label: string
     description: string
     required: boolean
     enabled: boolean
     errors: string
-    data: any
+    data: unknown
     id: string
     visible: boolean
   },
   I extends {
     control: ComputedRef<T>
-  } & (DispatchPropsOfControl | DispatchPropsOfMultiEnumControl),
+    handleChange?: DispatchPropsOfControl['handleChange']
+  },
 >(
   input: I,
-  adaptTarget: (target: any) => any = (v) => v,
+  adaptTarget: (target: unknown) => unknown = (v) => v,
   debounceWait?: number,
 ) => {
   const touched = ref(false)
 
-  const handleChange = (input as DispatchPropsOfControl).handleChange
+  const handleChange = input.handleChange
   const changeEmitter =
     typeof debounceWait === 'number' && handleChange
       ? debounce({ delay: debounceWait }, handleChange)
       : handleChange
 
-  const onChange = (value: any) => {
+  const onChange = (value: unknown) => {
     if (changeEmitter) {
       changeEmitter(input.control.value.path, adaptTarget(value))
     }
@@ -243,7 +249,7 @@ export const useUiControl = <
 
   const isClearable = computed(() => {
     if (appliedOptions.value?.clearable !== undefined) {
-      return appliedOptions.value.clearable
+      return Boolean(appliedOptions.value.clearable)
     }
 
     return isHovered.value || isFocused.value
@@ -258,7 +264,7 @@ export const useUiControl = <
     // d'élément serait répétée à l'identique sous chaque ligne.
     return {
       id,
-      description: appliedOptions.value?.hideDescription ? undefined : description,
+      description: appliedOptions.value?.hideDescription === true ? undefined : description,
       errors,
       label,
       visible,
@@ -312,12 +318,21 @@ export const useUiControl = <
   }
 }
 
-export const useUiLayout = <I extends { layout: any }>(input: I) => {
+export const useUiLayout = <
+  I extends {
+    layout: ComputedRef<{
+      uischema: UISchemaElement
+      config?: UiOptionBag
+    }>
+  },
+>(
+  input: I,
+) => {
   const appliedOptions = computed(() =>
     defu(
-      {} as Record<string, any>,
-      input.layout.value.uischema.options ?? {},
-      input.layout.value.config ?? {},
+      {} as UiOptionBag,
+      (input.layout.value.uischema.options ?? {}) as UiOptionBag,
+      (input.layout.value.config ?? {}) as UiOptionBag,
     ),
   )
 
@@ -339,7 +354,7 @@ export const useJsonForms = () => {
   return jsonforms
 }
 
-export const determineClearValue = (defaultValue: any) => {
+export const determineClearValue = (defaultValue: unknown) => {
   const jsonforms = useJsonForms()
   const useDefaultValue = inject<boolean>(
     IsDynamicPropertyContext,

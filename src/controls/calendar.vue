@@ -38,7 +38,7 @@ import {
   isDateControl,
   optionIs,
 } from '@jsonforms/core'
-import { computed, defineComponent, type DefineComponent } from 'vue'
+import { computed, defineComponent, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCalendar from '@nuxt/ui/components/Calendar.vue'
@@ -63,7 +63,7 @@ import { useDateControl } from '../composables'
  */
 // Annotation explicite : `UCalendar` expose des types internes de `reka-ui` que le
 // générateur de déclarations ne sait pas nommer depuis `dist/` (TS2742), comme `UInputDate`.
-const controlRenderer: DefineComponent<any, any, any> = defineComponent({
+const controlRenderer: Component = defineComponent({
   name: 'CalendarControlRenderer',
   components: {
     ControlWrapper,

@@ -15,7 +15,7 @@ export const resolveCombinatorBranches = (
   schema: JsonSchema | undefined,
   rootSchema: JsonSchema,
 ): JsonSchema[] => {
-  const branches: any[] = (schema as any)?.oneOf ?? (schema as any)?.anyOf ?? []
+  const branches: JsonSchema[] = schema?.oneOf ?? schema?.anyOf ?? []
 
   return branches.map((branch) => {
     if (!branch?.$ref) {
@@ -60,7 +60,7 @@ export const detectOneOfVariant = (data: unknown, variants: JsonSchema[]): numbe
         return false
       }
 
-      const constValue = (variant.properties?.[key] as any)?.const
+      const constValue = variant.properties?.[key]?.const
 
       return constValue === undefined || record[key] === constValue
     })
@@ -82,7 +82,7 @@ export const createVariantValue = (variant: JsonSchema, rootSchema: JsonSchema):
   }
 
   for (const [key, property] of Object.entries(variant.properties ?? {})) {
-    const constValue = (property as any)?.const
+    const constValue = property?.const
 
     if (constValue !== undefined) {
       ;(value as Record<string, unknown>)[key] = constValue

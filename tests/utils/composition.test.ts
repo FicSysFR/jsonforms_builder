@@ -118,7 +118,7 @@ describe('determineClearValue', () => {
     const app = createApp({})
     app.provide('jsonforms', { core: { schema: { type: 'string' } } })
 
-    let result: any
+    let result: unknown
     app.runWithContext(() => {
       result = determineClearValue('fallback')
     })
@@ -131,7 +131,7 @@ describe('determineClearValue', () => {
     app.provide('jsonforms', { core: { schema: { type: 'object' } } })
     app.provide(IsDynamicPropertyContext, false)
 
-    let result: any
+    let result: unknown
     app.runWithContext(() => {
       result = determineClearValue('fallback')
     })
@@ -184,7 +184,7 @@ describe('useUiControl clearOnHide', () => {
         useUiControl({
           control,
           handleChange: options.handleChange,
-        } as any)
+        })
       })
     })
 

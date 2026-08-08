@@ -115,9 +115,8 @@ export const uischema = {
             condition: {
               scope: '#',
               validate: (context: ValidateFunctionContext) => {
-                return (
-                  !(context.data as any).dead && (context.data as any).kindOfVegetables !== 'All'
-                )
+                const data = context.data as Record<string, unknown>
+                return !data.dead && data.kindOfVegetables !== 'All'
               },
             },
           },

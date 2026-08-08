@@ -55,18 +55,22 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsAllOfControl(props) as any)
+    const control = useUiControl(useJsonFormsAllOfControl(props))
 
     /** Réunion des branches, `$ref` suivis. */
     const mergedSchema = computed<JsonSchema>(() => {
-      const schema = control.control.value.schema as any
-      const branches: any[] = Array.isArray(schema?.allOf) ? schema.allOf : []
+      const schema = control.control.value.schema
+      const branches: JsonSchema[] = Array.isArray(schema.allOf) ? schema.allOf : []
       const rootSchema = control.control.value.rootSchema
 
-      const merged: any = { type: 'object', properties: {}, required: [] }
+      const merged: JsonSchema & {
+        type: 'object'
+        properties: Record<string, JsonSchema>
+        required: string[]
+      } = { type: 'object', properties: {}, required: [] }
 
       for (const branch of [schema, ...branches]) {
-        let resolved = branch
+        let resolved: JsonSchema = branch
 
         if (branch?.$ref) {
           try {
@@ -82,18 +86,18 @@ const controlRenderer = defineComponent({
 
       merged.required = [...new Set(merged.required)]
 
-      return merged as JsonSchema
+      return merged
     })
 
     const mergedUiSchema = computed<UISchemaElement | undefined>(() => {
-      const detail = (control.control.value.uischema as any)?.options?.detail
+      const detail = control.control.value.uischema.options?.detail as UISchemaElement | undefined
       if (detail) {
-        return detail as UISchemaElement
+        return detail
       }
 
       // Aucune propriété récupérée : mieux vaut ne rien rendre que de dispatcher un
       // `Control` sur `#`, qui reviendrait ici même en boucle.
-      if (!Object.keys((mergedSchema.value as any).properties ?? {}).length) {
+      if (!Object.keys(mergedSchema.value.properties ?? {}).length) {
         return undefined
       }
 

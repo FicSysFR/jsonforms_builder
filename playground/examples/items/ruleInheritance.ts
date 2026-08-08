@@ -22,6 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+import type { UISchemaElement } from '@jsonforms/core'
 import type { StateProps } from '../example'
 import { registerExamples } from '../register'
 
@@ -86,7 +87,7 @@ export const uischema = {
       ],
     },
   ],
-} as any
+} as unknown as UISchemaElement
 
 export const data = {
   toggleTopLayout: true,

@@ -8,6 +8,7 @@ import {
   moveElement,
   removeElementAt,
   shiftElement,
+  type SchemaFragment,
 } from '../../src/builder/tree'
 import {
   collectReferencedProperties,
@@ -142,7 +143,7 @@ describe('page builder — performances composants', () => {
       let schema: JsonSchema = { type: 'object', properties: {} }
       for (const field of PALETTE_FIELDS) {
         for (let i = 0; i < 10; i++) {
-          schema = addSchemaProperty(schema, `${field.key}_${i}`, field.schema() as any)
+          schema = addSchemaProperty(schema, `${field.key}_${i}`, field.schema() as SchemaFragment)
         }
       }
       expect(Object.keys(schema.properties ?? {}).length).toBe(PALETTE_FIELDS.length * 10)

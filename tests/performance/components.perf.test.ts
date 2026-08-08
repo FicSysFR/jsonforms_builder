@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { Component } from 'vue'
 import {
   and,
   formatIs,
@@ -18,6 +19,7 @@ import {
   or,
   rankWith,
   uiTypeIs,
+  type ControlElement,
   type JsonFormsRendererRegistryEntry,
   type JsonSchema,
   type UISchemaElement,
@@ -58,23 +60,25 @@ import {
  * renderers du package, afin de chronométrer le coût réel de sélection.
  */
 
+const stubRenderer = {} as Component
+
 const componentTesters: JsonFormsRendererRegistryEntry[] = [
-  { tester: rankWith(1, isStringControl), renderer: {} as any },
-  { tester: rankWith(2, and(isStringControl, formatIs('password'))), renderer: {} as any },
-  { tester: rankWith(2, and(isStringControl, isMultiLineControl)), renderer: {} as any },
-  { tester: rankWith(3, and(isStringControl, optionIs('wysiwyg', true))), renderer: {} as any },
-  { tester: rankWith(2, and(isStringControl, hasOption('suggestion'))), renderer: {} as any },
-  { tester: rankWith(1, isBooleanControl), renderer: {} as any },
-  { tester: rankWith(1, or(isIntegerControl, isNumberControl)), renderer: {} as any },
-  { tester: rankWith(2, isDateControl), renderer: {} as any },
-  { tester: rankWith(2, isEnumControl), renderer: {} as any },
-  { tester: rankWith(20, and(isEnumControl, optionIs('format', 'radio'))), renderer: {} as any },
-  { tester: rankWith(2, isObjectControl), renderer: {} as any },
-  { tester: rankWith(3, isOneOfControl), renderer: {} as any },
-  { tester: rankWith(4, isAllOfControl), renderer: {} as any },
-  { tester: rankWith(1, isLayout), renderer: {} as any },
-  { tester: rankWith(1, uiTypeIs('Group')), renderer: {} as any },
-  { tester: rankWith(1, uiTypeIs('Label')), renderer: {} as any },
+  { tester: rankWith(1, isStringControl), renderer: stubRenderer },
+  { tester: rankWith(2, and(isStringControl, formatIs('password'))), renderer: stubRenderer },
+  { tester: rankWith(2, and(isStringControl, isMultiLineControl)), renderer: stubRenderer },
+  { tester: rankWith(3, and(isStringControl, optionIs('wysiwyg', true))), renderer: stubRenderer },
+  { tester: rankWith(2, and(isStringControl, hasOption('suggestion'))), renderer: stubRenderer },
+  { tester: rankWith(1, isBooleanControl), renderer: stubRenderer },
+  { tester: rankWith(1, or(isIntegerControl, isNumberControl)), renderer: stubRenderer },
+  { tester: rankWith(2, isDateControl), renderer: stubRenderer },
+  { tester: rankWith(2, isEnumControl), renderer: stubRenderer },
+  { tester: rankWith(20, and(isEnumControl, optionIs('format', 'radio'))), renderer: stubRenderer },
+  { tester: rankWith(2, isObjectControl), renderer: stubRenderer },
+  { tester: rankWith(3, isOneOfControl), renderer: stubRenderer },
+  { tester: rankWith(4, isAllOfControl), renderer: stubRenderer },
+  { tester: rankWith(1, isLayout), renderer: stubRenderer },
+  { tester: rankWith(1, uiTypeIs('Group')), renderer: stubRenderer },
+  { tester: rankWith(1, uiTypeIs('Label')), renderer: stubRenderer },
 ]
 
 type TesterContext = {
@@ -212,7 +216,7 @@ describe('composants — résolution des renderers', () => {
           // Un rank -1 signalerait un trou dans le registre miroir des renderers.
           if (bestRank < 0) {
             throw new Error(
-              `aucun tester pour type=${entry.uischema.type} scope=${(entry.uischema as any).scope}`,
+              `aucun tester pour type=${entry.uischema.type} scope=${(entry.uischema as ControlElement).scope}`,
             )
           }
         }

@@ -31,21 +31,23 @@ import {
   type Dispatch,
 } from '@jsonforms/core'
 
-const touchedProperties: any = {
+const touchedProperties: Record<string, boolean> = {
   name: false,
   description: false,
 }
 
 export const onChange =
   (dispatch: Dispatch<AnyAction>) =>
-  (_: any) =>
+  (_: unknown) =>
   ({ data, errors }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
-    Object.keys(data).forEach((key) => {
+    Object.keys(data as Record<string, unknown>).forEach((key) => {
       touchedProperties[key] = true
     })
 
     const newErrors = errors.filter((error) => {
-      return touchedProperties[(error as any).dataPath ?? error.instancePath]
+      const path =
+        (error as { dataPath?: string }).dataPath ?? error.instancePath
+      return touchedProperties[path]
     })
 
     if (newErrors.length < errors.length) {

@@ -31,7 +31,7 @@ export const uischema = {
   ],
 }
 
-export const data: any[] = []
+export const data: unknown[] = []
 
 registerExamples([
   {

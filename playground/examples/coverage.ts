@@ -12,14 +12,24 @@
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Generate, hasType, resolveSchema } from '@jsonforms/core'
+import { Generate, hasType, resolveSchema, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
 
 import { getExamples } from './register'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..', '..')
 
-const loadRenderers = async (): Promise<any[]> => {
+type RendererEntry = {
+  tester: Function
+  renderer?: { name?: string }
+}
+
+type WalkUiSchema = UISchemaElement & {
+  elements?: WalkUiSchema[]
+  scope?: string
+}
+
+const loadRenderers = async (): Promise<RendererEntry[]> => {
   const dist = join(ROOT, 'dist', 'json-formbuilder.es.js')
 
   /*
@@ -40,7 +50,7 @@ const loadRenderers = async (): Promise<any[]> => {
   try {
     const mod = await import(pathToFileURL(join(dir, 'bundle.mjs')).href)
 
-    return mod.allRenderers
+    return mod.allRenderers as RendererEntry[]
   } finally {
     // Le module est déjà en mémoire à ce stade : on peut retirer les fichiers sans
     // laisser un `jf-coverage-*` de plus à chaque exécution.
@@ -75,11 +85,11 @@ const MAX_DEPTH = 12
 
 /** Renderer retenu pour cet élément — nom et rang —, ou `null` si aucun ne convient. */
 const winner = (
-  uischema: any,
-  schema: any,
-  rootSchema: any,
+  uischema: UISchemaElement,
+  schema: JsonSchema,
+  rootSchema: JsonSchema,
 ): { name: string; rank: number } | null =>
-  allRenderers.reduce<{ name: string; rank: number } | null>((best, entry: any) => {
+  allRenderers.reduce<{ name: string; rank: number } | null>((best, entry) => {
     let rank = -1
     try {
       rank = entry.tester(uischema, schema, { rootSchema, config: undefined })
@@ -100,7 +110,13 @@ const winner = (
  * Descend aussi dans les dispositions **générées** par les renderers d'objet, seul moyen
  * de repérer une boucle : celle-ci n'existe pas dans le uischema écrit à la main.
  */
-const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 0): void => {
+const walk = (
+  uischema: WalkUiSchema,
+  schema: JsonSchema,
+  rootSchema: JsonSchema,
+  gaps: Gap[],
+  depth = 0,
+): void => {
   if (!uischema || typeof uischema !== 'object') return
 
   if (depth > MAX_DEPTH) return
@@ -126,7 +142,7 @@ const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 
   // Un `Control` sur un objet : on rejoue ce que le renderer produirait.
   if (uischema.type !== 'Control' || !uischema.scope) return
 
-  let resolved: any
+  let resolved: JsonSchema | undefined
   try {
     resolved = resolveSchema(schema, uischema.scope, rootSchema)
   } catch {
@@ -138,11 +154,11 @@ const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 
    * Lui transmettre un `{ $ref: … }` nu le ferait résoudre un scope contre un schéma qui
    * n'est qu'un renvoi, et `resolveSchema` part alors en boucle côté navigateur.
    */
-  const branches: any[] = resolved?.oneOf ?? resolved?.anyOf ?? []
+  const branches: JsonSchema[] = resolved?.oneOf ?? resolved?.anyOf ?? []
   for (const branch of branches) {
     if (!branch?.$ref) continue
 
-    let target: any
+    let target: JsonSchema | undefined
     try {
       target = resolveSchema(rootSchema, branch.$ref, rootSchema)
     } catch {
@@ -155,7 +171,7 @@ const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 
     }
 
     walk(
-      Generate.uiSchema(target, 'VerticalLayout', undefined, rootSchema),
+      Generate.uiSchema(target, 'VerticalLayout', undefined, rootSchema) as WalkUiSchema,
       target,
       rootSchema,
       gaps,
@@ -167,7 +183,7 @@ const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 
 
   if (!resolved || !hasType(resolved, 'object')) return
 
-  const generated = Generate.uiSchema(resolved, 'VerticalLayout')
+  const generated = Generate.uiSchema(resolved, 'VerticalLayout') as WalkUiSchema
 
   /*
    * Cas dégénéré : faute de `properties`, la génération renvoie un `Control` sur l'objet
@@ -177,7 +193,7 @@ const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 
    * Ce n'est un défaut que pour `ObjectControlRenderer` : les schémas `allOf` atterrissent
    * sur leur propre renderer, qui fusionne les branches au lieu de générer à l'aveugle.
    */
-  if ((generated as any)?.type === 'Control') {
+  if (generated?.type === 'Control') {
     if (chosen.name === 'ObjectControlRenderer') {
       gaps.push({ type: 'Control', scope: uischema.scope, reason: 'rendu vide' })
     }
@@ -194,7 +210,7 @@ for (const example of examples) {
   if (!example.schema || !example.uischema) continue
 
   const gaps: Gap[] = []
-  walk(example.uischema, example.schema, example.schema, gaps)
+  walk(example.uischema as WalkUiSchema, example.schema as JsonSchema, example.schema as JsonSchema, gaps)
   if (gaps.length) report.push({ name: example.name, gaps })
 }
 

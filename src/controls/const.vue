@@ -54,10 +54,10 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsControl(props) as any)
+    const control = useUiControl(useJsonFormsControl(props))
 
     const constDisplay = computed(() => {
-      const value = (control.control.value.schema as any)?.const
+      const value = control.control.value.schema.const
 
       return typeof value === 'object' ? JSON.stringify(value) : String(value ?? '')
     })
@@ -79,9 +79,7 @@ export const entry: JsonFormsRendererRegistryEntry = {
     3,
     and(
       uiTypeIs('Control'),
-      schemaMatches(
-        (schema) => (schema as any)?.const !== undefined && (schema as any)?.enum === undefined,
-      ),
+      schemaMatches((schema) => schema.const !== undefined && schema.enum === undefined),
     ),
   ),
 }

@@ -38,12 +38,11 @@ import { useUiControl } from '../utils'
 
 /** `items: { oneOf: [{ const: 'foo' }, …] }` — la forme enum « riche », avec titres. */
 const hasOneOfItems = (schema: JsonSchema): boolean =>
-  Array.isArray((schema as any).oneOf) &&
-  (schema as any).oneOf.every((entry: any) => entry.const !== undefined)
+  Array.isArray(schema.oneOf) && schema.oneOf.every((entry) => entry.const !== undefined)
 
 /** `items: { type: 'string', enum: [...] }` — la forme enum simple. */
 const hasEnumItems = (schema: JsonSchema): boolean =>
-  schema.type === 'string' && Array.isArray((schema as any).enum)
+  schema.type === 'string' && Array.isArray(schema.enum)
 
 /**
  * MultiEnumControlRenderer
@@ -65,7 +64,7 @@ const controlRenderer = defineComponent({
   },
   setup(props: RendererProps<ControlElement>) {
     const jsonFormsControl = useJsonFormsMultiEnumControl(props)
-    const control = useUiControl(jsonFormsControl as any)
+    const control = useUiControl(jsonFormsControl)
 
     const selected = computed<unknown[]>(() =>
       Array.isArray(control.control.value.data) ? control.control.value.data : [],
@@ -82,13 +81,13 @@ const controlRenderer = defineComponent({
 
       for (const value of next) {
         if (!before.includes(value)) {
-          ;(jsonFormsControl as any).addItem?.(path, value)
+          jsonFormsControl.addItem?.(path, value)
         }
       }
 
       for (const value of before) {
         if (!next.includes(value)) {
-          ;(jsonFormsControl as any).removeItem?.(path, value)
+          jsonFormsControl.removeItem?.(path, value)
         }
       }
     }
@@ -110,12 +109,15 @@ export const entry: JsonFormsRendererRegistryEntry = {
     5,
     and(
       uiTypeIs('Control'),
-      schemaMatches(
-        (schema) =>
-          hasType(schema, 'array') &&
-          !Array.isArray((schema as any).items) &&
-          (hasOneOfItems((schema as any).items ?? {}) || hasEnumItems((schema as any).items ?? {})),
-      ),
+      schemaMatches((schema) => {
+        if (!hasType(schema, 'array') || Array.isArray(schema.items)) {
+          return false
+        }
+
+        const items = schema.items ?? {}
+
+        return hasOneOfItems(items) || hasEnumItems(items)
+      }),
     ),
   ),
 }

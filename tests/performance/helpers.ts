@@ -6,6 +6,8 @@
  * sur des runners CI hétérogènes.
  */
 
+import type { UISchemaElement } from '@jsonforms/core'
+
 export type MeasureResult = {
   /** Durée médiane (ms) sur les itérations chronométrées. */
   medianMs: number
@@ -114,7 +116,7 @@ export const buildDeepUiSchema = (depth: number, breadth = 3) => {
     scope: `#/properties/leaf_${index}`,
   })
 
-  let node: any = {
+  let node: UISchemaElement = {
     type: 'VerticalLayout',
     elements: Array.from({ length: breadth }, (_, i) => leaf(i)),
   }

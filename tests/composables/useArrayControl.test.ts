@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ControlElement, JsonSchema } from '@jsonforms/core'
 import {
   isArrayAtCapacity,
   isArrayAtMinimum,
@@ -19,13 +20,13 @@ describe('isPrimitiveItemSchema', () => {
   it('treats anything with properties as an object, whatever its declared type', () => {
     expect(isPrimitiveItemSchema({ type: 'object', properties: {} })).toBe(false)
     expect(
-      isPrimitiveItemSchema({ type: 'string', properties: { a: { type: 'string' } } } as any),
+      isPrimitiveItemSchema({ type: 'string', properties: { a: { type: 'string' } } }),
     ).toBe(false)
   })
 
   it('resolves union types on their first entry', () => {
-    expect(isPrimitiveItemSchema({ type: ['string', 'null'] } as any)).toBe(true)
-    expect(isPrimitiveItemSchema({ type: ['object', 'null'] } as any)).toBe(false)
+    expect(isPrimitiveItemSchema({ type: ['string', 'null'] })).toBe(true)
+    expect(isPrimitiveItemSchema({ type: ['object', 'null'] })).toBe(false)
   })
 
   it('is false for an absent or untyped schema', () => {
@@ -91,28 +92,28 @@ describe('isArrayAtMinimum', () => {
 })
 
 describe('resolveItemsSchema', () => {
-  const rootSchema = {
+  const rootSchema: JsonSchema = {
     type: 'object',
     definitions: {
       fileOrFolder: { oneOf: [{ type: 'object' }, { type: 'string' }] },
     },
-  } as any
+  }
 
   it('follows a $ref to its target', () => {
-    expect(resolveItemsSchema({ $ref: '#/definitions/fileOrFolder' } as any, rootSchema)).toEqual(
-      rootSchema.definitions.fileOrFolder,
+    expect(resolveItemsSchema({ $ref: '#/definitions/fileOrFolder' }, rootSchema)).toEqual(
+      rootSchema.definitions!.fileOrFolder,
     )
   })
 
   it('returns inline schemas untouched', () => {
-    const inline = { type: 'string' } as any
+    const inline: JsonSchema = { type: 'string' }
 
     expect(resolveItemsSchema(inline, rootSchema)).toBe(inline)
     expect(resolveItemsSchema(undefined, rootSchema)).toBeUndefined()
   })
 
   it('falls back to the raw items when the $ref cannot be resolved', () => {
-    const broken = { $ref: '#/definitions/missing' } as any
+    const broken: JsonSchema = { $ref: '#/definitions/missing' }
 
     expect(resolveItemsSchema(broken, rootSchema)).toBe(broken)
     expect(resolveItemsSchema(broken, undefined)).toBe(broken)
@@ -120,15 +121,17 @@ describe('resolveItemsSchema', () => {
 })
 
 describe('isCombinatorItemsArray', () => {
-  const uischema = { type: 'Control', scope: '#/properties/children' } as any
+  const uischema: ControlElement = { type: 'Control', scope: '#/properties/children' }
 
-  const schemaWith = (items: unknown) =>
-    ({ type: 'object', properties: { children: { type: 'array', items } } }) as any
+  const schemaWith = (items: JsonSchema | JsonSchema[]): JsonSchema => ({
+    type: 'object',
+    properties: { children: { type: 'array', items } },
+  })
 
   /** Un schéma récursif ne peut exprimer ses éléments qu'en `$ref` : c'est le cas nominal. */
   it('recognises a combinator reached through a $ref', () => {
     const schema = schemaWith({ $ref: '#/definitions/fileOrFolder' })
-    const rootSchema = {
+    const rootSchema: JsonSchema = {
       ...schema,
       definitions: { fileOrFolder: { oneOf: [{ $ref: '#/definitions/file' }] } },
     }
@@ -152,7 +155,7 @@ describe('isCombinatorItemsArray', () => {
 
   it('rejects a $ref that does not lead to a combinator', () => {
     const schema = schemaWith({ $ref: '#/definitions/file' })
-    const rootSchema = { ...schema, definitions: { file: { type: 'object' } } }
+    const rootSchema: JsonSchema = { ...schema, definitions: { file: { type: 'object' } } }
 
     expect(isCombinatorItemsArray(uischema, schema, { rootSchema })).toBe(false)
   })

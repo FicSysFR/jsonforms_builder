@@ -72,7 +72,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsOneOfControl(props) as any)
+    const control = useUiControl(useJsonFormsOneOfControl(props))
 
     /** Branches du combinateur, `$ref` suivis. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>
@@ -80,8 +80,8 @@ const controlRenderer = defineComponent({
     )
 
     const variantItems = computed(() => {
-      const schema = control.control.value.schema as any
-      const raw: any[] = schema?.oneOf ?? schema?.anyOf ?? []
+      const schema = control.control.value.schema
+      const raw: JsonSchema[] = schema.oneOf ?? schema.anyOf ?? []
 
       // Le libellé peut vivre sur le renvoi (`{ $ref, title }`) comme sur la cible :
       // on regarde les deux plutôt que de perdre le titre en résolvant.

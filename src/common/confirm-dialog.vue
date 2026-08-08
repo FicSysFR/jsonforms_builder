@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, type DefineComponent } from 'vue'
+import { defineComponent, type Component } from 'vue'
 import UModal from '@nuxt/ui/components/Modal.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 
@@ -35,7 +35,7 @@ import UButton from '@nuxt/ui/components/Button.vue'
  *
  * Purement présentationnelle : elle n'agit pas, elle émet `confirm`.
  */
-const confirmDialog: DefineComponent<any, any, any> = defineComponent({
+const confirmDialog: Component = defineComponent({
   name: 'ConfirmDialog',
   components: {
     UModal,

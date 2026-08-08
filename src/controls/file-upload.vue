@@ -48,11 +48,11 @@ import { useFileUploadControl } from '../composables'
 
 /** `array` de chaînes marqué `format: "file"` → dépôt multiple. */
 const isMultipleFileSchema = schemaMatches((schema) => {
-  if (!hasType(schema, 'array') || Array.isArray((schema as any).items)) {
+  if (!hasType(schema, 'array') || Array.isArray(schema.items)) {
     return false
   }
 
-  const items = (schema as any).items
+  const items = schema.items
 
   return Boolean(items) && hasType(items, 'string')
 })

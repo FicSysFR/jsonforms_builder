@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { UISchemaElement } from '@jsonforms/core'
+import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import {
   addSchemaProperty,
   adjustPathAfterRemoval,
@@ -18,7 +18,13 @@ import {
   updateElementAt,
 } from '../../src/builder/tree'
 
-const tree = (): UISchemaElement =>
+type TreeNode = UISchemaElement & {
+  elements?: TreeNode[]
+  scope?: string
+  label?: string
+}
+
+const tree = (): TreeNode =>
   ({
     type: 'VerticalLayout',
     elements: [
@@ -33,15 +39,15 @@ const tree = (): UISchemaElement =>
       },
       { type: 'Control', scope: '#/properties/d' },
     ],
-  }) as UISchemaElement
+  }) as TreeNode
 
 const scopesOf = (root: UISchemaElement): string =>
   JSON.stringify(root, (key, value) => (key === 'label' ? undefined : value))
 
 describe('getElementAt', () => {
   it('walks nested element indices', () => {
-    expect((getElementAt(tree(), [0]) as any).scope).toBe('#/properties/a')
-    expect((getElementAt(tree(), [1, 1]) as any).scope).toBe('#/properties/c')
+    expect((getElementAt(tree(), [0]) as TreeNode).scope).toBe('#/properties/a')
+    expect((getElementAt(tree(), [1, 1]) as TreeNode).scope).toBe('#/properties/c')
   })
 
   it('returns the root for an empty path', () => {
@@ -79,23 +85,23 @@ describe('isSamePath / isAncestorPath', () => {
 describe('insertElementAt', () => {
   it('inserts at the requested index without mutating the source', () => {
     const root = tree()
-    const next = insertElementAt(root, [], 1, { type: 'Label' } as UISchemaElement)
+    const next = insertElementAt(root, [], 1, { type: 'Label' } as UISchemaElement) as TreeNode
 
-    expect((next as any).elements[1].type).toBe('Label')
-    expect((next as any).elements).toHaveLength(4)
-    expect((root as any).elements).toHaveLength(3)
+    expect(next.elements![1].type).toBe('Label')
+    expect(next.elements).toHaveLength(4)
+    expect(root.elements).toHaveLength(3)
   })
 
   it('clamps an out-of-range index to the end', () => {
-    const next = insertElementAt(tree(), [], 99, { type: 'Label' } as UISchemaElement)
+    const next = insertElementAt(tree(), [], 99, { type: 'Label' } as UISchemaElement) as TreeNode
 
-    expect((next as any).elements[3].type).toBe('Label')
+    expect(next.elements![3].type).toBe('Label')
   })
 
   it('inserts into a nested container', () => {
-    const next = insertElementAt(tree(), [1], 0, { type: 'Label' } as UISchemaElement)
+    const next = insertElementAt(tree(), [1], 0, { type: 'Label' } as UISchemaElement) as TreeNode
 
-    expect((next as any).elements[1].elements[0].type).toBe('Label')
+    expect(next.elements![1].elements![0].type).toBe('Label')
   })
 
   it('is a no-op when the target cannot hold children', () => {
@@ -108,10 +114,10 @@ describe('insertElementAt', () => {
 describe('removeElementAt', () => {
   it('removes without mutating the source', () => {
     const root = tree()
-    const next = removeElementAt(root, [1])
+    const next = removeElementAt(root, [1]) as TreeNode
 
-    expect((next as any).elements).toHaveLength(2)
-    expect((root as any).elements).toHaveLength(3)
+    expect(next.elements).toHaveLength(2)
+    expect(root.elements).toHaveLength(3)
   })
 
   it('refuses to remove the root', () => {
@@ -121,10 +127,10 @@ describe('removeElementAt', () => {
 
 describe('updateElementAt', () => {
   it('patches the addressed element only', () => {
-    const next = updateElementAt(tree(), [1], { label: 'Renommé' })
+    const next = updateElementAt(tree(), [1], { label: 'Renommé' }) as TreeNode
 
-    expect((next as any).elements[1].label).toBe('Renommé')
-    expect((next as any).elements[1].elements).toHaveLength(2)
+    expect(next.elements![1].label).toBe('Renommé')
+    expect(next.elements![1].elements).toHaveLength(2)
   })
 })
 
@@ -147,17 +153,17 @@ describe('adjustPathAfterRemoval', () => {
 
 describe('moveElement', () => {
   it('moves an element into another container', () => {
-    const next = moveElement(tree(), [0], [1], 0)
+    const next = moveElement(tree(), [0], [1], 0) as TreeNode
 
-    expect((next as any).elements[0].type).toBe('Group')
-    expect((next as any).elements[0].elements[0].scope).toBe('#/properties/a')
-    expect((next as any).elements).toHaveLength(2)
+    expect(next.elements![0].type).toBe('Group')
+    expect(next.elements![0].elements![0].scope).toBe('#/properties/a')
+    expect(next.elements).toHaveLength(2)
   })
 
   it('compensates the index shift when moving down among siblings', () => {
     // a, G, d → déplacer `a` en position 2 doit le placer entre G et d, pas après d.
-    const next = moveElement(tree(), [0], [], 2)
-    const scopes = (next as any).elements.map((e: any) => e.scope ?? e.type)
+    const next = moveElement(tree(), [0], [], 2) as TreeNode
+    const scopes = next.elements!.map((e) => e.scope ?? e.type)
 
     expect(scopes).toEqual(['Group', '#/properties/a', '#/properties/d'])
   })
@@ -178,15 +184,15 @@ describe('moveElement', () => {
 
 describe('shiftElement', () => {
   it('swaps an element with its next sibling', () => {
-    const next = shiftElement(tree(), [0], 1)
-    const scopes = (next as any).elements.map((e: any) => e.scope ?? e.type)
+    const next = shiftElement(tree(), [0], 1) as TreeNode
+    const scopes = next.elements!.map((e) => e.scope ?? e.type)
 
     expect(scopes).toEqual(['Group', '#/properties/a', '#/properties/d'])
   })
 
   it('swaps an element with its previous sibling', () => {
-    const next = shiftElement(tree(), [2], -1)
-    const scopes = (next as any).elements.map((e: any) => e.scope ?? e.type)
+    const next = shiftElement(tree(), [2], -1) as TreeNode
+    const scopes = next.elements!.map((e) => e.scope ?? e.type)
 
     expect(scopes).toEqual(['#/properties/a', '#/properties/d', 'Group'])
   })
@@ -238,13 +244,13 @@ describe('slugifyPropertyName', () => {
 })
 
 describe('schema property helpers', () => {
-  const base = { type: 'object', properties: { a: { type: 'string' } } } as any
+  const base: JsonSchema = { type: 'object', properties: { a: { type: 'string' } } }
 
   it('adds a property without mutating the source', () => {
     const next = addSchemaProperty(base, 'b', { type: 'number' })
 
-    expect(next.properties.b.type).toBe('number')
-    expect(base.properties.b).toBeUndefined()
+    expect(next.properties!.b.type).toBe('number')
+    expect(base.properties!.b).toBeUndefined()
   })
 
   it('adds to required when asked', () => {

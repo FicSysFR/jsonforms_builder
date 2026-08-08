@@ -1,3 +1,4 @@
+import type { UISchemaElement } from '@jsonforms/core'
 import { registerExamples } from '../register'
 const schema = {
   $schema: 'http://json-schema.org/schema#',
@@ -940,7 +941,7 @@ const schema = {
   },
 }
 
-const data: any = {
+const data: unknown = {
   attribution: {
     contributor: {
       resource: '#A-1',
@@ -1277,7 +1278,7 @@ const data: any = {
   ],
 }
 
-export const uischema: any = {
+export const uischema: UISchemaElement = {
   type: 'Categorization',
   elements: [
     {

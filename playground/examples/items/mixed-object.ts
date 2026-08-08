@@ -79,7 +79,7 @@ export const uischema = {
 
 const data = {
   mixedSimple: 'String',
-  nullableString: null as any,
+  nullableString: null as unknown as string | null,
   nullableObject: {
     shape: 'circle',
     size: 5,

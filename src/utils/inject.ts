@@ -1,4 +1,4 @@
-import type { DefineComponent, InjectionKey } from 'vue'
+import type { Component, InjectionKey } from 'vue'
 import type { useControlAppliedOptions } from './composition'
 import type { Theme } from '../theme'
 
@@ -20,7 +20,7 @@ export interface ControlWrapperProps {
   appliedOptions?: AppliedOptions
 }
 
-export type ControlWrapperType = DefineComponent<ControlWrapperProps, any, any, any>
+export type ControlWrapperType = Component
 
 export const ControlWrapperSymbol: InjectionKey<ControlWrapperType> = Symbol.for(
   'jsonforms-vue-nuxtui:ControlWrapper',

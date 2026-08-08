@@ -52,7 +52,7 @@ import {
   isDateTimeControl,
   isTimeControl,
 } from '@jsonforms/core'
-import { defineComponent, type DefineComponent } from 'vue'
+import { defineComponent, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInputDate from '@nuxt/ui/components/InputDate.vue'
 import UInputTime from '@nuxt/ui/components/InputTime.vue'
@@ -78,7 +78,7 @@ import { useDateControl } from '../composables'
 // internes de `reka-ui` que le générateur de déclarations ne sait pas nommer depuis
 // `dist/` (TS2742). Les consommateurs ne câblent jamais ces props à la main — le renderer
 // est instancié par JSONForms —, la perte d'inférence est donc sans conséquence.
-const controlRenderer: DefineComponent<any, any, any> = defineComponent({
+const controlRenderer: Component = defineComponent({
   name: 'DateControlRenderer',
   components: {
     ControlWrapper,

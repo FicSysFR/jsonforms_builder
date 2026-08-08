@@ -7,10 +7,11 @@ import type { Theme } from './theme'
  *
  * @example classes`btn ${isPrimary && 'btn--primary'}` // → 'btn btn--primary'
  */
-export const classes = (strings: TemplateStringsArray, ...variables: any[]) => {
+export const classes = (strings: TemplateStringsArray, ...variables: unknown[]) => {
   return strings
     .reduce((acc, curr, index) => {
-      return `${acc}${curr}${variables[index] || ''}`
+      const value = variables[index]
+      return `${acc}${curr}${value == null || value === false ? '' : String(value)}`
     }, '')
     .trim()
 }

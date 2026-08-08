@@ -70,9 +70,8 @@ export default defineConfig({
       },
     }),
     vue(),
-    pugPlugin(<any>{
+    pugPlugin({
       pretty: true,
-      compilerOptions: {},
     }),
     expressDevPlugin(),
   ],

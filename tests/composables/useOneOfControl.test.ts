@@ -33,13 +33,16 @@ const refRoot: JsonSchema = {
 
 describe('resolveCombinatorBranches', () => {
   it('suit les $ref pour rendre chaque branche exploitable', () => {
-    const branches = resolveCombinatorBranches((refRoot as any).properties.addressOrUser, refRoot)
+    const branches = resolveCombinatorBranches(
+      refRoot.properties?.addressOrUser as JsonSchema,
+      refRoot,
+    )
 
     expect(branches).toHaveLength(2)
     // La garantie qui compte : plus aucun `$ref` nu ne peut atteindre le dispatcher.
-    expect(branches.some((b: any) => b.$ref !== undefined)).toBe(false)
-    expect((branches[0] as any).properties.street).toBeDefined()
-    expect((branches[1] as any).properties.name).toBeDefined()
+    expect(branches.some((b: JsonSchema) => b.$ref !== undefined)).toBe(false)
+    expect(branches[0].properties?.street).toBeDefined()
+    expect(branches[1].properties?.name).toBeDefined()
   })
 
   it('laisse les branches déjà littérales intactes', () => {

@@ -149,7 +149,7 @@ export default defineComponent({
       props.property ? props.schema.properties?.[props.property] : undefined,
     )
 
-    const options = computed<Record<string, any>>(
+    const options = computed<Record<string, unknown>>(
       () => (props.element as ControlElement | undefined)?.options ?? {},
     )
 

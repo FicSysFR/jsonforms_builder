@@ -56,7 +56,7 @@ export const schema = {
       type: 'array',
       items: { type: 'string' },
       uniqueItems: true,
-      default: [] as any,
+      default: [],
     },
   },
   type: ['object', 'boolean'],
@@ -188,7 +188,7 @@ export const schema = {
   default: true,
 }
 
-export const uischema: UISchemaElement = undefined as any as UISchemaElement
+export const uischema: UISchemaElement = undefined
 
 export const data = {
   type: 'object',
@@ -437,7 +437,8 @@ export const uischemas = [
   },
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
-      return 'http://json-schema.org/draft-07/schema#' === (jsonSchema as any).$id &&
+      return 'http://json-schema.org/draft-07/schema#' ===
+        (jsonSchema as Record<string, unknown>).$id &&
         jsonSchema.type === 'object'
         ? 2
         : NOT_APPLICABLE
@@ -516,7 +517,8 @@ export const uischemas = [
   },
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
-      return 'http://json-schema.org/draft-07/schema#' === (jsonSchema as any).$id &&
+      return 'http://json-schema.org/draft-07/schema#' ===
+        (jsonSchema as Record<string, unknown>).$id &&
         jsonSchema.type === 'boolean'
         ? 2
         : NOT_APPLICABLE
@@ -542,7 +544,7 @@ const actions = [
     label: 'Unregister UISchema',
     apply: (props: StateProps) => {
       const uischemas: JsonFormsUISchemaRegistryEntry[] =
-        undefined as any as JsonFormsUISchemaRegistryEntry[]
+        undefined as unknown as JsonFormsUISchemaRegistryEntry[]
       return {
         ...props,
         uischemas: uischemas,
@@ -556,7 +558,7 @@ registerExamples([
     name: 'jsonschema',
     label: 'JsonSchema',
     data,
-    schema: schema as any as JsonSchema,
+    schema: schema as unknown as JsonSchema,
     uischema,
     actions,
   },

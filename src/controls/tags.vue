@@ -92,11 +92,11 @@ export const entry: JsonFormsRendererRegistryEntry = {
       uiTypeIs('Control'),
       optionIs('format', 'tags'),
       schemaMatches((schema) => {
-        if (!hasType(schema, 'array') || Array.isArray((schema as any).items)) {
+        if (!hasType(schema, 'array') || Array.isArray(schema.items)) {
           return false
         }
 
-        const items = (schema as any).items
+        const items = schema.items
 
         return !items || hasType(items, 'string')
       }),

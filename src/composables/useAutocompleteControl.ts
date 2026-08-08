@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { get, isArray } from 'radash'
-import { useUiControl } from '../utils'
+import { useUiControl, type UiOptionBag } from '../utils'
+import type { EnumOption } from '@jsonforms/core'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 import { createEnumAdaptTarget, normalizeSuggestions } from './useEnumSuggestionControl'
 
@@ -15,6 +16,11 @@ export interface AutocompleteApiConfig {
   headers?: Record<string, string>
 }
 
+export type AutocompleteOption = {
+  label: string
+  value: unknown
+}
+
 type JsonFormsEnumControl = ReturnType<typeof useJsonFormsEnumControl>
 
 type UseAutocompleteControlOptions = {
@@ -25,8 +31,8 @@ type UseAutocompleteControlOptions = {
 }
 
 export const resolveAutocompleteMinLength = (
-  uiOptions: any,
-  appliedOptions: any,
+  uiOptions: UiOptionBag | undefined,
+  appliedOptions: UiOptionBag | undefined,
   fallback: number,
 ): number => {
   const uiValue = Number(uiOptions?.minLength)
@@ -53,10 +59,10 @@ export const mapSuggestionsToOptions = (
 }
 
 export const extractAutocompleteApiConfig = (
-  uiOptions: any,
-  appliedOptions: any,
+  uiOptions: UiOptionBag | undefined,
+  appliedOptions: UiOptionBag | undefined,
 ): AutocompleteApiConfig | undefined => {
-  const api = uiOptions?.api ?? appliedOptions?.api
+  const api = (uiOptions?.api ?? appliedOptions?.api) as AutocompleteApiConfig | undefined
   if (!api?.url) {
     return undefined
   }
@@ -85,24 +91,24 @@ export const buildAutocompleteRequest = (
 }
 
 export const resolveFetchedOptions = (
-  items: any[],
+  items: unknown[],
   api: AutocompleteApiConfig,
-): Array<{ label: string; value: unknown }> => {
+): AutocompleteOption[] => {
   const labelKey = api.labelKey ?? 'label'
   const valueKey = api.valueKey ?? 'value'
 
   return items.map((item) => {
-    const label = get(item, labelKey)
-    const value = get(item, valueKey)
+    const label = get(item as object, labelKey)
+    const value = get(item as object, valueKey)
 
     return {
-      label: String(label ?? item?.toString?.() ?? ''),
+      label: String(label ?? (item as { toString?: () => string })?.toString?.() ?? ''),
       value: value ?? item,
     }
   })
 }
 
-const isArrayOfOptions = (options: unknown): options is any[] => {
+const isArrayOfOptions = (options: unknown): options is EnumOption[] => {
   return Array.isArray(options)
 }
 
@@ -110,15 +116,11 @@ const getStaticOptions = (control: JsonFormsEnumControl['control']['value']) => 
   return isArrayOfOptions(control.options) ? control.options : []
 }
 
-const filterOptionsBySearch = (options: any[], search: string) => {
+const filterOptionsBySearch = (options: EnumOption[], search: string) => {
   const lowered = search.toLowerCase()
 
   return options.filter((option) => {
-    if (typeof option === 'string') {
-      return option.toLowerCase().includes(lowered)
-    }
-
-    const label = option?.label ?? option?.toString?.()
+    const label = option.label ?? option.toString?.()
     return typeof label === 'string' && label.toLowerCase().includes(lowered)
   })
 }
@@ -132,7 +134,7 @@ export const useAutocompleteControl = ({
   const adaptTarget = createEnumAdaptTarget(clearValue)
   const control = useUiControl(jsonFormsControl, adaptTarget, debounceWait)
 
-  const optionsList = ref<any[]>([])
+  const optionsList = ref<AutocompleteOption[]>([])
   const abortController = ref<AbortController | null>(null)
 
   const suggestions = computed(() => {
@@ -145,7 +147,7 @@ export const useAutocompleteControl = ({
 
   const minLength = computed(() =>
     resolveAutocompleteMinLength(
-      control.control.value.uischema.options,
+      control.control.value.uischema.options as UiOptionBag | undefined,
       control.appliedOptions.value,
       defaultMinLength,
     ),
@@ -171,7 +173,7 @@ export const useAutocompleteControl = ({
     }
   }
 
-  const fetchOptions = async (search: string, uiOptions?: any) => {
+  const fetchOptions = async (search: string, uiOptions?: UiOptionBag) => {
     const apiConfig = extractAutocompleteApiConfig(uiOptions, control.appliedOptions.value)
 
     if (!apiConfig) {
@@ -219,7 +221,7 @@ export const useAutocompleteControl = ({
       return
     }
 
-    const uiOptions = control.control.value.uischema.options
+    const uiOptions = control.control.value.uischema.options as UiOptionBag | undefined
     const apiConfig = extractAutocompleteApiConfig(uiOptions, control.appliedOptions.value)
 
     // Sans API déclarée, on filtre les options statiques côté client.

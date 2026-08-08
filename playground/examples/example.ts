@@ -9,23 +9,23 @@ import type {
 export interface ExampleDescription {
   name: string
   label: string
-  data: any
+  data: unknown
   schema: JsonSchema
   uischema: UISchemaElement
   uischemas?: JsonFormsUISchemaRegistryEntry[]
-  config?: any
-  actions?: { label: string; apply: (props: StateProps) => any }[]
+  config?: Record<string, unknown>
+  actions?: { label: string; apply: (props: StateProps) => unknown }[]
   i18n?: ExampleI18n
   readonly?: boolean
 }
 
 export interface StateProps {
-  data: any
+  data: unknown
   schema?: JsonSchema
   uischema?: UISchemaElement
   renderers: JsonFormsRendererRegistryEntry[]
   cells?: JsonFormsCellRendererRegistryEntry[]
-  config?: any
+  config?: Record<string, unknown>
   uischemas?: JsonFormsUISchemaRegistryEntry[]
   readonly?: boolean
 }

@@ -8,6 +8,7 @@ import {
   resolveSchema,
   schemaMatches,
   type JsonSchema,
+  type TesterContext,
   type UISchemaElement,
 } from '@jsonforms/core'
 import type { useJsonFormsArrayControl } from '@jsonforms/vue'
@@ -59,7 +60,7 @@ export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean =
 
 /** Le schéma d'élément est-il un combinateur (`oneOf` / `anyOf`) ? */
 export const isCombinatorSchema = (schema: JsonSchema | undefined): boolean =>
-  Array.isArray((schema as any)?.oneOf) || Array.isArray((schema as any)?.anyOf)
+  Array.isArray(schema?.oneOf) || Array.isArray(schema?.anyOf)
 
 /**
  * Suit un `items: { $ref: … }` jusqu'au schéma visé.
@@ -75,7 +76,7 @@ export const resolveItemsSchema = (
   items: JsonSchema | undefined,
   rootSchema: JsonSchema | undefined,
 ): JsonSchema | undefined => {
-  const ref = (items as any)?.$ref
+  const ref = items?.$ref
 
   if (!ref || !rootSchema) {
     return items
@@ -90,6 +91,15 @@ export const resolveItemsSchema = (
   }
 }
 
+/** Schéma d'élément unique (hors tuple). */
+const singleItemsSchema = (schema: JsonSchema): JsonSchema | undefined => {
+  if (Array.isArray(schema.items)) {
+    return undefined
+  }
+
+  return schema.items
+}
+
 /**
  * Tester des tableaux dont les éléments sont un combinateur.
  *
@@ -100,14 +110,16 @@ export const resolveItemsSchema = (
 export const isCombinatorItemsArray = (
   uischema: UISchemaElement,
   schema: JsonSchema,
-  context: any,
+  context: TesterContext,
 ): boolean =>
   schemaMatches((resolved, rootSchema) => {
-    if (!hasType(resolved, 'array') || Array.isArray((resolved as any).items)) {
+    const items = singleItemsSchema(resolved)
+
+    if (!hasType(resolved, 'array') || !items) {
       return false
     }
 
-    return isCombinatorSchema(resolveItemsSchema((resolved as any).items, rootSchema))
+    return isCombinatorSchema(resolveItemsSchema(items, rootSchema))
   })(uischema, schema, context)
 
 /** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
@@ -121,13 +133,13 @@ export const isArrayAtMinimum = (length: number, minItems: number | undefined): 
 }
 
 export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) => {
-  const control = useUiControl(jsonFormsControl as any)
+  const control = useUiControl(jsonFormsControl)
 
   const items = computed<unknown[]>(() =>
     Array.isArray(control.control.value.data) ? control.control.value.data : [],
   )
 
-  const arraySchema = computed<JsonSchema>(() => (control.control.value as any).arraySchema ?? {})
+  const arraySchema = computed<JsonSchema>(() => control.control.value.arraySchema ?? {})
 
   const canAdd = computed(
     () =>
@@ -196,28 +208,32 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
   const childPath = (index: number) => composePaths(control.control.value.path, `${index}`)
 
   const itemLabel = (index: number) =>
-    resolveArrayItemLabel(items.value[index], index, control.appliedOptions.value?.elementLabelProp)
+    resolveArrayItemLabel(
+      items.value[index],
+      index,
+      control.appliedOptions.value?.elementLabelProp as string | undefined,
+    )
 
   // Les dispatchers de JSONForms renvoient un *thunk* : `addItem(path, value)` ne fait
   // rien tant qu'on n'appelle pas la fonction qu'il retourne.
   const addItem = () => {
     const value = createDefaultValue(control.control.value.schema, control.control.value.rootSchema)
 
-    ;(jsonFormsControl as any).addItem(control.control.value.path, value)()
+    jsonFormsControl.addItem(control.control.value.path, value)()
   }
 
   const removeItem = (index: number) => {
-    ;(jsonFormsControl as any).removeItems?.(control.control.value.path, [index])()
+    jsonFormsControl.removeItems?.(control.control.value.path, [index])()
   }
 
   const moveUp = (index: number) => {
     if (index <= 0) return
-    ;(jsonFormsControl as any).moveUp?.(control.control.value.path, index)()
+    jsonFormsControl.moveUp?.(control.control.value.path, index)()
   }
 
   const moveDown = (index: number) => {
     if (index >= items.value.length - 1) return
-    ;(jsonFormsControl as any).moveDown?.(control.control.value.path, index)()
+    jsonFormsControl.moveDown?.(control.control.value.path, index)()
   }
 
   return {

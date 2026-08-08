@@ -19,8 +19,8 @@ type WindowLike = {
   history?: {
     replaceState?: (data: unknown, unused: string, url?: string | null) => void
   }
-  addEventListener?: (type: string, listener: (...args: any[]) => void) => void
-  removeEventListener?: (type: string, listener: (...args: any[]) => void) => void
+  addEventListener?: (type: string, listener: EventListenerOrEventListenerObject) => void
+  removeEventListener?: (type: string, listener: EventListenerOrEventListenerObject) => void
 }
 
 /**

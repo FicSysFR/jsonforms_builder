@@ -34,7 +34,7 @@ import {
   isStringControl,
   optionIs,
 } from '@jsonforms/core'
-import { computed, defineComponent, type DefineComponent } from 'vue'
+import { computed, defineComponent, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UEditor from '@nuxt/ui/components/Editor.vue'
 import UEditorToolbar from '@nuxt/ui/components/EditorToolbar.vue'
@@ -122,7 +122,7 @@ const DEFAULT_TOOLBAR = [
  * `options.toolbar` remplace la barre par défaut par un tableau de groupes au format
  * `EditorToolbarItem` de Nuxt UI.
  */
-const controlRenderer: DefineComponent<any, any, any> = defineComponent({
+const controlRenderer: Component = defineComponent({
   name: 'WysiwygControlRenderer',
   components: {
     ControlWrapper,

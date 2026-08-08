@@ -138,7 +138,7 @@ export default defineComponent({
     /** Accès aux props libres du uischema (`options.formField`). */
     uiProps: {
       required: false as const,
-      type: Function as PropType<(path: string) => Record<string, any>>,
+      type: Function as PropType<(path: string) => Record<string, unknown>>,
       default: undefined,
     },
   },

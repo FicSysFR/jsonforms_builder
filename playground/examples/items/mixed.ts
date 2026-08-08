@@ -34,7 +34,7 @@ export const uischema = {
   scope: '#/',
 }
 
-const data = undefined as any
+const data: unknown = undefined
 
 registerExamples([
   {

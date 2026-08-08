@@ -5,6 +5,8 @@ import {
   normalizeSuggestions,
 } from '../../src/composables/useEnumSuggestionControl'
 
+type EnumControlValue = Parameters<typeof isArraySchemaControl>[0]
+
 describe('createEnumAdaptTarget', () => {
   it('returns clear value when input empty', () => {
     const adapt = createEnumAdaptTarget(undefined)
@@ -15,9 +17,11 @@ describe('createEnumAdaptTarget', () => {
 
 describe('isArraySchemaControl', () => {
   it('detects array schema types', () => {
-    expect(isArraySchemaControl({ schema: { type: 'array' } } as any)).toBe(true)
-    expect(isArraySchemaControl({ schema: { type: ['array', 'string'] } } as any)).toBe(true)
-    expect(isArraySchemaControl({ schema: { type: 'string' } } as any)).toBe(false)
+    expect(isArraySchemaControl({ schema: { type: 'array' } } as EnumControlValue)).toBe(true)
+    expect(
+      isArraySchemaControl({ schema: { type: ['array', 'string'] } } as EnumControlValue),
+    ).toBe(true)
+    expect(isArraySchemaControl({ schema: { type: 'string' } } as EnumControlValue)).toBe(false)
   })
 })
 

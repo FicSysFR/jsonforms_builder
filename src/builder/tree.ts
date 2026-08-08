@@ -13,7 +13,7 @@ export type ElementPath = number[]
  * draft-4 / draft-7 : on ne peut ni recomposer ni patcher un membre de cette union sans
  * que TypeScript rejette les champs divergents. La validation réelle reste celle d'AJV.
  */
-export type SchemaFragment = Record<string, any>
+export type SchemaFragment = Record<string, unknown>
 
 /**
  * Clone profond d'un document JSON.
