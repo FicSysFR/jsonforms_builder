@@ -134,3 +134,50 @@ export const buildDeepUiSchema = (depth: number, breadth = 3) => {
 
   return node
 }
+
+/**
+ * Schéma racine avec une chaîne `allOf` / `$ref` de profondeur `depth`.
+ * Chaque niveau ajoute `fieldsPerLayer` propriétés string.
+ *
+ * Miroir du stress playground `allOf-perf` : sert à chronométrer
+ * `flattenAllOfSchema` sans monter Vue.
+ */
+export const buildNestedAllOfSchema = (depth: number, fieldsPerLayer = 10) => {
+  const definitions: Record<
+    string,
+    {
+      type?: 'object'
+      title?: string
+      properties?: Record<string, { type: string; title: string }>
+      allOf?: Array<{ $ref: string } | { type: 'object'; properties: Record<string, { type: string; title: string }> }>
+    }
+  > = {}
+
+  for (let level = 0; level < depth; level++) {
+    const properties: Record<string, { type: string; title: string }> = {}
+    for (let i = 0; i < fieldsPerLayer; i++) {
+      properties[`l${level}_field_${i}`] = { type: 'string', title: `L${level}.${i}` }
+    }
+
+    if (level === 0) {
+      definitions[`layer_${level}`] = { type: 'object', title: `Couche ${level}`, properties }
+      continue
+    }
+
+    definitions[`layer_${level}`] = {
+      title: `Couche ${level}`,
+      allOf: [
+        { $ref: `#/definitions/layer_${level - 1}` },
+        { type: 'object', properties },
+      ],
+    }
+  }
+
+  return {
+    type: 'object' as const,
+    definitions,
+    properties: {
+      entity: { $ref: `#/definitions/layer_${depth - 1}` },
+    },
+  }
+}

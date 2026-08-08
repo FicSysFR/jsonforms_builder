@@ -29,6 +29,7 @@ import {
   isPrimitiveItemSchema,
   isArrayAtCapacity,
 } from '../../src/composables/useArrayControl'
+import { flattenAllOfSchema } from '../../src/composables/useAllOfControl'
 import {
   detectOneOfVariant,
   resolveCombinatorBranches,
@@ -47,13 +48,14 @@ import {
   buildDeepUiSchema,
   buildFlatObjectSchema,
   buildFlatVerticalUiSchema,
+  buildNestedAllOfSchema,
   expectWithinBudget,
   measure,
 } from './helpers'
 
 /**
  * Performances des chemins composants : résolution de renderer (testers),
- * libellés de tableaux, combinateurs oneOf, suggestions.
+ * libellés de tableaux, combinateurs oneOf / allOf, suggestions.
  *
  * On n'importe pas les SFC Vue (elles tirent `@nuxt/ui` et les alias Nuxt).
  * Le registre ci-dessous reprend les *mêmes* prédicats `rankWith` que les
@@ -308,6 +310,24 @@ describe('composants — tableaux et contrôles', () => {
     })
 
     expectWithinBudget('oneOf 80 branches × 100', result, 80)
+  })
+
+  it('aplatit une chaîne allOf / $ref profonde (miroir playground allOf-perf)', () => {
+    const depth = 8
+    const fieldsPerLayer = 12
+    const root = buildNestedAllOfSchema(depth, fieldsPerLayer) as JsonSchema
+    const leaf = root.definitions?.[`layer_${depth - 1}`] as JsonSchema
+    const expectedProps = depth * fieldsPerLayer
+
+    const result = measure(() => {
+      for (let i = 0; i < 200; i++) {
+        const flattened = flattenAllOfSchema(leaf, root)
+        expect(Object.keys(flattened.properties ?? {})).toHaveLength(expectedProps)
+        expect(flattened.allOf).toBeUndefined()
+      }
+    })
+
+    expectWithinBudget('flattenAllOfSchema profondeur 8 × 200', result, 80)
   })
 
   it('normalise et mappe de grandes listes de suggestions', () => {
