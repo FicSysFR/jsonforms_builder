@@ -15,7 +15,7 @@ Renderers [JSONForms](https://jsonforms.io/) pour Vue 3, bâtis sur **Nuxt UI 4*
 ## Installation
 
 ```bash
-bun add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
+yarn add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 ```
 
 `@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue` et `vue` sont des **peerDependencies** : la librairie n'embarque aucun composant Nuxt UI, elle les importe depuis l'installation de l'application.
@@ -182,13 +182,17 @@ l'application hôte si elle démonte elle-même des sous-arbres depuis un `@upda
 
 ## Développement
 
-Ce projet utilise **Bun** exclusivement ; `npm`, `yarn` et `pnpm` sont bloqués par le script `preinstall`.
+Ce projet tourne sur **Node.js ≥ 22** avec **Yarn** (Classic 1.x, cf. `packageManager`)
+comme unique gestionnaire de paquets : c'est `yarn.lock` qui fait foi, n'installez pas
+avec `npm` ou `pnpm`.
 
 ```bash
-bun install
-bun run start:dev   # playground : galerie d'exemples + builder
-bun run build       # build de la librairie (es + cjs + déclarations)
-bun test
+yarn install
+yarn start:dev        # playground : galerie d'exemples + builder
+yarn build            # build de la librairie (es + cjs + déclarations)
+yarn test             # suite Vitest
+yarn test:watch       # idem, en mode veille
+yarn test:coverage    # couverture v8 → ./coverage/lcov.info
 ```
 
 ![Alt](https://repobeats.axiom.co/api/embed/a6c9d83d94634994e69a4302a2329c934a2cbcd6.svg "Repobeats analytics image")

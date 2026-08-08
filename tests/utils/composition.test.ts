@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'bun:test'
-import { computed, createApp } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
+import { computed, createApp, effectScope, nextTick, ref } from 'vue'
 import {
   isFieldReadonly,
   useControlAppliedOptions,
   useComputedLabel,
   useLayoutAppliedOptions,
   determineClearValue,
+  resolveClearOnHideValue,
+  useUiControl,
 } from '../../src/utils/composition'
 import { IsDynamicPropertyContext } from '../../src/utils/inject'
 
@@ -135,5 +137,100 @@ describe('determineClearValue', () => {
     })
 
     expect(result).toBeUndefined()
+  })
+})
+
+describe('resolveClearOnHideValue', () => {
+  it('returns schema default when present', () => {
+    expect(resolveClearOnHideValue({ type: 'string', default: 'None' })).toBe('None')
+    expect(resolveClearOnHideValue({ type: 'boolean', default: false })).toBe(false)
+  })
+
+  it('returns undefined when schema has no default', () => {
+    expect(resolveClearOnHideValue({ type: 'string' })).toBeUndefined()
+    expect(resolveClearOnHideValue(undefined)).toBeUndefined()
+  })
+})
+
+describe('useUiControl clearOnHide', () => {
+  const mountControl = (options: {
+    visible: { value: boolean }
+    data?: unknown
+    schema?: Record<string, unknown>
+    config?: Record<string, unknown>
+    handleChange: ReturnType<typeof vi.fn>
+  }) => {
+    const app = createApp({})
+    app.provide('jsonforms', { core: { schema: { type: 'object' } } })
+    const scope = effectScope()
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        const control = computed(() => ({
+          schema: options.schema ?? { type: 'string' },
+          uischema: { type: 'Control', scope: '#/properties/vitaminDeficiency' },
+          path: 'vitaminDeficiency',
+          config: options.config ?? {},
+          label: 'Vitamin',
+          description: '',
+          required: false,
+          enabled: true,
+          errors: '',
+          data: options.data,
+          id: '#/properties/vitaminDeficiency',
+          visible: options.visible.value,
+        }))
+
+        useUiControl({
+          control,
+          handleChange: options.handleChange,
+        } as any)
+      })
+    })
+
+    return scope
+  }
+
+  it('clears data to undefined when a control becomes hidden', async () => {
+    const visible = ref(true)
+    const handleChange = vi.fn()
+    mountControl({ visible, data: 'Vitamin A', handleChange })
+
+    visible.value = false
+    await nextTick()
+
+    expect(handleChange).toHaveBeenCalledWith('vitaminDeficiency', undefined)
+  })
+
+  it('clears data to schema default when a control becomes hidden', async () => {
+    const visible = ref(true)
+    const handleChange = vi.fn()
+    mountControl({
+      visible,
+      data: 'Vitamin A',
+      schema: { type: 'string', default: 'None' },
+      handleChange,
+    })
+
+    visible.value = false
+    await nextTick()
+
+    expect(handleChange).toHaveBeenCalledWith('vitaminDeficiency', 'None')
+  })
+
+  it('does not clear when clearOnHide is disabled', async () => {
+    const visible = ref(true)
+    const handleChange = vi.fn()
+    mountControl({
+      visible,
+      data: 'Vitamin A',
+      config: { clearOnHide: false },
+      handleChange,
+    })
+
+    visible.value = false
+    await nextTick()
+
+    expect(handleChange).not.toHaveBeenCalled()
   })
 })

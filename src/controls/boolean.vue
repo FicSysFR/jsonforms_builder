@@ -1,11 +1,17 @@
 <template lang="pug">
+  //- Ne pas faire `:label="undefined"` après `v-bind="controlWrapper"` : mergeProps
+  //- ignore `undefined`, le titre du schéma restait sur le `UFormField` et annulait
+  //- `reserveLabelSpace`. On omet volontairement `label` du bind.
   control-wrapper(
-    v-bind="controlWrapper"
+    :id="controlWrapper.id"
+    :description="controlWrapper.description"
+    :errors="controlWrapper.errors"
+    :visible="controlWrapper.visible"
+    :required="controlWrapper.required"
     :styles="styles"
     :ui-props="uiProps"
     :show-description="showDescription()"
     :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
-    :label="undefined"
     reserve-label-space
   )
     u-switch(
@@ -45,8 +51,8 @@ import { useBooleanControl } from '../composables'
  * Rend les propriétés `type: "boolean"`.
  *
  * Le libellé est porté par la case elle-même (et non par le `UFormField`), pour obtenir
- * la disposition attendue « case + texte sur une ligne » : d'où le `:label="undefined"`
- * passé au wrapper, qui ne conserve alors que l'aide et l'erreur.
+ * la disposition « case + texte sur une ligne ». `reserveLabelSpace` aligne la case et
+ * sa description sur les champs voisins (ligne de libellé fantôme + hauteur d'input).
  *
  * Option `toggle: true` du uischema pour basculer sur un `USwitch`.
  */

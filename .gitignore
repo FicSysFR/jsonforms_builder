@@ -1,6 +1,7 @@
 dist/
 node_modules/
 coverage/
+*.tsbuildinfo
 
 # Générés par le plugin Vite de Nuxt UI (auto-import des composants `U*`).
 playground/auto-imports.d.ts

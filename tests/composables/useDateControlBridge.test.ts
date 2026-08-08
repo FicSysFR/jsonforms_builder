@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import {
   fromDateValue,
   resolveDateGranularity,
@@ -23,10 +23,10 @@ describe('resolveDateGranularity', () => {
 describe('toDateValue', () => {
   it('parses dates, times and datetimes at their schema pattern', () => {
     expect(toDateValue('1985-06-02', DEFAULT_DATE_FORMAT, 'date')?.toString()).toBe('1985-06-02')
-    expect(toDateValue('13:37:00', DEFAULT_TIME_FORMAT, 'time')?.toString()).toStartWith('13:37')
+    expect(toDateValue('13:37:00', DEFAULT_TIME_FORMAT, 'time')?.toString()).toMatch(/^13:37/)
     expect(
       toDateValue('1999-12-11T10:05:00', DEFAULT_DATETIME_FORMAT, 'date-time')?.toString(),
-    ).toStartWith('1999-12-11T10:05')
+    ).toMatch(/^1999-12-11T10:05/)
   })
 
   it('honours a custom uischema pattern', () => {

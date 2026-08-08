@@ -11,13 +11,14 @@
  */
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Generate, hasType, resolveSchema } from '@jsonforms/core'
 
 import { getExamples } from './register'
 
-const ROOT = join(import.meta.dir, '..', '..')
+const HERE = dirname(fileURLToPath(import.meta.url))
+const ROOT = join(HERE, '..', '..')
 
 const loadRenderers = async (): Promise<any[]> => {
   const dist = join(ROOT, 'dist', 'json-formbuilder.es.js')
@@ -36,9 +37,11 @@ const loadRenderers = async (): Promise<any[]> => {
 
 const allRenderers = await loadRenderers()
 
-const itemsDir = join(import.meta.dir, 'items')
+const itemsDir = join(HERE, 'items')
 for (const file of readdirSync(itemsDir).filter((f) => f.endsWith('.ts'))) {
-  await import(join(itemsDir, file))
+  // `pathToFileURL` : un chemin Windows absolu (`C:\…`) n'est pas un spécificateur
+  // d'import valide pour Node, contrairement à Bun qui l'acceptait.
+  await import(pathToFileURL(join(itemsDir, file)).href)
 }
 
 type Gap = { type: string; scope?: string; reason: 'aucun renderer' | 'rendu vide' }

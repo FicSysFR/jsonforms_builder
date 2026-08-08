@@ -13,18 +13,16 @@
     v-bind="uiProps ? uiProps('formField') : {}"
     :id="id"
     :name="id"
-    :label="label"
+    :label="fieldLabel"
     :help="description || undefined"
     :error="errors || undefined"
     :required="showAsterisk"
     :class="styles.control.root"
     :ui="fieldUi"
   )
-    //- Ligne de libellé fantôme, pour les contrôles qui portent leur libellé eux-mêmes
-    //- (case à cocher, interrupteur). Sans elle, la case se cale en haut de sa cellule,
-    //- donc au niveau du *libellé* de ses voisins et non de leur *champ*.
-    //- `aria-hidden` : le libellé accessible reste celui de la case.
-    template(v-if="reserveLabelSpace && !label" #label)
+    //- Libellé fantôme (hauteur de ligne uniquement). Le vrai libellé reste sur la case :
+    //- `aria-hidden` évite la double annonce aux lecteurs d'écran.
+    template(v-if="reserveLabelSpace" #label)
       span(aria-hidden="true") &nbsp;
 
     slot(name="default")
@@ -143,18 +141,56 @@ export default defineComponent({
     /**
      * `UFormField` rend lui-même l'astérisque : on ne passe donc PAS par `computeLabel`
      * de JSONForms, qui l'aurait concaténé au libellé et produit un doublon.
+     *
+     * Avec `reserveLabelSpace`, le libellé visible est sur la case : l'astérisque sur la
+     * ligne fantôme flotterait tout seul — on le coupe ici.
      */
     showAsterisk(): boolean {
+      if (this.reserveLabelSpace) {
+        return false
+      }
+
       return this.required && !this.hideRequiredAsterisk
+    },
+
+    /**
+     * Libellé passé à `UFormField`.
+     *
+     * Si `reserveLabelSpace` : un espace insécable force la ligne de libellé (même hauteur
+     * que les voisins). Un `label` vide / `undefined` ne suffit pas — `UFormField` ne
+     * monte son wrapper de libellé que si `label` est truthy, et `:label="undefined"` ne
+     * remplace pas un `v-bind` amont (mergeProps ignore `undefined`).
+     */
+    fieldLabel(): string | undefined {
+      if (this.reserveLabelSpace) {
+        return '\u00A0'
+      }
+
+      return this.label
     },
 
     /**
      * Laisse passer les surcharges `ui` du uischema.
      *
+     * Avec `reserveLabelSpace`, le conteneur du contrôle prend la hauteur d'un `UInput`
+     * md (`min-h-8`) et centre la case : sans ça, la description remonte au-dessus de
+     * celles des champs voisins (la case est plus basse qu'un input).
+     *
      * @see help — la description est rendue en permanence, cf. le commentaire du gabarit.
      */
     fieldUi(): Record<string, string> {
-      return this.uiProps?.('formField')?.ui ?? {}
+      const base = this.uiProps?.('formField')?.ui ?? {}
+
+      if (!this.reserveLabelSpace) {
+        return base
+      }
+
+      return {
+        ...base,
+        container: [base.container, 'min-h-8 flex items-center']
+          .filter(Boolean)
+          .join(' '),
+      }
     },
   },
 })
