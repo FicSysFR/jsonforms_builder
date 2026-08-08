@@ -41,7 +41,11 @@ u-app
     //- Colonne unique par défaut, barre latérale à partir de `lg` : une largeur fixe
     //- imposée dès le mobile ferait déborder la page horizontalement.
     .flex.flex-col.items-stretch.gap-4.p-4(class="lg:flex-row lg:items-start" v-else)
-      nav.space-y-1(class="lg:w-56 lg:shrink-0")
+      //- Sticky + max-height sous le header : la liste d'exemples scrolle
+      //- indépendamment du formulaire quand elle dépasse la fenêtre.
+      nav.space-y-1.overflow-y-auto(
+        class="max-h-56 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-56 lg:shrink-0"
+      )
         u-button(
           v-for="item in examples"
           :key="item.name"
