@@ -76,6 +76,18 @@
 
   "overrides": [
     {
+      // Dans un test, `!` porte sur une valeur dont le test lui-même garantit la présence
+      // — la réécrire en accès optionnel masquerait l'échec au lieu de le signaler.
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
       // Biome n'analyse que le bloc `<script>` d'un SFC, jamais le `<template>` — a
       // fortiori en Pug. Toute liaison consommée uniquement par le template y passerait
       // donc pour inutilisée : ces deux règles ne sont exploitables que hors `.vue`.
