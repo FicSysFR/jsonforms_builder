@@ -10,10 +10,12 @@
   "files": {
     "includes": [
       "**",
-      "!**/dist",
-      "!**/coverage",
+      // Générés par le plugin Vite de Nuxt UI.
       "!playground/auto-imports.d.ts",
-      "!playground/components.d.ts"
+      "!playground/components.d.ts",
+      // Outil autonome de mise au point du convertisseur Tiptap, sans rapport avec le
+      // code de la librairie : le reformater n'apporterait rien.
+      "!tests/prosemirror.html"
     ]
   },
 
@@ -22,7 +24,10 @@
     "useEditorconfig": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 180,
+    // Le `printWidth: 180` de `.prettierrc` ne décrivait pas le dépôt : le code est
+    // enroulé autour de 95-100 colonnes, et c'est à 100 que l'écart mesuré est le plus
+    // faible. Prettier n'a d'ailleurs jamais tourné ici — aucun script ne l'appelait.
+    "lineWidth": 100,
     "lineEnding": "lf"
   },
 
@@ -43,23 +48,18 @@
       "recommended": true,
 
       "suspicious": {
-        // Le socle v2 est encore parsemé de `any` (60 occurrences) : les signaler sans
-        // faire échouer `yarn lint`, le temps de les résorber.
+        // Le socle v2 compte encore 159 `any` : les signaler sans bloquer `yarn lint`,
+        // le temps de les résorber.
         "noExplicitAny": "warn",
-        // Les scripts d'outillage (`coverage.ts`) et les avertissements de développement
-        // des renderers écrivent volontairement sur la console.
-        "noConsole": "off"
+        // `then` est un mot-clé JSON Schema (`if`/`then`/`else`) omniprésent dans les
+        // schémas d'exemple ; la règle vise les objets *thenables*, pas ce cas.
+        "noThenProperty": "off"
       },
 
-      "correctness": {
-        // Les composables exposent des paramètres qu'ils n'utilisent pas tous, et les
-        // signatures de testers JSONForms sont imposées de l'extérieur.
-        "noUnusedFunctionParameters": "off"
-      },
-
-      "complexity": {
-        // `<any>expr` reste nécessaire face aux typages incomplets de `vite-plugin-pug`.
-        "noBannedTypes": "off"
+      "style": {
+        // Les renderers sont nommés d'après la construction JSON Schema qu'ils prennent
+        // en charge (`object.vue`, `one-of.vue`…) : la convention est délibérée.
+        "useVueMultiWordComponentNames": "off"
       }
     }
   },
@@ -72,5 +72,22 @@
         "organizeImports": "off"
       }
     }
-  }
+  },
+
+  "overrides": [
+    {
+      // Biome n'analyse que le bloc `<script>` d'un SFC, jamais le `<template>` — a
+      // fortiori en Pug. Toute liaison consommée uniquement par le template y passerait
+      // donc pour inutilisée : ces deux règles ne sont exploitables que hors `.vue`.
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

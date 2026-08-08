@@ -25,7 +25,12 @@
     template(v-if="reserveLabelSpace" #label)
       span(aria-hidden="true") &nbsp;
 
-    slot(name="default")
+    //- Envelopper uniquement le contrôle : `flex` sur le conteneur `UFormField`
+    //- (qui contient aussi `help`) alignait la description à droite de la case.
+    div(v-if="reserveLabelSpace" class="min-h-8 flex items-center w-full")
+      slot(name="default")
+    template(v-else)
+      slot(name="default")
 </template>
 
 <script lang="ts">
@@ -172,25 +177,13 @@ export default defineComponent({
     /**
      * Laisse passer les surcharges `ui` du uischema.
      *
-     * Avec `reserveLabelSpace`, le conteneur du contrôle prend la hauteur d'un `UInput`
-     * md (`min-h-8`) et centre la case : sans ça, la description remonte au-dessus de
-     * celles des champs voisins (la case est plus basse qu'un input).
+     * La hauteur / centrage pour `reserveLabelSpace` est sur l'enveloppe du slot
+     * (voir le gabarit), pas sur `container` : celui-ci inclut aussi `help`.
      *
      * @see help — la description est rendue en permanence, cf. le commentaire du gabarit.
      */
     fieldUi(): Record<string, string> {
-      const base = this.uiProps?.('formField')?.ui ?? {}
-
-      if (!this.reserveLabelSpace) {
-        return base
-      }
-
-      return {
-        ...base,
-        container: [base.container, 'min-h-8 flex items-center']
-          .filter(Boolean)
-          .join(' '),
-      }
+      return this.uiProps?.('formField')?.ui ?? {}
     },
   },
 })

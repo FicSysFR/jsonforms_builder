@@ -193,6 +193,16 @@ yarn build            # build de la librairie (es + cjs + déclarations)
 yarn test             # suite Vitest
 yarn test:watch       # idem, en mode veille
 yarn test:coverage    # couverture v8 → ./coverage/lcov.info
+yarn lint             # Biome : lint + vérification du formatage
+yarn lint:fix         # applique les corrections sûres et reformate
 ```
+
+Le lint et le formatage sont assurés par **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
+qui remplace ESLint et Prettier. Deux limites tiennent au socle Vue + Pug :
+
+- Biome n'analyse que le bloc `<script>` d'un SFC, jamais le `<template>`. Les règles
+  `noUnusedVariables` et `noUnusedImports` sont donc désactivées sur les `.vue`, où toute
+  liaison consommée par le template passerait pour inutilisée.
+- Le formatage ne touche pas les templates Pug, laissés à `.editorconfig`.
 
 ![Alt](https://repobeats.axiom.co/api/embed/a6c9d83d94634994e69a4302a2329c934a2cbcd6.svg "Repobeats analytics image")
