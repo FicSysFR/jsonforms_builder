@@ -31,6 +31,14 @@
     "lineEnding": "lf"
   },
 
+  "css": {
+    "parser": {
+      // Tailwind 4 pilote sa configuration depuis le CSS : `@source`, `@theme`, `@variant`
+      // ne sont pas du CSS standard et font échouer l'analyse par défaut.
+      "tailwindDirectives": true
+    }
+  },
+
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
