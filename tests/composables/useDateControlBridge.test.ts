@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   fromDateValue,
+  resolveCalendarType,
   resolveDateGranularity,
   toDateValue,
   DEFAULT_DATE_FORMAT,
@@ -17,6 +18,19 @@ describe('resolveDateGranularity', () => {
   it('goes down to the second only when the pattern asks for it', () => {
     expect(resolveDateGranularity('date-time', 'YYYY-MM-DDTHH:mm')).toBe('minute')
     expect(resolveDateGranularity('date-time', DEFAULT_DATETIME_FORMAT)).toBe('second')
+  })
+})
+
+describe('resolveCalendarType', () => {
+  it('picks a day calendar when the pattern includes a day token', () => {
+    expect(resolveCalendarType(DEFAULT_DATE_FORMAT)).toBe('date')
+    expect(resolveCalendarType('YYYY-MM-DDTHH:mm')).toBe('date')
+  })
+
+  it('falls back to month or year when the pattern omits the day', () => {
+    expect(resolveCalendarType('YYYY.MM')).toBe('month')
+    expect(resolveCalendarType('YYYY-MM')).toBe('month')
+    expect(resolveCalendarType('YYYY')).toBe('year')
   })
 })
 

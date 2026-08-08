@@ -10,6 +10,7 @@
       u-calendar(
         v-bind="uiProps('calendar')"
         :id="control.id + '-input'"
+        :type="calendarType"
         :model-value="calendarValue"
         :locale="appliedOptions.locale ?? 'fr-FR'"
         :disabled="isDisabled || isReadonly"

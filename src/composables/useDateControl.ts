@@ -166,6 +166,29 @@ export const resolveDateGranularity = (
 }
 
 /**
+ * Type de `UCalendar` dérivé du motif dayjs du schéma / uischema.
+ *
+ * - `D` présent → sélection de jour (`date`)
+ * - sinon `M` → mois seul (`month`, ex. `YYYY.MM`)
+ * - sinon `Y` → année seule (`year`, ex. `YYYY`)
+ */
+export const resolveCalendarType = (pattern: string): 'date' | 'month' | 'year' => {
+  if (/D/.test(pattern)) {
+    return 'date'
+  }
+
+  if (/M/.test(pattern)) {
+    return 'month'
+  }
+
+  if (/Y/.test(pattern)) {
+    return 'year'
+  }
+
+  return 'date'
+}
+
+/**
  * Convertit la valeur stockée (chaîne au motif du schéma) vers l'objet attendu par
  * `UInputDate` / `UInputTime`, qui travaillent en `@internationalized/date`.
  *
@@ -269,6 +292,8 @@ export const useDateControl = ({
 
   const granularity = computed(() => resolveDateGranularity(rawFormat.value, optionPattern.value))
 
+  const calendarType = computed(() => resolveCalendarType(String(optionPattern.value ?? '')))
+
   /** Valeur exposée à `UInputDate` / `UInputTime`. */
   const dateValue = computed(() =>
     toDateValue(control.control.value.data, optionPattern.value, rawFormat.value),
@@ -356,6 +381,7 @@ export const useDateControl = ({
     ...control,
     adaptTarget,
     granularity,
+    calendarType,
     dateValue,
     onChangeDateValue,
     optionPattern,

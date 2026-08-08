@@ -55,7 +55,8 @@
       v-bind="uiProps('inputDate')"
       :id="control.id + '-input'"
       :model-value="dateValue"
-      :class="styles.control.input"
+      :class="[styles.control.input, dateInputClass]"
+      :data-date-precision="calendarType"
       :disabled="isDisabled"
       :readonly="isReadonly"
       :autofocus="appliedOptions.focus"
@@ -86,6 +87,7 @@
               .flex.flex-col.gap-3.items-stretch(class="sm:flex-row")
                 u-calendar(
                   v-bind="uiProps('calendar')"
+                  :type="calendarType"
                   :model-value="calendarValue"
                   :locale="appliedOptions.locale ?? 'fr-FR'"
                   :color="control.errors ? 'error' : undefined"
@@ -213,6 +215,31 @@ const controlRenderer: Component = defineComponent({
     })
 
     /**
+     * `UInputDate` / reka-ui n'exposent pas de granularité `month` / `year` : le segment
+     * jour (et mois) reste dans le DOM. On le masque quand le motif du schéma ne le
+     * demande pas (`YYYY.MM`, `YYYY`), y compris le séparateur adjacent selon la locale.
+     */
+    const dateInputClass = computed(() => {
+      if (control.calendarType.value === 'month') {
+        return [
+          '[&_[data-segment=day]]:hidden',
+          '[&_[data-segment=day]+[data-segment=literal]]:hidden',
+          '[&_[data-segment=literal]:has(+[data-segment=day])]:hidden',
+        ].join(' ')
+      }
+
+      if (control.calendarType.value === 'year') {
+        return [
+          '[&_[data-segment=day]]:hidden',
+          '[&_[data-segment=month]]:hidden',
+          '[&_[data-segment=literal]]:hidden',
+        ].join(' ')
+      }
+
+      return undefined
+    })
+
+    /**
      * `null` et non `undefined` pour l'absence de valeur : `undefined` fait basculer
      * `UCalendar` en mode non contrôlé. Pour `date-time`, on ne passe que la partie jour.
      */
@@ -279,15 +306,21 @@ const controlRenderer: Component = defineComponent({
         return
       }
 
+      // Mois / année seuls : on fixe le jour (et le mois pour l'année) à 1 pour
+      // que le motif `YYYY.MM` / `YYYY` ne dépende pas d'un jour choisi ailleurs.
+      const type = control.calendarType.value
+      const month = type === 'year' ? 1 : value.month
+      const day = type === 'date' ? value.day : 1
+
       if (control.inputType.value === 'datetime-local') {
         const { hour, minute, second } = timeParts.value
         control.onChangeDateValue(
-          new CalendarDateTime(value.year, value.month, value.day, hour, minute, second),
+          new CalendarDateTime(value.year, month, day, hour, minute, second),
         )
         return
       }
 
-      control.onChangeDateValue(new CalendarDate(value.year, value.month, value.day))
+      control.onChangeDateValue(new CalendarDate(value.year, month, day))
       pickerOpen.value = false
     }
 
@@ -297,6 +330,7 @@ const controlRenderer: Component = defineComponent({
       calendarIcon,
       pickerAriaLabel,
       showSeconds,
+      dateInputClass,
       calendarValue,
       timeParts,
       onHourChange,
