@@ -22,21 +22,25 @@ export const startExpressServer = (port?: number) => {
 
   const upload = multer({ storage: multer.memoryStorage() })
 
-  app.post('/api/upload', upload.single('file'), (req: express.Request & { file?: Express.Multer.File }, res) => {
-    const file = req.file
+  app.post(
+    '/api/upload',
+    upload.single('file'),
+    (req: express.Request & { file?: Express.Multer.File }, res) => {
+      const file = req.file
 
-    if (!file) {
-      res.status(400).json({ error: 'missing file field "file"' })
+      if (!file) {
+        res.status(400).json({ error: 'missing file field "file"' })
 
-      return
-    }
+        return
+      }
 
-    res.json({
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-    })
-  })
+      res.json({
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+      })
+    },
+  )
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' })

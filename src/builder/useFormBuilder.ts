@@ -1,10 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/core'
-import {
-  createControl,
-  findPaletteContainer,
-  findPaletteField,
-} from './palette'
+import { createControl, findPaletteContainer, findPaletteField } from './palette'
 import {
   addSchemaProperty,
   getElementAt,
@@ -43,9 +39,7 @@ export const listPropertyNames = (schema: JsonSchema): string[] =>
  * retirer un groupe emporte ses champs, et laisser leurs propriétés dans le schéma
  * produirait une donnée que le formulaire ne sait plus afficher.
  */
-export const collectReferencedProperties = (
-  element: UISchemaElement | undefined,
-): string[] => {
+export const collectReferencedProperties = (element: UISchemaElement | undefined): string[] => {
   if (!element) {
     return []
   }
@@ -53,10 +47,7 @@ export const collectReferencedProperties = (
   const property = propertyFromScope((element as ControlElement).scope)
   const children = (element as { elements?: UISchemaElement[] }).elements ?? []
 
-  return [
-    ...(property ? [property] : []),
-    ...children.flatMap(collectReferencedProperties),
-  ]
+  return [...(property ? [property] : []), ...children.flatMap(collectReferencedProperties)]
 }
 
 const HISTORY_LIMIT = 50
@@ -125,10 +116,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     const field = findPaletteField(paletteKey)
     if (!field) return
 
-    const name = slugifyPropertyName(
-      field.label,
-      listPropertyNames(definition.value.schema),
-    )
+    const name = slugifyPropertyName(field.label, listPropertyNames(definition.value.schema))
 
     const property = { title: field.label, ...field.schema() }
 
@@ -152,12 +140,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
 
     commit({
       schema: definition.value.schema,
-      uischema: insertElementAt(
-        definition.value.uischema,
-        parentPath,
-        index,
-        container.create(),
-      ),
+      uischema: insertElementAt(definition.value.uischema, parentPath, index, container.create()),
     })
 
     select([...parentPath, index])
@@ -245,8 +228,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     })
   }
 
-  const isRequired = (name: string) =>
-    (definition.value.schema.required ?? []).includes(name)
+  const isRequired = (name: string) => (definition.value.schema.required ?? []).includes(name)
 
   const reset = (next?: Partial<FormDefinition>) => {
     const blank = createEmptyDefinition()

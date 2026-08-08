@@ -8,10 +8,7 @@ type UseBooleanControlOptions = {
   debounceWait?: number
 }
 
-export const useBooleanControl = ({
-  jsonFormsControl,
-  debounceWait,
-}: UseBooleanControlOptions) => {
+export const useBooleanControl = ({ jsonFormsControl, debounceWait }: UseBooleanControlOptions) => {
   const control = useUiControl(jsonFormsControl, undefined, debounceWait)
 
   const modelValue = computed(() => control.control.value.data)

@@ -34,9 +34,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, type PropType } from 'vue'
 import UFormField from '@nuxt/ui/components/FormField.vue'
-import { Theme } from '../theme'
+import type { Theme } from '../theme'
 
 /**
  * ControlWrapper

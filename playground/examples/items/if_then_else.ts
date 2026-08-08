@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { UISchemaElement } from '@jsonforms/core';
+import { registerExamples } from '../register'
+import type { UISchemaElement } from '@jsonforms/core'
 
 export const schema = {
   type: 'object',
@@ -33,11 +33,11 @@ export const schema = {
   },
   if: { properties: { b: { enum: [false] } } },
   then: { required: ['c'] },
-};
+}
 
-export const uischema: UISchemaElement = undefined;
+export const uischema: UISchemaElement = undefined
 
-export const data = {};
+export const data = {}
 
 registerExamples([
   {
@@ -47,4 +47,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

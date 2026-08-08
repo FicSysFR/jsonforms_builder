@@ -31,9 +31,23 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, Generate, JsonFormsRendererRegistryEntry, isAnyOfControl, isOneOfControl, or, rankWith, type JsonSchema } from '@jsonforms/core'
+import {
+  type ControlElement,
+  Generate,
+  type JsonFormsRendererRegistryEntry,
+  isAnyOfControl,
+  isOneOfControl,
+  or,
+  rankWith,
+  type JsonSchema,
+} from '@jsonforms/core'
 import { computed, defineComponent, nextTick, ref, watch } from 'vue'
-import { DispatchRenderer, rendererProps, useJsonFormsOneOfControl, RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsOneOfControl,
+  type RendererProps,
+} from '@jsonforms/vue'
 import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
@@ -62,10 +76,7 @@ const controlRenderer = defineComponent({
 
     /** Branches du combinateur, `$ref` suivis. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>
-      resolveCombinatorBranches(
-        control.control.value.schema,
-        control.control.value.rootSchema,
-      ),
+      resolveCombinatorBranches(control.control.value.schema, control.control.value.rootSchema),
     )
 
     const variantItems = computed(() => {
@@ -105,7 +116,12 @@ const controlRenderer = defineComponent({
 
     const selectedUiSchema = computed(() =>
       selectedSchema.value
-        ? Generate.uiSchema(selectedSchema.value, 'VerticalLayout', undefined, control.control.value.rootSchema)
+        ? Generate.uiSchema(
+            selectedSchema.value,
+            'VerticalLayout',
+            undefined,
+            control.control.value.rootSchema,
+          )
         : undefined,
     )
 

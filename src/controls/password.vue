@@ -36,9 +36,16 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, formatIs, isStringControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  and,
+  formatIs,
+  isStringControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInput from '@nuxt/ui/components/Input.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import { ControlWrapper } from '../common'
@@ -81,11 +88,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(2,
-    and(
-      isStringControl,
-      formatIs('password'),
-    ),
-  ), // Matches schema properties with format "password"
+  tester: rankWith(2, and(isStringControl, formatIs('password'))), // Matches schema properties with format "password"
 }
 </script>

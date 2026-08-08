@@ -22,34 +22,34 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 import {
-  UISchemaElement,
+  type UISchemaElement,
   updateErrors,
-  JsonFormsCore,
-  AnyAction,
-  Dispatch,
-} from '@jsonforms/core';
+  type JsonFormsCore,
+  type AnyAction,
+  type Dispatch,
+} from '@jsonforms/core'
 
 const touchedProperties: any = {
   name: false,
   description: false,
-};
+}
 
 export const onChange =
   (dispatch: Dispatch<AnyAction>) =>
   (_: any) =>
   ({ data, errors }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
-    Object.keys(data).forEach((key) => (touchedProperties[key] = true));
+    Object.keys(data).forEach((key) => (touchedProperties[key] = true))
 
     const newErrors = errors.filter((error) => {
-      return touchedProperties[(error as any).dataPath ?? error.instancePath];
-    });
+      return touchedProperties[(error as any).dataPath ?? error.instancePath]
+    })
 
     if (newErrors.length < errors.length) {
-      return dispatch(updateErrors(newErrors));
+      return dispatch(updateErrors(newErrors))
     }
-  };
+  }
 
 export const schema = {
   type: 'object',
@@ -64,11 +64,11 @@ export const schema = {
     },
   },
   required: ['name', 'description'],
-};
+}
 
-export const uischema: UISchemaElement = undefined;
+export const uischema: UISchemaElement = undefined
 
-export const data = {};
+export const data = {}
 
 registerExamples([
   {
@@ -78,4 +78,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

@@ -25,9 +25,16 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, or, isIntegerControl, isNumberControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  or,
+  isIntegerControl,
+  isNumberControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInputNumber from '@nuxt/ui/components/InputNumber.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -68,10 +75,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(1,
-    or(isIntegerControl,
-      isNumberControl,
-    ),
-  ), // Matches schema properties with type "number" or "integer"
+  tester: rankWith(1, or(isIntegerControl, isNumberControl)), // Matches schema properties with type "number" or "integer"
 }
 </script>

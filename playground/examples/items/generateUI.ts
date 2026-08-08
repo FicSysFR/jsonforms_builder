@@ -22,13 +22,13 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { data as personData, personCoreSchema } from './person';
-import { UISchemaElement } from '@jsonforms/core';
+import { registerExamples } from '../register'
+import { data as personData, personCoreSchema } from './person'
+import type { UISchemaElement } from '@jsonforms/core'
 
-export const schema = personCoreSchema;
-export const uischema: UISchemaElement = undefined;
-export const data = personData;
+export const schema = personCoreSchema
+export const uischema: UISchemaElement = undefined
+export const data = personData
 
 registerExamples([
   {
@@ -38,4 +38,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

@@ -25,11 +25,7 @@ type UseArrayControlOptions = {
  * (« Dupont » plutôt que « Élément 3 »). À défaut on retombe sur le rang, en base 1
  * parce que c'est ce que lit un humain.
  */
-export const resolveArrayItemLabel = (
-  item: unknown,
-  index: number,
-  labelProp?: string,
-): string => {
+export const resolveArrayItemLabel = (item: unknown, index: number, labelProp?: string): string => {
   if (labelProp && item && typeof item === 'object') {
     const value = (item as Record<string, unknown>)[labelProp]
 
@@ -84,18 +80,12 @@ export const isCombinatorItemsArray = (
   )(uischema, schema, context)
 
 /** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
-export const isArrayAtCapacity = (
-  length: number,
-  maxItems: number | undefined,
-): boolean => {
+export const isArrayAtCapacity = (length: number, maxItems: number | undefined): boolean => {
   return typeof maxItems === 'number' && length >= maxItems
 }
 
 /** Retirer un élément est interdit sous le `minItems` du schéma. */
-export const isArrayAtMinimum = (
-  length: number,
-  minItems: number | undefined,
-): boolean => {
+export const isArrayAtMinimum = (length: number, minItems: number | undefined): boolean => {
   return typeof minItems === 'number' && length <= minItems
 }
 
@@ -106,9 +96,7 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
     Array.isArray(control.control.value.data) ? control.control.value.data : [],
   )
 
-  const arraySchema = computed<JsonSchema>(
-    () => (control.control.value as any).arraySchema ?? {},
-  )
+  const arraySchema = computed<JsonSchema>(() => (control.control.value as any).arraySchema ?? {})
 
   const canAdd = computed(
     () =>
@@ -125,14 +113,10 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
   )
 
   /** Les éléments sont-ils des valeurs simples (chaîne, nombre, booléen) ? */
-  const isPrimitiveItems = computed(() =>
-    isPrimitiveItemSchema(control.control.value.schema),
-  )
+  const isPrimitiveItems = computed(() => isPrimitiveItemSchema(control.control.value.schema))
 
   /** Les flèches de réordonnancement suivent la convention JSONForms `showSortButtons`. */
-  const showSortButtons = computed(
-    () => !!control.appliedOptions.value?.showSortButtons,
-  )
+  const showSortButtons = computed(() => !!control.appliedOptions.value?.showSortButtons)
 
   /**
    * Gabarit d'un élément : `options.detail` s'il est fourni, sinon un uischema
@@ -178,23 +162,15 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
     )
   })
 
-  const childPath = (index: number) =>
-    composePaths(control.control.value.path, `${index}`)
+  const childPath = (index: number) => composePaths(control.control.value.path, `${index}`)
 
   const itemLabel = (index: number) =>
-    resolveArrayItemLabel(
-      items.value[index],
-      index,
-      control.appliedOptions.value?.elementLabelProp,
-    )
+    resolveArrayItemLabel(items.value[index], index, control.appliedOptions.value?.elementLabelProp)
 
   // Les dispatchers de JSONForms renvoient un *thunk* : `addItem(path, value)` ne fait
   // rien tant qu'on n'appelle pas la fonction qu'il retourne.
   const addItem = () => {
-    const value = createDefaultValue(
-      control.control.value.schema,
-      control.control.value.rootSchema,
-    )
+    const value = createDefaultValue(control.control.value.schema, control.control.value.rootSchema)
 
     ;(jsonFormsControl as any).addItem(control.control.value.path, value)()
   }

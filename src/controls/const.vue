@@ -17,9 +17,16 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, and, rankWith, schemaMatches, uiTypeIs } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  and,
+  rankWith,
+  schemaMatches,
+  uiTypeIs,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInput from '@nuxt/ui/components/Input.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
@@ -73,8 +80,7 @@ export const entry: JsonFormsRendererRegistryEntry = {
     and(
       uiTypeIs('Control'),
       schemaMatches(
-        (schema) =>
-          (schema as any)?.const !== undefined && (schema as any)?.enum === undefined,
+        (schema) => (schema as any)?.const !== undefined && (schema as any)?.enum === undefined,
       ),
     ),
   ),

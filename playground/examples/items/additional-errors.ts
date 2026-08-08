@@ -1,5 +1,5 @@
-import { ErrorObject } from 'ajv'
-import { StateProps } from '../example'
+import type { ErrorObject } from 'ajv'
+import type { StateProps } from '../example'
 import { registerExamples } from '../register'
 import { schema, uischema, data } from './person'
 
@@ -15,11 +15,11 @@ export const actions = [
         schemaPath: '',
         keyword: '',
         params: {},
-      });
+      })
       return {
         ...props,
         additionalErrors: [...additionalErrors],
-      };
+      }
     },
   },
 ]

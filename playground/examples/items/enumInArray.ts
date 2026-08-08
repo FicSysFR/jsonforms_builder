@@ -1,4 +1,4 @@
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'array',
@@ -19,7 +19,7 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -29,9 +29,9 @@ export const uischema = {
       scope: '#',
     },
   ],
-};
+}
 
-export const data: any[] = [];
+export const data: any[] = []
 
 registerExamples([
   {
@@ -41,4 +41,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

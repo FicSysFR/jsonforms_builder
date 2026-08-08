@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { StateProps } from '../example';
-import { registerExamples } from '../register';
+import type { StateProps } from '../example'
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'object',
@@ -44,7 +44,7 @@ export const schema = {
       type: 'boolean',
     },
   },
-};
+}
 export const uischema = {
   type: 'VerticalLayout',
   rule: {
@@ -86,13 +86,13 @@ export const uischema = {
       ],
     },
   ],
-} as any;
+} as any
 
 export const data = {
   toggleTopLayout: true,
   toggleBottomLayout: true,
   toggleControl: true,
-};
+}
 
 const actions = [
   {
@@ -101,7 +101,7 @@ const actions = [
       return {
         ...props,
         data: { ...props.data, toggleTopLayout: !props.data.toggleTopLayout },
-      };
+      }
     },
   },
   {
@@ -113,10 +113,10 @@ const actions = [
           ...props.data,
           toggleBottomLayout: !props.data.toggleBottomLayout,
         },
-      };
+      }
     },
   },
-];
+]
 
 registerExamples([
   {
@@ -127,4 +127,4 @@ registerExamples([
     uischema,
     actions,
   },
-]);
+])

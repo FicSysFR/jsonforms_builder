@@ -43,9 +43,17 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, or, isDateControl, isDateTimeControl, isTimeControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  or,
+  isDateControl,
+  isDateTimeControl,
+  isTimeControl,
+} from '@jsonforms/core'
 import { defineComponent, type DefineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInputDate from '@nuxt/ui/components/InputDate.vue'
 import UInputTime from '@nuxt/ui/components/InputTime.vue'
 import { ControlWrapper } from '../common'
@@ -97,12 +105,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(2,
-    or(
-      isDateControl,
-      isDateTimeControl,
-      isTimeControl,
-    ),
-  ), // Matches schema properties with format "date", "date-time" or "time"
+  tester: rankWith(2, or(isDateControl, isDateTimeControl, isTimeControl)), // Matches schema properties with format "date", "date-time" or "time"
 }
 </script>

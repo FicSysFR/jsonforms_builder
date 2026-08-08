@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { personCoreSchema } from './person';
+import { registerExamples } from '../register'
+import { personCoreSchema } from './person'
 
 export const schema = {
   type: 'object',
@@ -50,7 +50,7 @@ export const schema = {
     },
   },
   required: ['occupation', 'nationality'],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -99,7 +99,7 @@ export const uischema = {
       },
     },
   ],
-};
+}
 
 export const data = {
   occupation: 'developer',
@@ -113,7 +113,7 @@ export const data = {
       message: 'Get ready for booohay',
     },
   ],
-};
+}
 
 registerExamples([
   {
@@ -123,4 +123,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

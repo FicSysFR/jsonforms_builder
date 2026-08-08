@@ -20,9 +20,18 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, and, hasType, rankWith, schemaMatches, uiTypeIs, type JsonSchema } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  and,
+  hasType,
+  rankWith,
+  schemaMatches,
+  uiTypeIs,
+  type JsonSchema,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { rendererProps, useJsonFormsMultiEnumControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsMultiEnumControl, type RendererProps } from '@jsonforms/vue'
 import UCheckboxGroup from '@nuxt/ui/components/CheckboxGroup.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
@@ -105,8 +114,7 @@ export const entry: JsonFormsRendererRegistryEntry = {
         (schema) =>
           hasType(schema, 'array') &&
           !Array.isArray((schema as any).items) &&
-          (hasOneOfItems((schema as any).items ?? {}) ||
-            hasEnumItems((schema as any).items ?? {})),
+          (hasOneOfItems((schema as any).items ?? {}) || hasEnumItems((schema as any).items ?? {})),
       ),
     ),
   ),

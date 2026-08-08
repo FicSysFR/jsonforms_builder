@@ -63,9 +63,19 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, uiTypeIs } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  uiTypeIs,
+} from '@jsonforms/core'
 import { computed, defineComponent, nextTick, ref, watch } from 'vue'
-import { DispatchRenderer, rendererProps, useJsonFormsArrayControl, RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsArrayControl,
+  type RendererProps,
+} from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCard from '@nuxt/ui/components/Card.vue'
 import { ConfirmDialog } from '../common'
@@ -121,9 +131,7 @@ const layoutRenderer = defineComponent({
     const pendingRemoveIndex = ref<number | null>(null)
 
     const pendingRemoveLabel = computed(() =>
-      pendingRemoveIndex.value === null
-        ? ''
-        : `« ${control.itemLabel(pendingRemoveIndex.value)} »`,
+      pendingRemoveIndex.value === null ? '' : `« ${control.itemLabel(pendingRemoveIndex.value)} »`,
     )
 
     const askRemove = (index: number) => {

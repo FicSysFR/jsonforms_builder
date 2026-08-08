@@ -29,10 +29,7 @@ export const useTextareaControl = ({
   })
 
   const minRows = computed(() => {
-    return resolveTextareaRows(
-      base.appliedOptions.value?.minRows,
-      rows.value ?? defaultRows,
-    )
+    return resolveTextareaRows(base.appliedOptions.value?.minRows, rows.value ?? defaultRows)
   })
 
   return {

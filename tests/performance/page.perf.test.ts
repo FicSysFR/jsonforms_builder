@@ -18,11 +18,7 @@ import {
  */
 
 /** Simule le traducteur i18n du playground (lookup radash + fallback). */
-const translate = (
-  dict: Record<string, unknown>,
-  key: string,
-  defaultMessage?: string,
-): string => {
+const translate = (dict: Record<string, unknown>, key: string, defaultMessage?: string): string => {
   const translated = get(dict, key) as string | undefined
   if (translated !== undefined) {
     return translated

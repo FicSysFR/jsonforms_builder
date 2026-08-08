@@ -245,9 +245,7 @@ export const uischema = {
     {
       type: 'Category',
       label: 'Sécurité',
-      elements: [
-        { type: 'Control', scope: '#/properties/userPassword' },
-      ],
+      elements: [{ type: 'Control', scope: '#/properties/userPassword' }],
     },
   ],
 }

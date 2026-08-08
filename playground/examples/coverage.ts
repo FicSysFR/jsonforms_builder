@@ -100,13 +100,7 @@ const winner = (
  * Descend aussi dans les dispositions **générées** par les renderers d'objet, seul moyen
  * de repérer une boucle : celle-ci n'existe pas dans le uischema écrit à la main.
  */
-const walk = (
-  uischema: any,
-  schema: any,
-  rootSchema: any,
-  gaps: Gap[],
-  depth = 0,
-): void => {
+const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[], depth = 0): void => {
   if (!uischema || typeof uischema !== 'object') return
 
   if (depth > MAX_DEPTH) return

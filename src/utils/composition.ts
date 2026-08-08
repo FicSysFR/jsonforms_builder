@@ -1,7 +1,16 @@
-import { computeLabel, ControlElement, DispatchPropsOfControl, DispatchPropsOfMultiEnumControl, isDescriptionHidden, JsonFormsSubStates, JsonSchema, UISchemaElement } from '@jsonforms/core'
+import {
+  computeLabel,
+  type ControlElement,
+  type DispatchPropsOfControl,
+  type DispatchPropsOfMultiEnumControl,
+  isDescriptionHidden,
+  type JsonFormsSubStates,
+  type JsonSchema,
+  type UISchemaElement,
+} from '@jsonforms/core'
 import { debounce, get, isObject } from 'radash'
 import { defu } from 'defu'
-import { computed, ComputedRef, inject, ref, watch } from 'vue'
+import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
 import { IsDynamicPropertyContext } from './inject'
 
@@ -10,7 +19,7 @@ import { IsDynamicPropertyContext } from './inject'
  * du schéma s'il est défini, sinon `undefined`.
  */
 export const resolveClearOnHideValue = (schema?: JsonSchema) => {
-  if (schema && Object.prototype.hasOwnProperty.call(schema, 'default')) {
+  if (schema && Object.hasOwn(schema, 'default')) {
     return schema.default
   }
 
@@ -40,7 +49,7 @@ const isFieldReadonly = (schema: JsonSchema, uischema: any): boolean => {
 export const useControlAppliedOptions = <
   T extends { config: any; uischema: UISchemaElement },
   I extends {
-    control: ComputedRef<T>,
+    control: ComputedRef<T>
   },
 >(
   input: I,
@@ -48,20 +57,28 @@ export const useControlAppliedOptions = <
   // `defu(override, base)` : les options du uischema priment sur la config globale.
   // defu ne mute jamais ses entrées, ce qui remplace le couple cloneDeep + merge de la v1.
   return computed(() =>
-    defu({} as Record<string, any>, input.control.value.uischema.options ?? {}, input.control.value.config ?? {}),
+    defu(
+      {} as Record<string, any>,
+      input.control.value.uischema.options ?? {},
+      input.control.value.config ?? {},
+    ),
   )
 }
 
 export const useLayoutAppliedOptions = <
   T extends { config: any; uischema: UISchemaElement },
   I extends {
-    layout: ComputedRef<T>,
+    layout: ComputedRef<T>
   },
 >(
   input: I,
 ) => {
   return computed(() =>
-    defu({} as Record<string, any>, input.layout.value.uischema.options ?? {}, input.layout.value.config ?? {}),
+    defu(
+      {} as Record<string, any>,
+      input.layout.value.uischema.options ?? {},
+      input.layout.value.config ?? {},
+    ),
   )
 }
 
@@ -102,18 +119,22 @@ const createUiProps = (appliedOptions: ComputedRef<Record<string, any>>) => {
 
 export const useUiLabel = <
   T extends {
-    uischema: UISchemaElement,
-    config: any,
+    uischema: UISchemaElement
+    config: any
   },
   I extends {
-    label: ComputedRef<T>,
+    label: ComputedRef<T>
   },
 >(
   input: I,
 ) => {
   const styles = useTheme(input.label.value.uischema)
   const appliedOptions = computed(() =>
-    defu({} as Record<string, any>, input.label.value.uischema.options ?? {}, input.label.value.config ?? {}),
+    defu(
+      {} as Record<string, any>,
+      input.label.value.uischema.options ?? {},
+      input.label.value.config ?? {},
+    ),
   )
 
   return {
@@ -263,10 +284,7 @@ export const useUiControl = <
       return true
     }
 
-    return isFieldReadonly(
-      input.control.value?.schema,
-      input.control.value?.uischema,
-    )
+    return isFieldReadonly(input.control.value?.schema, input.control.value?.uischema)
   })
 
   /** `disabled` au sens Nuxt UI : désactivé sauf si l'on est simplement en lecture seule. */
@@ -296,7 +314,11 @@ export const useUiControl = <
 
 export const useUiLayout = <I extends { layout: any }>(input: I) => {
   const appliedOptions = computed(() =>
-    defu({} as Record<string, any>, input.layout.value.uischema.options ?? {}, input.layout.value.config ?? {}),
+    defu(
+      {} as Record<string, any>,
+      input.layout.value.uischema.options ?? {},
+      input.layout.value.config ?? {},
+    ),
   )
 
   return {
@@ -311,9 +333,7 @@ export const useJsonForms = () => {
   const jsonforms = inject<JsonFormsSubStates>('jsonforms')
 
   if (!jsonforms) {
-    throw new Error(
-      "jsonforms couldn't be injected. Are you within JSON Forms?",
-    )
+    throw new Error("jsonforms couldn't be injected. Are you within JSON Forms?")
   }
 
   return jsonforms

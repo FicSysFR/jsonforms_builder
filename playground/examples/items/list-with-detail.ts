@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const data = {
   orders: [
@@ -52,7 +52,7 @@ export const data = {
       status: 'planned',
     },
   ],
-};
+}
 
 export const schema = {
   definitions: {
@@ -103,7 +103,7 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'ListWithDetail',
@@ -193,7 +193,7 @@ export const uischema = {
       ],
     },
   },
-};
+}
 
 export const uischemaNoLabelRef = {
   type: 'ListWithDetail',
@@ -282,7 +282,7 @@ export const uischemaNoLabelRef = {
       ],
     },
   },
-};
+}
 
 registerExamples([
   {
@@ -292,7 +292,7 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])
 
 registerExamples([
   {
@@ -302,4 +302,4 @@ registerExamples([
     schema,
     uischema: uischemaNoLabelRef,
   },
-]);
+])

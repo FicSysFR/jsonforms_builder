@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { convertDateToString } from '@jsonforms/core';
-import { registerExamples } from '../register';
+import { convertDateToString } from '@jsonforms/core'
+import { registerExamples } from '../register'
 
 export const schema = {
   definitions: {
@@ -96,7 +96,7 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -114,9 +114,9 @@ export const uischema = {
       scope: '#/properties/objectArrayWithPropertyRefs',
     },
   ],
-};
+}
 
-export const data = {};
+export const data = {}
 
 registerExamples([
   {
@@ -126,4 +126,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

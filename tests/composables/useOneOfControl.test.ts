@@ -33,10 +33,7 @@ const refRoot: JsonSchema = {
 
 describe('resolveCombinatorBranches', () => {
   it('suit les $ref pour rendre chaque branche exploitable', () => {
-    const branches = resolveCombinatorBranches(
-      (refRoot as any).properties.addressOrUser,
-      refRoot,
-    )
+    const branches = resolveCombinatorBranches((refRoot as any).properties.addressOrUser, refRoot)
 
     expect(branches).toHaveLength(2)
     // La garantie qui compte : plus aucun `$ref` nu ne peut atteindre le dispatcher.

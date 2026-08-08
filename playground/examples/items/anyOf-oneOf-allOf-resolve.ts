@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $defs: {
@@ -54,7 +54,7 @@ export const schema = {
       $ref: '#/$defs/Child',
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -80,9 +80,9 @@ export const uischema = {
       scope: '#/properties/element/properties/geometry',
     },
   ],
-};
+}
 
-const data = {};
+const data = {}
 
 registerExamples([
   {
@@ -92,4 +92,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

@@ -232,12 +232,7 @@ describe('composants — résolution des renderers', () => {
       node.type === 'Control' ? stringSchema : rootSchema
 
     const walk = (node: UISchemaElement): number => {
-      const bestRank = resolveBestRenderer(
-        componentTesters,
-        node,
-        schemaFor(node),
-        context,
-      )
+      const bestRank = resolveBestRenderer(componentTesters, node, schemaFor(node), context)
       expect(bestRank).toBeGreaterThanOrEqual(0)
       const children = (node as { elements?: UISchemaElement[] }).elements ?? []
       return 1 + children.reduce((sum, child) => sum + walk(child), 0)
@@ -261,9 +256,7 @@ describe('composants — tableaux et contrôles', () => {
     }))
 
     const result = measure(() => {
-      const labels = items.map((item, index) =>
-        resolveArrayItemLabel(item, index, 'company'),
-      )
+      const labels = items.map((item, index) => resolveArrayItemLabel(item, index, 'company'))
       expect(labels[0]).toBe('Société 0')
       expect(labels[1]).toBe('Élément 2')
       expect(labels).toHaveLength(2_000)
@@ -320,9 +313,7 @@ describe('composants — tableaux et contrôles', () => {
       const normalized = normalizeSuggestions(raw)
       expect(normalized).toHaveLength(3_000)
 
-      const mapped = mapSuggestionsToOptions(
-        Array.from({ length: 1_500 }, (_, i) => `s-${i}`),
-      )
+      const mapped = mapSuggestionsToOptions(Array.from({ length: 1_500 }, (_, i) => `s-${i}`))
       expect(mapped).toHaveLength(1_500)
 
       const fetched = resolveFetchedOptions(

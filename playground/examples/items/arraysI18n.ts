@@ -22,11 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import {
-  ArrayTranslationEnum,
-  Translator,
-} from '@jsonforms/core';
+import { registerExamples } from '../register'
+import { ArrayTranslationEnum, type Translator } from '@jsonforms/core'
 import { get } from 'radash'
 
 export const schema = {
@@ -53,7 +50,7 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -66,7 +63,7 @@ export const uischema = {
       },
     },
   ],
-};
+}
 
 export const data = {
   comments: [
@@ -79,7 +76,7 @@ export const data = {
       message: 'Get ready for booohay',
     },
   ],
-};
+}
 
 export const translations = {
   comments: {
@@ -87,13 +84,12 @@ export const translations = {
     [ArrayTranslationEnum.addTooltip]: 'Add a Comment',
     [ArrayTranslationEnum.deleteDialogAccept]: 'Delete!',
     [ArrayTranslationEnum.deleteDialogDecline]: 'Cancel!',
-    [ArrayTranslationEnum.deleteDialogMessage]:
-      'Are you sure you want to delete this comment?',
+    [ArrayTranslationEnum.deleteDialogMessage]: 'Are you sure you want to delete this comment?',
   },
-};
+}
 export const translate: Translator = (key, defaultMessage) => {
-  return get(translations, key) ?? defaultMessage;
-};
+  return get(translations, key) ?? defaultMessage
+}
 
 registerExamples([
   {
@@ -107,4 +103,4 @@ registerExamples([
       locale: 'en',
     },
   },
-]);
+])

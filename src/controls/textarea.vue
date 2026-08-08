@@ -27,9 +27,16 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, isStringControl, isMultiLineControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  and,
+  isStringControl,
+  isMultiLineControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UTextarea from '@nuxt/ui/components/Textarea.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -69,11 +76,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(2,
-    and(
-      isStringControl,
-      isMultiLineControl,
-    ),
-  ), // Matches schema properties with type "string" and with "multiLine" option set to true
+  tester: rankWith(2, and(isStringControl, isMultiLineControl)), // Matches schema properties with type "string" and with "multiLine" option set to true
 }
 </script>

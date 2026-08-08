@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -59,28 +59,19 @@ export const schema = {
 
   properties: {
     addressOrUser: {
-      anyOf: [
-        { $ref: '#/definitions/address' },
-        { $ref: '#/definitions/user' },
-      ],
+      anyOf: [{ $ref: '#/definitions/address' }, { $ref: '#/definitions/user' }],
     },
     addressesOrUsers: {
-      anyOf: [
-        { $ref: '#/definitions/addresses' },
-        { $ref: '#/definitions/users' },
-      ],
+      anyOf: [{ $ref: '#/definitions/addresses' }, { $ref: '#/definitions/users' }],
     },
     addressesOrUsersAnyOfItems: {
       type: 'array',
       items: {
-        anyOf: [
-          { $ref: '#/definitions/addresses' },
-          { $ref: '#/definitions/users' },
-        ],
+        anyOf: [{ $ref: '#/definitions/addresses' }, { $ref: '#/definitions/users' }],
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -100,7 +91,7 @@ export const uischema = {
       label: 'Addresses or Users (AnyOf Array Items)',
     },
   ],
-};
+}
 
 const data = {
   addressOrUser: {
@@ -108,7 +99,7 @@ const data = {
     city: 'Washington',
     state: 'DC',
   },
-};
+}
 
 const schema_simple = {
   type: 'object',
@@ -117,7 +108,7 @@ const schema_simple = {
       anyOf: [{ type: 'string' }, { enum: ['foo', 'bar'] }],
     },
   },
-};
+}
 
 registerExamples([
   {
@@ -134,4 +125,4 @@ registerExamples([
     schema: schema_simple,
     uischema: undefined,
   },
-]);
+])

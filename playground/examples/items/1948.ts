@@ -1,5 +1,5 @@
 import { registerExamples } from '../register'
-import { UISchemaElement } from '@jsonforms/core'
+import type { UISchemaElement } from '@jsonforms/core'
 
 export const schema = {
   type: 'object',

@@ -1,15 +1,11 @@
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 const schema = {
   $schema: 'http://json-schema.org/schema#',
 
   definitions: {
     confidenceTypes: {
       type: 'string',
-      enum: [
-        'http://gedcomx.org/High',
-        'http://gedcomx.org/Medium',
-        'http://gedcomx.org/Low',
-      ],
+      enum: ['http://gedcomx.org/High', 'http://gedcomx.org/Medium', 'http://gedcomx.org/Low'],
     },
     genderTypes: {
       type: 'string',
@@ -128,8 +124,7 @@ const schema = {
       properties: {
         contributor: {
           $ref: '#/definitions/resourceReference',
-          description:
-            'Reference to the agent to whom the attributed data is attributed.',
+          description: 'Reference to the agent to whom the attributed data is attributed.',
         },
         modified: {
           type: 'number',
@@ -190,8 +185,7 @@ const schema = {
         },
         value: {
           type: 'string',
-          description:
-            'The bibliographic metadata rendered as a full citation.',
+          description: 'The bibliographic metadata rendered as a full citation.',
         },
       },
       required: ['value'],
@@ -284,23 +278,18 @@ const schema = {
         },
         sources: {
           items: { $ref: '#/definitions/sourceReference' },
-          description:
-            'The list of references to the sources of related to this conclusion.',
+          description: 'The list of references to the sources of related to this conclusion.',
         },
         analysis: {
           $ref: '#/definitions/resourceReference',
-          description:
-            'Reference to a document containing analysis supporting this conclusion.',
+          description: 'Reference to a document containing analysis supporting this conclusion.',
         },
         notes: {
           items: { $ref: '#/definitions/note' },
           description: 'A list of notes about this conclusion.',
         },
         confidence: {
-          anyOf: [
-            { $ref: '#/definitions/uri' },
-            { $ref: '#/definitions/confidenceTypes' },
-          ],
+          anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/confidenceTypes' }],
           description: 'Reference to a confidence level for this conclusion.',
         },
         attribution: {
@@ -317,13 +306,11 @@ const schema = {
           properties: {
             extracted: {
               type: 'boolean',
-              description:
-                'Whether this subject is to be constrained as an extracted conclusion.',
+              description: 'Whether this subject is to be constrained as an extracted conclusion.',
             },
             evidence: {
               items: { $ref: '#/definitions/evidenceReference' },
-              description:
-                'References to other subjects that support this subject.',
+              description: 'References to other subjects that support this subject.',
             },
             media: {
               items: { $ref: '#/definitions/sourceReference' },
@@ -344,10 +331,7 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/uri' },
-                { $ref: '#/definitions/genderTypes' },
-              ],
+              anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/genderTypes' }],
               description: 'Enumerated value identifying the gender.',
             },
           },
@@ -360,8 +344,7 @@ const schema = {
       properties: {
         original: {
           type: 'string',
-          description:
-            'The original value of the date as supplied by the contributor.',
+          description: 'The original value of the date as supplied by the contributor.',
         },
         formal: {
           type: 'string',
@@ -379,10 +362,7 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/uri' },
-                { $ref: '#/definitions/nameTypes' },
-              ],
+              anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/nameTypes' }],
               description: 'Enumerated value identifying the name type.',
             },
             date: {
@@ -407,12 +387,8 @@ const schema = {
         'The NamePart data type is used to model a portion of a full name, including the terms that make up that portion. Some name parts may have qualifiers to provide additional semantic meaning to the name part (e.g., "given name" or "surname").',
       properties: {
         type: {
-          anyOf: [
-            { $ref: '#/definitions/uri' },
-            { $ref: '#/definitions/namePartTypes' },
-          ],
-          description:
-            'Enumerated value identifying the type of the name part.',
+          anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/namePartTypes' }],
+          description: 'Enumerated value identifying the type of the name part.',
         },
         value: {
           type: 'string',
@@ -420,8 +396,7 @@ const schema = {
         },
         qualifiers: {
           items: { $ref: '#/definitions/namePartQualifier' },
-          description:
-            'Qualifiers to add additional semantic meaning to the name part.',
+          description: 'Qualifiers to add additional semantic meaning to the name part.',
         },
       },
       required: ['value'],
@@ -429,10 +404,7 @@ const schema = {
     namePartQualifier: {
       properties: {
         name: {
-          anyOf: [
-            { $ref: '#/definitions/namePartQualifierNames' },
-            { $ref: '#/definitions/uri' },
-          ],
+          anyOf: [{ $ref: '#/definitions/namePartQualifierNames' }, { $ref: '#/definitions/uri' }],
         },
         value: { type: 'string' },
       },
@@ -472,8 +444,7 @@ const schema = {
         },
         fullText: {
           type: 'string',
-          description:
-            'A full rendering of the name (or as much of the name as is known).',
+          description: 'A full rendering of the name (or as much of the name as is known).',
         },
         parts: {
           items: {
@@ -490,10 +461,7 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/uri' },
-                { $ref: '#/definitions/personFactTypes' },
-              ],
+              anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/personFactTypes' }],
               description: 'Enumerated value identifying the type of the fact.',
             },
             date: {
@@ -507,8 +475,7 @@ const schema = {
             value: { type: 'string', description: 'The value of the fact.' },
             qualifiers: {
               items: { $ref: '#/definitions/factQualifier' },
-              description:
-                'Qualifiers to add additional details about the fact.',
+              description: 'Qualifiers to add additional details about the fact.',
             },
           },
           required: ['type'],
@@ -518,10 +485,7 @@ const schema = {
     factQualifier: {
       properties: {
         name: {
-          anyOf: [
-            { $ref: '#/definitions/factQualifierNames' },
-            { $ref: '#/definitions/uri' },
-          ],
+          anyOf: [{ $ref: '#/definitions/factQualifierNames' }, { $ref: '#/definitions/uri' }],
         },
         value: { type: 'string' },
       },
@@ -546,17 +510,12 @@ const schema = {
               description: 'Reference to the event participant.',
             },
             type: {
-              anyOf: [
-                { $ref: '#/definitions/uri' },
-                { $ref: '#/definitions/eventRoleTypes' },
-              ],
-              description:
-                "Enumerated value identifying the participant's role.",
+              anyOf: [{ $ref: '#/definitions/uri' }, { $ref: '#/definitions/eventRoleTypes' }],
+              description: "Enumerated value identifying the participant's role.",
             },
             details: {
               type: 'string',
-              description:
-                'Details about the role of participant in the event.',
+              description: 'Details about the role of participant in the event.',
             },
           },
           required: ['person'],
@@ -576,8 +535,7 @@ const schema = {
       properties: {
         original: {
           type: 'string',
-          description:
-            'The original place name text as supplied by the contributor.',
+          description: 'The original place name text as supplied by the contributor.',
         },
         description: {
           $ref: '#/definitions/uri',
@@ -608,8 +566,7 @@ const schema = {
             },
             type: {
               $ref: '#/definitions/uri',
-              description:
-                "Enumerated value identifying the participant's role.",
+              description: "Enumerated value identifying the participant's role.",
             },
             date: {
               $ref: '#/definitions/date',
@@ -617,8 +574,7 @@ const schema = {
             },
             details: {
               type: 'string',
-              description:
-                'Details about the role of he participant in the group.',
+              description: 'Details about the role of he participant in the group.',
             },
           },
           required: ['person'],
@@ -658,12 +614,8 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/relationshipType' },
-                { $ref: '#/definitions/uri' },
-              ],
-              description:
-                'Enumerated value identifying the type of the relationship.',
+              anyOf: [{ $ref: '#/definitions/relationshipType' }, { $ref: '#/definitions/uri' }],
+              description: 'Enumerated value identifying the type of the relationship.',
             },
             person1: {
               $ref: '#/definitions/resourceReference',
@@ -671,8 +623,7 @@ const schema = {
             },
             person2: {
               $ref: '#/definitions/resourceReference',
-              description:
-                'Reference to the second person in the relationship.',
+              description: 'Reference to the second person in the relationship.',
             },
             facts: {
               items: { $ref: '#/definitions/fact' },
@@ -695,16 +646,11 @@ const schema = {
       properties: {
         id: {
           type: 'string',
-          description:
-            'An identifier for the data structure holding the source description data.',
+          description: 'An identifier for the data structure holding the source description data.',
         },
         resourceType: {
-          anyOf: [
-            { $ref: '#/definitions/resourceTypes' },
-            { $ref: '#/definitions/uri' },
-          ],
-          description:
-            'Enumerated value identifying the type of resource being described.',
+          anyOf: [{ $ref: '#/definitions/resourceTypes' }, { $ref: '#/definitions/uri' }],
+          description: 'Enumerated value identifying the type of resource being described.',
         },
         citations: {
           items: { $ref: '#/definitions/sourceCitation' },
@@ -712,18 +658,15 @@ const schema = {
         },
         mediaType: {
           type: 'string',
-          description:
-            'A hint about the media type of the resource being described.',
+          description: 'A hint about the media type of the resource being described.',
         },
         about: {
           $ref: '#/definitions/uri',
-          description:
-            'A uniform resource identifier (URI) for the resource being described.',
+          description: 'A uniform resource identifier (URI) for the resource being described.',
         },
         mediator: {
           $ref: '#/definitions/resourceReference',
-          description:
-            'A reference to the entity that mediates access to the described source.',
+          description: 'A reference to the entity that mediates access to the described source.',
         },
         publisher: {
           $ref: '#/definitions/resourceReference',
@@ -732,13 +675,11 @@ const schema = {
         },
         sources: {
           items: { $ref: '#/definitions/sourceReference' },
-          description:
-            'A list of references to any sources from which this source is derived.',
+          description: 'A list of references to any sources from which this source is derived.',
         },
         analysis: {
           $ref: '#/definitions/resourceReference',
-          description:
-            'A reference to a document containing analysis about this source.',
+          description: 'A reference to a document containing analysis about this source.',
         },
         componentOf: {
           $ref: '#/definitions/sourceReference',
@@ -771,23 +712,19 @@ const schema = {
         },
         identifiers: {
           items: { $ref: '#/definitions/identifier' },
-          description:
-            'A list of identifiers for the resource being described.',
+          description: 'A list of identifiers for the resource being described.',
         },
         created: {
           type: 'number',
-          description:
-            'Timestamp of when the resource being described was created.',
+          description: 'Timestamp of when the resource being described was created.',
         },
         modified: {
           type: 'number',
-          description:
-            'Timestamp of when the resource being described was modified.',
+          description: 'Timestamp of when the resource being described was modified.',
         },
         repository: {
           $ref: '#/definitions/resourceReference',
-          description:
-            'A reference to the repository that contains the described resource.',
+          description: 'A reference to the repository that contains the described resource.',
         },
       },
       required: ['citations'],
@@ -841,10 +778,7 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/eventTypes' },
-                { $ref: '#/definitions/uri' },
-              ],
+              anyOf: [{ $ref: '#/definitions/eventTypes' }, { $ref: '#/definitions/uri' }],
             },
             date: { $ref: '#/definitions/date' },
             place: { $ref: '#/definitions/placeReference' },
@@ -901,10 +835,7 @@ const schema = {
         {
           properties: {
             type: {
-              anyOf: [
-                { $ref: '#/definitions/documentTypes' },
-                { $ref: '#/definitions/uri' },
-              ],
+              anyOf: [{ $ref: '#/definitions/documentTypes' }, { $ref: '#/definitions/uri' }],
             },
             extracted: { type: 'boolean' },
             textType: { type: 'string' },
@@ -1007,7 +938,7 @@ const schema = {
     lang: { $ref: '#/definitions/localeTag' },
     attribution: { $ref: '#/definitions/attribution' },
   },
-};
+}
 
 const data: any = {
   attribution: {
@@ -1344,7 +1275,7 @@ const data: any = {
       id: 'D-2',
     },
   ],
-};
+}
 
 export const uischema: any = {
   type: 'Categorization',
@@ -1357,16 +1288,12 @@ export const uischema: any = {
     {
       type: 'Category',
       label: 'Relationships',
-      elements: [
-        { type: 'ListWithDetail', scope: '#/properties/relationships' },
-      ],
+      elements: [{ type: 'ListWithDetail', scope: '#/properties/relationships' }],
     },
     {
       type: 'Category',
       label: 'SourceDescriptions',
-      elements: [
-        { type: 'ListWithDetail', scope: '#/properties/sourceDescriptions' },
-      ],
+      elements: [{ type: 'ListWithDetail', scope: '#/properties/sourceDescriptions' }],
     },
     {
       type: 'Category',
@@ -1399,7 +1326,7 @@ export const uischema: any = {
       ],
     },
   ],
-};
+}
 
 registerExamples([
   {
@@ -1409,4 +1336,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

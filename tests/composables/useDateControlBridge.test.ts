@@ -59,7 +59,9 @@ describe('fromDateValue', () => {
     expect(fromDateValue(time, DEFAULT_TIME_FORMAT, 'time')).toBe('13:37:00')
 
     const datetime = toDateValue('1999-12-11T10:05:00', DEFAULT_DATETIME_FORMAT, 'date-time')
-    expect(fromDateValue(datetime, DEFAULT_DATETIME_FORMAT, 'date-time')).toBe('1999-12-11T10:05:00')
+    expect(fromDateValue(datetime, DEFAULT_DATETIME_FORMAT, 'date-time')).toBe(
+      '1999-12-11T10:05:00',
+    )
   })
 
   it('returns undefined when there is no value to convert', () => {

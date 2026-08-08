@@ -1,7 +1,7 @@
-import { Translator } from '@jsonforms/core'
+import type { Translator } from '@jsonforms/core'
 import { get } from 'radash'
 import { registerExamples } from '../register'
-import { Layout, UISchemaElement, JsonSchema } from '@jsonforms/core'
+import type { Layout, UISchemaElement, JsonSchema } from '@jsonforms/core'
 
 export const schema: JsonSchema = {
   type: 'object',
@@ -65,7 +65,7 @@ export const schema: JsonSchema = {
       },
     },
   },
-};
+}
 
 export const uischema: Layout & UISchemaElement = {
   type: 'Categorization',
@@ -176,13 +176,11 @@ export const uischema: Layout & UISchemaElement = {
         },
         {
           type: 'Control',
-          scope:
-            '#/properties/vegetarianOptions/properties/otherFavoriteVegetable',
+          scope: '#/properties/vegetarianOptions/properties/otherFavoriteVegetable',
           rule: {
             effect: 'SHOW',
             condition: {
-              scope:
-                '#/properties/vegetarianOptions/properties/favoriteVegetable',
+              scope: '#/properties/vegetarianOptions/properties/favoriteVegetable',
               schema: { const: 'Other' },
             },
           },
@@ -197,13 +195,13 @@ export const uischema: Layout & UISchemaElement = {
       },
     },
   ],
-};
+}
 
 export const data = {
   provideAddress: true,
   vegetarian: false,
   birthDate: '1985-06-12',
-};
+}
 
 const schema_1713 = {
   type: 'object',
@@ -223,7 +221,7 @@ const schema_1713 = {
     },
   },
   required: ['experiments'],
-};
+}
 const uischema_1713 = {
   type: 'Categorization',
   elements: [
@@ -275,17 +273,17 @@ const uischema_1713 = {
       ],
     },
   ],
-};
+}
 
 export const translations = {
   categoryLabelKey: 'Basic',
   address: {
     label: 'Address',
   },
-};
+}
 export const translate: Translator = (key: string, defaultMessage: string) => {
-  return get(translations, key) ?? defaultMessage;
-};
+  return get(translations, key) ?? defaultMessage
+}
 
 registerExamples([
   {
@@ -303,4 +301,4 @@ registerExamples([
     schema: schema_1713,
     uischema: uischema_1713,
   },
-]);
+])

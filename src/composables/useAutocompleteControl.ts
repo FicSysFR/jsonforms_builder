@@ -2,10 +2,7 @@ import { computed, ref } from 'vue'
 import { get, isArray } from 'radash'
 import { useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
-import {
-  createEnumAdaptTarget,
-  normalizeSuggestions,
-} from './useEnumSuggestionControl'
+import { createEnumAdaptTarget, normalizeSuggestions } from './useEnumSuggestionControl'
 
 export interface AutocompleteApiConfig {
   url: string
@@ -139,9 +136,7 @@ export const useAutocompleteControl = ({
   const abortController = ref<AbortController | null>(null)
 
   const suggestions = computed(() => {
-    const normalized = normalizeSuggestions(
-      control.control.value.uischema.options?.suggestion,
-    )
+    const normalized = normalizeSuggestions(control.control.value.uischema.options?.suggestion)
 
     return mapSuggestionsToOptions(normalized)
   })
@@ -177,10 +172,7 @@ export const useAutocompleteControl = ({
   }
 
   const fetchOptions = async (search: string, uiOptions?: any) => {
-    const apiConfig = extractAutocompleteApiConfig(
-      uiOptions,
-      control.appliedOptions.value,
-    )
+    const apiConfig = extractAutocompleteApiConfig(uiOptions, control.appliedOptions.value)
 
     if (!apiConfig) {
       optionsList.value = []
@@ -228,17 +220,11 @@ export const useAutocompleteControl = ({
     }
 
     const uiOptions = control.control.value.uischema.options
-    const apiConfig = extractAutocompleteApiConfig(
-      uiOptions,
-      control.appliedOptions.value,
-    )
+    const apiConfig = extractAutocompleteApiConfig(uiOptions, control.appliedOptions.value)
 
     // Sans API déclarée, on filtre les options statiques côté client.
     if (!apiConfig) {
-      optionsList.value = filterOptionsBySearch(
-        getStaticOptions(control.control.value),
-        value,
-      )
+      optionsList.value = filterOptionsBySearch(getStaticOptions(control.control.value), value)
       return
     }
 

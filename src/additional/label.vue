@@ -10,7 +10,12 @@
 </template>
 
 <script lang="ts">
-import { JsonFormsRendererRegistryEntry, LabelElement, rankWith, uiTypeIs } from '@jsonforms/core'
+import {
+  type JsonFormsRendererRegistryEntry,
+  type LabelElement,
+  rankWith,
+  uiTypeIs,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
 import { rendererProps, useJsonFormsLabel, type RendererProps } from '@jsonforms/vue'
 import USeparator from '@nuxt/ui/components/Separator.vue'

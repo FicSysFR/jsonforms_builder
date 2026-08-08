@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -38,8 +38,7 @@ export const schema = {
     },
     nullableObject: {
       type: ['object', 'null'],
-      description:
-        'A nullable object whose properties should still be rendered.',
+      description: 'A nullable object whose properties should still be rendered.',
       properties: {
         shape: {
           type: 'string',
@@ -50,19 +49,11 @@ export const schema = {
       },
     },
     mixed: {
-      type: [
-        'array',
-        'boolean',
-        'integer',
-        'null',
-        'number',
-        'object',
-        'string',
-      ],
+      type: ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string'],
     },
   },
   required: ['mixedSimple'],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -84,7 +75,7 @@ export const uischema = {
       scope: '#/properties/mixed',
     },
   ],
-};
+}
 
 const data = {
   mixedSimple: 'String',
@@ -93,7 +84,7 @@ const data = {
     shape: 'circle',
     size: 5,
   },
-};
+}
 
 registerExamples([
   {
@@ -103,4 +94,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

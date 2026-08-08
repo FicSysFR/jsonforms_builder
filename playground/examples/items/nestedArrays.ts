@@ -22,14 +22,14 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 import {
-  ControlElement,
-  JsonFormsUISchemaRegistryEntry,
-  JsonSchema,
+  type ControlElement,
+  type JsonFormsUISchemaRegistryEntry,
+  type JsonSchema,
   NOT_APPLICABLE,
-} from '@jsonforms/core';
-import { StateProps } from '../example';
+} from '@jsonforms/core'
+import type { StateProps } from '../example'
 
 const schema = {
   definitions: {
@@ -55,7 +55,7 @@ const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'HorizontalLayout',
@@ -69,7 +69,7 @@ export const uischema = {
       scope: '#/properties/exampleArray',
     },
   ],
-};
+}
 
 const data = {
   exampleArray: [
@@ -78,29 +78,29 @@ const data = {
       name: 'Hi there',
     },
   ],
-};
+}
 
 const control1: ControlElement = {
   type: 'Control',
   scope: '#/properties/name',
-};
+}
 // register inner layout
 const control2: ControlElement = {
   type: 'Control',
   scope: '#/properties/choices',
-};
+}
 
 const uischemas = [
   {
     tester: (_jsonSchema: JsonSchema, schemaPath: string) => {
-      return schemaPath === '#/properties/exampleArray' ? 2 : NOT_APPLICABLE;
+      return schemaPath === '#/properties/exampleArray' ? 2 : NOT_APPLICABLE
     },
     uischema: {
       type: 'VerticalLayout',
       elements: [control1, control2],
     },
   },
-];
+]
 
 const actions = [
   {
@@ -109,20 +109,20 @@ const actions = [
       return {
         ...props,
         uischemas: uischemas,
-      };
+      }
     },
   },
   {
     label: 'Unregister NestedArray UISchema',
     apply: (props: StateProps) => {
-      const uischemas: JsonFormsUISchemaRegistryEntry[] = undefined;
+      const uischemas: JsonFormsUISchemaRegistryEntry[] = undefined
       return {
         ...props,
         uischemas: uischemas,
-      };
+      }
     },
   },
-];
+]
 
 registerExamples([
   {
@@ -133,4 +133,4 @@ registerExamples([
     uischema,
     actions,
   },
-]);
+])

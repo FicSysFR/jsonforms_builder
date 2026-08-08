@@ -1,5 +1,5 @@
 import { isObject } from 'radash'
-import { type Theme } from './theme'
+import type { Theme } from './theme'
 
 /**
  * Assemble un littéral de gabarit en une chaîne de classes, en ignorant les
@@ -36,7 +36,9 @@ const mergeDeep = (a: unknown, b: unknown): unknown => {
       result[key] =
         key in source && key in override
           ? mergeDeep(source[key], override[key])
-          : (key in override ? override[key] : source[key])
+          : key in override
+            ? override[key]
+            : source[key]
     }
 
     return result
@@ -45,9 +47,6 @@ const mergeDeep = (a: unknown, b: unknown): unknown => {
   return b === undefined ? a : b
 }
 
-export const mergeStyles = (
-  stylesA: Partial<Theme>,
-  stylesB: Partial<Theme>,
-): Partial<Theme> => {
+export const mergeStyles = (stylesA: Partial<Theme>, stylesB: Partial<Theme>): Partial<Theme> => {
   return mergeDeep(stylesA, stylesB) as Partial<Theme>
 }

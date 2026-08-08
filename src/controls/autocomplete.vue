@@ -28,9 +28,16 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, hasOption, isStringControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  and,
+  hasOption,
+  isStringControl,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsEnumControl, type RendererProps } from '@jsonforms/vue'
 import UInputMenu from '@nuxt/ui/components/InputMenu.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -64,8 +71,9 @@ const controlRenderer = defineComponent({
       clearValue,
     })
 
-    const searchHint = computed(() =>
-      `Saisissez au moins ${control.minLength.value} caractère${control.minLength.value > 1 ? 's' : ''}`,
+    const searchHint = computed(
+      () =>
+        `Saisissez au moins ${control.minLength.value} caractère${control.minLength.value > 1 ? 's' : ''}`,
     )
 
     return { ...control, searchHint }
@@ -77,11 +85,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(2,
-    and(
-      isStringControl,
-      hasOption('api'),
-    ),
-  ), // Matches string controls with 'api' option defined
+  tester: rankWith(2, and(isStringControl, hasOption('api'))), // Matches string controls with 'api' option defined
 }
 </script>

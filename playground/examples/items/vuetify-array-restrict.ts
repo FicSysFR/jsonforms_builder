@@ -4,60 +4,57 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "type": "object",
-  "properties": {
-    "comments": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
+  type: 'object',
+  properties: {
+    comments: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          date: {
+            type: 'string',
+            format: 'date',
           },
-          "message": {
-            "type": "string",
-            "maxLength": 5
+          message: {
+            type: 'string',
+            maxLength: 5,
           },
-          "enum": {
-            "type": "string",
-            "enum": [
-              "foo",
-              "bar"
-            ]
-          }
-        }
+          enum: {
+            type: 'string',
+            enum: ['foo', 'bar'],
+          },
+        },
       },
-      "minItems": 1,
-      "maxItems": 5
-    }
-  }
+      minItems: 1,
+      maxItems: 5,
+    },
+  },
 }
 
 export const uischema = {
-  "type": "VerticalLayout",
-  "elements": [
+  type: 'VerticalLayout',
+  elements: [
     {
-      "type": "Control",
-      "scope": "#/properties/comments",
-      "options": {
-        "restrict": true
-      }
-    }
-  ]
+      type: 'Control',
+      scope: '#/properties/comments',
+      options: {
+        restrict: true,
+      },
+    },
+  ],
 }
 
 export const data = {
-  "comments": [
+  comments: [
     {
-      "date": "2001-09-11",
-      "message": "This is an example message"
+      date: '2001-09-11',
+      message: 'This is an example message',
     },
     {
-      "date": "2021-08-13",
-      "message": "Get ready for booohay"
-    }
-  ]
+      date: '2021-08-13',
+      message: 'Get ready for booohay',
+    },
+  ],
 }
 
 registerExamples([

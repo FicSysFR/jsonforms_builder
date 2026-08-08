@@ -24,9 +24,19 @@
 </template>
 
 <script lang="ts">
-import { GroupLayout, JsonFormsRendererRegistryEntry, rankWith, uiTypeIs } from '@jsonforms/core'
+import {
+  type GroupLayout,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  uiTypeIs,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { DispatchRenderer, rendererProps, useJsonFormsLayout, type RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsLayout,
+  type RendererProps,
+} from '@jsonforms/vue'
 import UCard from '@nuxt/ui/components/Card.vue'
 import { useUiLayout } from '../utils'
 

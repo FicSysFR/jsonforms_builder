@@ -13,7 +13,7 @@ export const schema = {
     date: {
       type: 'string',
       format: 'date',
-      description: "Date du journal",
+      description: 'Date du journal',
     },
     weather: {
       type: 'string',
@@ -36,7 +36,7 @@ export const schema = {
       },
     },
     activity: {
-      title: "Activité du jour",
+      title: 'Activité du jour',
       oneOf: [
         {
           title: 'Pose de voie',

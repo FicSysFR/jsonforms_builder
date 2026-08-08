@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 /**
  * Prepend and Append Slots
@@ -72,7 +72,7 @@ export const schema = {
       description: 'Temperature with dynamic icon and unit (°C)',
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -127,7 +127,7 @@ export const uischema = {
       },
     },
   ],
-};
+}
 
 export const data = {
   displayName: 'John Doe',
@@ -135,7 +135,7 @@ export const data = {
   username: '', // Start empty so checker can be tested
   email: 'user@example.com',
   temperature: 22,
-};
+}
 
 registerExamples([
   {
@@ -145,4 +145,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

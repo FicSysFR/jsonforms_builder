@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -61,14 +61,14 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'Control',
   scope: '#',
-};
+}
 
-const data = {};
+const data = {}
 
 registerExamples([
   {
@@ -78,4 +78,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

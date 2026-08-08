@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { Translator } from '@jsonforms/core';
+import { registerExamples } from '../register'
+import type { Translator } from '@jsonforms/core'
 import { get } from 'radash'
 
 export const schema = {
@@ -46,7 +46,7 @@ export const schema = {
       ],
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -88,11 +88,11 @@ export const uischema = {
       ],
     },
   ],
-};
+}
 
 export const data = {
   country: 'DE',
-};
+}
 
 export const translations: Record<string, string> = {
   // Translations for country enum values
@@ -114,11 +114,11 @@ export const translations: Record<string, string> = {
   'status.pending': 'Awaiting Review',
   'status.approved': 'Approved',
   'status.rejected': 'Declined',
-};
+}
 
 export const translate: Translator = (key, defaultMessage) => {
-  return get(translations, key) ?? defaultMessage;
-};
+  return get(translations, key) ?? defaultMessage
+}
 
 registerExamples([
   {
@@ -132,4 +132,4 @@ registerExamples([
       locale: 'en',
     },
   },
-]);
+])

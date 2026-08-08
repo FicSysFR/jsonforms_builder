@@ -65,11 +65,16 @@ import {
   and,
   categorizationHasCategory,
   isCategorization,
-  JsonFormsRendererRegistryEntry,
+  type JsonFormsRendererRegistryEntry,
   rankWith,
   type Layout,
 } from '@jsonforms/core'
-import { DispatchRenderer, rendererProps, useJsonFormsCategorization, type RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsCategorization,
+  type RendererProps,
+} from '@jsonforms/vue'
 import { computed, defineComponent, onMounted } from 'vue'
 import UTabs from '@nuxt/ui/components/Tabs.vue'
 import UStepper from '@nuxt/ui/components/Stepper.vue'
@@ -106,11 +111,13 @@ const layoutRenderer = defineComponent({
     const { state, set } = useHashState()
     const renderedProps = useUiLayout(useJsonFormsCategorization(props))
     const queryKey = get(renderedProps.layout.value, 'uischema.options.queryKey', DEFAULT_QUERY_KEY)
-    const defaultTab = get(renderedProps.layout.value, 'uischema.options.defaultTab', DEFAULT_DEFAULT_TAB)
-
-    const isStepper = computed(
-      () => renderedProps.appliedOptions.value?.variant === 'stepper',
+    const defaultTab = get(
+      renderedProps.layout.value,
+      'uischema.options.defaultTab',
+      DEFAULT_DEFAULT_TAB,
     )
+
+    const isStepper = computed(() => renderedProps.appliedOptions.value?.variant === 'stepper')
 
     const activeCategory = computed({
       get: () => state.value[queryKey] || defaultTab,

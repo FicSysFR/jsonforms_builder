@@ -27,9 +27,19 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, or, hasOption, isEnumControl, isPrimitiveArrayControl, isStringControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  and,
+  or,
+  hasOption,
+  isEnumControl,
+  isPrimitiveArrayControl,
+  isStringControl,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsEnumControl, type RendererProps } from '@jsonforms/vue'
 import USelectMenu from '@nuxt/ui/components/SelectMenu.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -87,15 +97,9 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(2, and(
-    or(
-      isStringControl,
-      isPrimitiveArrayControl,
-    ),
-    or(
-      hasOption('suggestion'),
-      isEnumControl,
-    ),
-  )),
+  tester: rankWith(
+    2,
+    and(or(isStringControl, isPrimitiveArrayControl), or(hasOption('suggestion'), isEnumControl)),
+  ),
 }
 </script>

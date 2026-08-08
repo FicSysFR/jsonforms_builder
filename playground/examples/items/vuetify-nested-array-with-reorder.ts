@@ -4,54 +4,52 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "type": "object",
-  "properties": {
-    "exampleArray": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "phones": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$"
-            }
-          }
+  type: 'object',
+  properties: {
+    exampleArray: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          phones: {
+            type: 'array',
+            items: {
+              type: 'string',
+              pattern: '^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$',
+            },
+          },
         },
-        "required":[
-          "name"
-        ]
-      }
-    }
-  }
+        required: ['name'],
+      },
+    },
+  },
 }
 
 export const uischema = {
-  "type": "HorizontalLayout",
-  "elements": [
+  type: 'HorizontalLayout',
+  elements: [
     {
-      "type": "Control",
-      "label": {
-        "text": "Example Array",
-        "show": true
+      type: 'Control',
+      label: {
+        text: 'Example Array',
+        show: true,
       },
-      "scope": "#/properties/exampleArray",
-      "options": {
-        "showSortButtons": true
-      }
-    }
-  ]
+      scope: '#/properties/exampleArray',
+      options: {
+        showSortButtons: true,
+      },
+    },
+  ],
 }
 
 export const data = {
-  "exampleArray": [
+  exampleArray: [
     {
-      "phones": ["555-1212", "(888)555-1212"],
-      "name": "John Smith"
-    }
-  ]
+      phones: ['555-1212', '(888)555-1212'],
+      name: 'John Smith',
+    },
+  ],
 }
 
 registerExamples([

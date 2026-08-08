@@ -4,61 +4,61 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "definitions": {
-    "address": {
-      "type": "object",
-      "title": "Address",
-      "properties": {
-        "street_address": {
-          "type": "string"
+  definitions: {
+    address: {
+      type: 'object',
+      title: 'Address',
+      properties: {
+        street_address: {
+          type: 'string',
         },
-        "city": {
-          "type": "string"
+        city: {
+          type: 'string',
         },
-        "state": {
-          "type": "string"
-        }
+        state: {
+          type: 'string',
+        },
       },
-      "required": ["street_address", "city", "state"]
+      required: ['street_address', 'city', 'state'],
     },
-    "user": {
-      "type": "object",
-      "title": "User",
-      "properties": {
-        "name": {
-          "type": "string"
+    user: {
+      type: 'object',
+      title: 'User',
+      properties: {
+        name: {
+          type: 'string',
         },
-        "mail": {
-          "type": "string"
-        }
+        mail: {
+          type: 'string',
+        },
       },
-      "required": ["name", "mail"]
-    }
+      required: ['name', 'mail'],
+    },
   },
-  "type": "object",
-  "properties": {
-    "label": {
-      "type": "string"
-    }
+  type: 'object',
+  properties: {
+    label: {
+      type: 'string',
+    },
   },
-  "anyOf": [
+  anyOf: [
     {
-      "$ref": "#/definitions/address"
+      $ref: '#/definitions/address',
     },
     {
-      "$ref": "#/definitions/user"
-    }
-  ]
+      $ref: '#/definitions/user',
+    },
+  ],
 }
 
 export const uischema = undefined
 
 export const data = {
-  "addressOrUser": {
-    "street_address": "1600 Pennsylvania Avenue NW",
-    "city": "Washington",
-    "state": "DC"
-  }
+  addressOrUser: {
+    street_address: '1600 Pennsylvania Avenue NW',
+    city: 'Washington',
+    state: 'DC',
+  },
 }
 
 registerExamples([

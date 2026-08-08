@@ -142,7 +142,8 @@ export const schema = {
               description: 'Clés publiques OpenSSH',
               items: {
                 type: 'string',
-                pattern: '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\\.com) .+',
+                pattern:
+                  '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\\.com) .+',
               },
             },
           },
@@ -195,9 +196,7 @@ const data = {
     homeDirectory: '/home/jdoe',
     loginShell: '/bin/bash',
     gecos: 'Jane Doe',
-    sshPublicKey: [
-      'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleKeyMaterial jane@laptop',
-    ],
+    sshPublicKey: ['ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleKeyMaterial jane@laptop'],
   },
 }
 

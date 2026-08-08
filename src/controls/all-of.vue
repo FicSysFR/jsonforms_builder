@@ -16,9 +16,23 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, Generate, JsonFormsRendererRegistryEntry, isAllOfControl, rankWith, resolveSchema, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
+import {
+  type ControlElement,
+  Generate,
+  type JsonFormsRendererRegistryEntry,
+  isAllOfControl,
+  rankWith,
+  resolveSchema,
+  type JsonSchema,
+  type UISchemaElement,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { DispatchRenderer, rendererProps, useJsonFormsAllOfControl, RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsAllOfControl,
+  type RendererProps,
+} from '@jsonforms/vue'
 import { useUiControl } from '../utils'
 
 /**

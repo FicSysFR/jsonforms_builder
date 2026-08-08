@@ -4,28 +4,25 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "type": "object",
-  "properties": {
-    "foo": {
-      "anyOf": [
+  type: 'object',
+  properties: {
+    foo: {
+      anyOf: [
         {
-          "type": "string"
+          type: 'string',
         },
         {
-          "enum": [
-            "foo",
-            "bar"
-          ]
-        }
-      ]
-    }
-  }
+          enum: ['foo', 'bar'],
+        },
+      ],
+    },
+  },
 }
 
 export const uischema = undefined
 
 export const data = {
-  "foo": "foo"
+  foo: 'foo',
 }
 
 registerExamples([

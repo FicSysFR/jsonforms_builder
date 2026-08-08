@@ -22,10 +22,10 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { data as personData, schema as personSchema } from './person';
+import { registerExamples } from '../register'
+import { data as personData, schema as personSchema } from './person'
 
-export const schema = personSchema;
+export const schema = personSchema
 
 export const uischemaVertical = {
   type: 'VerticalLayout',
@@ -41,7 +41,7 @@ export const uischemaVertical = {
       scope: '#/properties/birthDate',
     },
   ],
-};
+}
 export const uischemaHorizontal = {
   type: 'HorizontalLayout',
   elements: [
@@ -56,7 +56,7 @@ export const uischemaHorizontal = {
       scope: '#/properties/birthDate',
     },
   ],
-};
+}
 export const uischemaGroup = {
   type: 'Group',
   label: 'My Group',
@@ -72,7 +72,7 @@ export const uischemaGroup = {
       scope: '#/properties/birthDate',
     },
   ],
-};
+}
 export const uischemaComplex = {
   type: 'Group',
   label: 'My Group',
@@ -113,8 +113,8 @@ export const uischemaComplex = {
       ],
     },
   ],
-};
-export const data = personData;
+}
+export const data = personData
 
 registerExamples([
   {
@@ -145,4 +145,4 @@ registerExamples([
     schema,
     uischema: uischemaComplex,
   },
-]);
+])

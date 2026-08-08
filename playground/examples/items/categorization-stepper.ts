@@ -22,23 +22,23 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 import {
   data as categorizationData,
   schema as categorizationSchema,
   uischema as categorizationUiSchema,
-} from './categorization';
+} from './categorization'
 
-export const schema = categorizationSchema;
+export const schema = categorizationSchema
 
 export const uischema = {
   ...categorizationUiSchema,
   options: {
     variant: 'stepper',
   },
-};
+}
 
-export const data = categorizationData;
+export const data = categorizationData
 
 registerExamples([
   {
@@ -48,4 +48,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

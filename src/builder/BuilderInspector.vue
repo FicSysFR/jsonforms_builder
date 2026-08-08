@@ -153,9 +153,7 @@ export default defineComponent({
       () => (props.element as ControlElement | undefined)?.options ?? {},
     )
 
-    const hasOwnLabel = computed(() =>
-      SELF_LABELLED.includes(props.element?.type ?? ''),
-    )
+    const hasOwnLabel = computed(() => SELF_LABELLED.includes(props.element?.type ?? ''))
 
     const isNumeric = computed(() =>
       ['number', 'integer'].includes(String(schemaProperty.value?.type)),

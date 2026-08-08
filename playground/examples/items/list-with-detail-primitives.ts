@@ -22,11 +22,11 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const data = {
   'an-array-of-strings': ['foo', 'bar', 'foobar'],
-};
+}
 export const schema = {
   type: 'object',
   properties: {
@@ -37,11 +37,11 @@ export const schema = {
       },
     },
   },
-};
+}
 export const uischema = {
   type: 'ListWithDetail',
   scope: '#/properties/an-array-of-strings',
-};
+}
 
 registerExamples([
   {
@@ -51,11 +51,11 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])
 
 export const data_number = {
   'an-array-of-numbers': [1, 2, 3],
-};
+}
 export const schema_number = {
   type: 'object',
   properties: {
@@ -66,11 +66,11 @@ export const schema_number = {
       },
     },
   },
-};
+}
 export const uischema_number = {
   type: 'ListWithDetail',
   scope: '#/properties/an-array-of-numbers',
-};
+}
 
 registerExamples([
   {
@@ -80,4 +80,4 @@ registerExamples([
     schema: schema_number,
     uischema: uischema_number,
   },
-]);
+])

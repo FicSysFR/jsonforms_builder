@@ -24,9 +24,14 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isStringControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  isStringControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UInput from '@nuxt/ui/components/Input.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -66,8 +71,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(1,
-    isStringControl,
-  ), // Matches schema properties with type "string"
+  tester: rankWith(1, isStringControl), // Matches schema properties with type "string"
 }
 </script>

@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'object',
@@ -47,7 +47,7 @@ export const schema = {
       },
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -61,9 +61,9 @@ export const uischema = {
       scope: '#/properties/multiEnum',
     },
   ],
-};
+}
 
-export const data = { oneOfMultiEnum: ['foo'], multiEnum: ['bar'] };
+export const data = { oneOfMultiEnum: ['foo'], multiEnum: ['bar'] }
 
 registerExamples([
   {
@@ -73,4 +73,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

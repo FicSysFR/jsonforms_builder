@@ -5,7 +5,7 @@ export const schema = {
   properties: {
     addressSearch: {
       type: 'string',
-      description: 'Recherche d\'adresse via API (autocomplete)',
+      description: "Recherche d'adresse via API (autocomplete)",
     },
     string: {
       type: 'string',
@@ -135,19 +135,16 @@ export const extendedSchema = {
     },
     trimText: {
       type: 'string',
-      description:
-        'Trim indicates whether the control shall grab the full width available',
+      description: 'Trim indicates whether the control shall grab the full width available',
     },
     restrictText: {
       type: 'string',
       maxLength: 5,
-      description:
-        'Restricts the input length to the set value (in this case: 5)',
+      description: 'Restricts the input length to the set value (in this case: 5)',
     },
     unfocusedDescription: {
       type: 'string',
-      description:
-        'This description is shown even when the control is not focused',
+      description: 'This description is shown even when the control is not focused',
     },
     hideRequiredAsterisk: {
       type: 'string',
@@ -227,78 +224,78 @@ export const extendedUischema = {
 export const extendedData = {
   multilineString: 'Multi-\nline\nexample',
   objectDoc: {
-    "type": "doc",
-    "content": [
+    type: 'doc',
+    content: [
       {
-        "type": "paragraph",
-        "content": [
+        type: 'paragraph',
+        content: [
           {
-            "type": "text",
-            "marks": [
+            type: 'text',
+            marks: [
               {
-                "type": "underline"
-              }
+                type: 'underline',
+              },
             ],
-            "text": "Multi"
+            text: 'Multi',
           },
           {
-            "type": "text",
-            "text": "-"
+            type: 'text',
+            text: '-',
           },
           {
-            "type": "text",
-            "marks": [
+            type: 'text',
+            marks: [
               {
-                "type": "italic"
-              }
+                type: 'italic',
+              },
             ],
-            "text": "line"
+            text: 'line',
           },
           {
-            "type": "text",
-            "text": " "
+            type: 'text',
+            text: ' ',
           },
           {
-            "type": "text",
-            "marks": [
+            type: 'text',
+            marks: [
               {
-                "type": "bold"
-              }
+                type: 'bold',
+              },
             ],
-            "text": "example"
-          }
-        ]
+            text: 'example',
+          },
+        ],
       },
       {
-        "type": "paragraph"
+        type: 'paragraph',
       },
       {
-        "type": "heading",
-        "attrs": {
-          "level": 3
+        type: 'heading',
+        attrs: {
+          level: 3,
         },
-        "content": [
+        content: [
           {
-            "type": "text",
-            "marks": [
+            type: 'text',
+            marks: [
               {
-                "type": "textStyle",
-                "attrs": {
-                  "fontFamily": "BBH Sans Bogle",
-                  "fontSize": null,
-                  "color": null,
-                  "backgroundColor": null
-                }
-              }
+                type: 'textStyle',
+                attrs: {
+                  fontFamily: 'BBH Sans Bogle',
+                  fontSize: null,
+                  color: null,
+                  backgroundColor: null,
+                },
+              },
             ],
-            "text": "test"
-          }
-        ]
+            text: 'test',
+          },
+        ],
       },
       {
-        "type": "paragraph"
-      }
-    ]
+        type: 'paragraph',
+      },
+    ],
   },
   slider: 4,
   trimText: 'abcdefg',

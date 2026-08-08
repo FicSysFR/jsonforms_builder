@@ -6,9 +6,9 @@ import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import type { ManipulateType } from 'dayjs'
 import {
-  CalendarDate,
-  CalendarDateTime,
-  Time,
+  type CalendarDate,
+  type CalendarDateTime,
+  type Time,
   parseDate,
   parseDateTime,
   parseTime,
@@ -33,10 +33,7 @@ export const countPatternDigits = (pattern: string): number => {
 }
 
 // 3️⃣ normalise les valeurs saisies pour comparaison stricte avec dayjs
-export const normalizeDateValue = (
-  value: string,
-  pattern: string,
-): string => {
+export const normalizeDateValue = (value: string, pattern: string): string => {
   if (!value) {
     return value
   }
@@ -98,10 +95,7 @@ export const resolveDateInputType = (format?: string): 'date' | 'time' | 'dateti
   return 'date'
 }
 
-export const detectDateUnitFromPosition = (
-  pattern: string,
-  position: number,
-): ManipulateType => {
+export const detectDateUnitFromPosition = (pattern: string, position: number): ManipulateType => {
   // Si position dépasse le pattern, utiliser la dernière position valide
   const safePosition = Math.min(position, pattern.length - 1)
 
@@ -273,9 +267,7 @@ export const useDateControl = ({
 
   const inputType = computed(() => resolveDateInputType(rawFormat.value))
 
-  const granularity = computed(() =>
-    resolveDateGranularity(rawFormat.value, optionPattern.value),
-  )
+  const granularity = computed(() => resolveDateGranularity(rawFormat.value, optionPattern.value))
 
   /** Valeur exposée à `UInputDate` / `UInputTime`. */
   const dateValue = computed(() =>
@@ -283,12 +275,8 @@ export const useDateControl = ({
   )
 
   /** Retour du composant : on repasse en chaîne au motif du schéma avant de propager. */
-  const onChangeDateValue = (
-    value: CalendarDate | CalendarDateTime | Time | null | undefined,
-  ) => {
-    control.onChange(
-      adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)),
-    )
+  const onChangeDateValue = (value: CalendarDate | CalendarDateTime | Time | null | undefined) => {
+    control.onChange(adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)))
   }
 
   const normalizeValue = (value: string, pattern = patternDefault.value) => {

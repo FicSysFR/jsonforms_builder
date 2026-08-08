@@ -78,10 +78,7 @@ export const insertElementAt = (
   return next
 }
 
-export const removeElementAt = (
-  root: UISchemaElement,
-  path: ElementPath,
-): UISchemaElement => {
+export const removeElementAt = (root: UISchemaElement, path: ElementPath): UISchemaElement => {
   if (!path.length) {
     return root
   }
@@ -118,18 +115,13 @@ export const updateElementAt = (
  * l'un d'eux doit donc être décrémenté à cette profondeur — sans quoi il désigne, après
  * coup, un tout autre nœud de l'arbre.
  */
-export const adjustPathAfterRemoval = (
-  path: ElementPath,
-  removed: ElementPath,
-): ElementPath => {
+export const adjustPathAfterRemoval = (path: ElementPath, removed: ElementPath): ElementPath => {
   if (!removed.length || path.length < removed.length) {
     return path
   }
 
   const depth = removed.length - 1
-  const sameBranch = removed
-    .slice(0, depth)
-    .every((value, i) => value === path[i])
+  const sameBranch = removed.slice(0, depth).every((value, i) => value === path[i])
 
   if (!sameBranch || path[depth] <= removed[depth]) {
     return path
@@ -215,10 +207,7 @@ export const propertyFromScope = (scope: string | undefined): string | undefined
  * Sans accent ni espace, parce qu'il finit dans un pointeur JSON (`#/properties/…`)
  * et dans les clés de la donnée envoyée à l'API.
  */
-export const slugifyPropertyName = (
-  label: string,
-  existing: string[] = [],
-): string => {
+export const slugifyPropertyName = (label: string, existing: string[] = []): string => {
   const base =
     label
       .normalize('NFD')
@@ -228,9 +217,7 @@ export const slugifyPropertyName = (
       .split(' ')
       .filter(Boolean)
       .map((word, index) =>
-        index === 0
-          ? word.toLowerCase()
-          : word[0].toUpperCase() + word.slice(1).toLowerCase(),
+        index === 0 ? word.toLowerCase() : word[0].toUpperCase() + word.slice(1).toLowerCase(),
       )
       .join('') || 'champ'
 
@@ -275,10 +262,7 @@ export const addSchemaProperty = (
   return next
 }
 
-export const removeSchemaProperty = (
-  schema: JsonSchema,
-  name: string,
-): JsonSchema => {
+export const removeSchemaProperty = (schema: JsonSchema, name: string): JsonSchema => {
   const next = cloneJson(schema)
 
   if (next.properties) {

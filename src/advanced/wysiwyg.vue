@@ -24,9 +24,18 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, or, isObjectControl, isStringControl, optionIs } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  and,
+  or,
+  isObjectControl,
+  isStringControl,
+  optionIs,
+} from '@jsonforms/core'
 import { computed, defineComponent, type DefineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UEditor from '@nuxt/ui/components/Editor.vue'
 import UEditorToolbar from '@nuxt/ui/components/EditorToolbar.vue'
 import { ControlWrapper } from '../common'
@@ -58,10 +67,25 @@ const DEFAULT_TOOLBAR = [
     { kind: 'mark', mark: 'code', icon: 'i-lucide-code', 'aria-label': 'Code' },
   ],
   [
-    { kind: 'textAlign', align: 'left', icon: 'i-lucide-align-left', 'aria-label': 'Aligner à gauche' },
+    {
+      kind: 'textAlign',
+      align: 'left',
+      icon: 'i-lucide-align-left',
+      'aria-label': 'Aligner à gauche',
+    },
     { kind: 'textAlign', align: 'center', icon: 'i-lucide-align-center', 'aria-label': 'Centrer' },
-    { kind: 'textAlign', align: 'right', icon: 'i-lucide-align-right', 'aria-label': 'Aligner à droite' },
-    { kind: 'textAlign', align: 'justify', icon: 'i-lucide-align-justify', 'aria-label': 'Justifier' },
+    {
+      kind: 'textAlign',
+      align: 'right',
+      icon: 'i-lucide-align-right',
+      'aria-label': 'Aligner à droite',
+    },
+    {
+      kind: 'textAlign',
+      align: 'justify',
+      icon: 'i-lucide-align-justify',
+      'aria-label': 'Justifier',
+    },
   ],
   [
     { kind: 'bulletList', icon: 'i-lucide-list', 'aria-label': 'Liste à puces' },
@@ -78,7 +102,11 @@ const DEFAULT_TOOLBAR = [
     { kind: 'image', icon: 'i-lucide-image', 'aria-label': 'Image' },
   ],
   [
-    { kind: 'clearFormatting', icon: 'i-lucide-remove-formatting', 'aria-label': 'Effacer la mise en forme' },
+    {
+      kind: 'clearFormatting',
+      icon: 'i-lucide-remove-formatting',
+      'aria-label': 'Effacer la mise en forme',
+    },
   ],
 ]
 
@@ -114,9 +142,7 @@ const controlRenderer: DefineComponent<any, any, any> = defineComponent({
       control.control.value.schema?.type === 'object' ? 'json' : 'html',
     )
 
-    const toolbarItems = computed(
-      () => control.appliedOptions.value?.toolbar ?? DEFAULT_TOOLBAR,
-    )
+    const toolbarItems = computed(() => control.appliedOptions.value?.toolbar ?? DEFAULT_TOOLBAR)
 
     return { ...control, contentType, toolbarItems }
   },
@@ -126,12 +152,6 @@ export default controlRenderer
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  tester: rankWith(3, and(
-    or(
-      isStringControl,
-      isObjectControl,
-    ),
-    optionIs('wysiwyg', true),
-  )),
+  tester: rankWith(3, and(or(isStringControl, isObjectControl), optionIs('wysiwyg', true))),
 }
 </script>

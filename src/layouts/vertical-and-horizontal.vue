@@ -19,9 +19,19 @@
 </template>
 
 <script lang="ts">
-import { isLayout, JsonFormsRendererRegistryEntry, Layout, rankWith } from '@jsonforms/core'
+import {
+  isLayout,
+  type JsonFormsRendererRegistryEntry,
+  type Layout,
+  rankWith,
+} from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { DispatchRenderer, rendererProps, useJsonFormsLayout, type RendererProps } from '@jsonforms/vue'
+import {
+  DispatchRenderer,
+  rendererProps,
+  useJsonFormsLayout,
+  type RendererProps,
+} from '@jsonforms/vue'
 import { useUiLayout } from '../utils'
 
 /**

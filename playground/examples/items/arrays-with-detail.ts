@@ -22,9 +22,9 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { personCoreSchema } from './person';
-import { StateProps } from '../example';
+import { registerExamples } from '../register'
+import { personCoreSchema } from './person'
+import type { StateProps } from '../example'
 
 export const schema = {
   type: 'object',
@@ -52,7 +52,7 @@ export const schema = {
     },
   },
   required: ['occupation', 'nationality'],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -79,7 +79,7 @@ export const uischema = {
       },
     },
   ],
-};
+}
 
 export const data = {
   comments: [
@@ -92,16 +92,16 @@ export const data = {
       message: 'Get ready for booohay',
     },
   ],
-};
+}
 
 const actions = [
   {
     label: 'Toggle readonly',
     apply: (props: StateProps) => {
-      return { ...props, readonly: !props.readonly };
+      return { ...props, readonly: !props.readonly }
     },
   },
-];
+]
 
 registerExamples([
   {
@@ -112,4 +112,4 @@ registerExamples([
     uischema,
     actions,
   },
-]);
+])

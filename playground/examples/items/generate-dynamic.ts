@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { StateProps } from '../example';
-import { registerExamples } from '../register';
+import type { StateProps } from '../example'
+import { registerExamples } from '../register'
 
 export const actions = [
   {
@@ -32,10 +32,10 @@ export const actions = [
       return {
         ...props,
         data: { id: 'aaa' },
-      };
+      }
     },
   },
-];
+]
 
 registerExamples([
   {
@@ -46,4 +46,4 @@ registerExamples([
     data: { name: 'bla' },
     actions,
   },
-]);
+])

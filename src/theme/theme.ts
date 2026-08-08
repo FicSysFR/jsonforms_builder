@@ -1,4 +1,4 @@
-import { type UISchemaElement } from '@jsonforms/core'
+import type { UISchemaElement } from '@jsonforms/core'
 import { inject } from 'vue'
 import { defu } from 'defu'
 import { defaultTheme } from './defaultTheme'

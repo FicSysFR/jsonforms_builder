@@ -17,26 +17,16 @@ export const getAdditionalPropertiesTranslations = (
   defaultTranslations.forEach((controlElement) => {
     const key = addI18nKeyToPrefix(i18nKeyPrefix, controlElement.key)
 
-    if (
-      controlElement.key ==
-      AdditionalPropertiesTranslationEnum.propertyAlreadyDefined
-    ) {
+    if (controlElement.key === AdditionalPropertiesTranslationEnum.propertyAlreadyDefined) {
       translations[controlElement.key] = computed(() =>
         t(key, controlElement.default(propertyName.value), propertyName.value),
       )
-    } else if (
-      controlElement.key ==
-      AdditionalPropertiesTranslationEnum.propertyNameInvalid
-    ) {
+    } else if (controlElement.key === AdditionalPropertiesTranslationEnum.propertyNameInvalid) {
       translations[controlElement.key] = computed(() =>
         t(key, controlElement.default(propertyName.value), propertyName.value),
       )
     } else {
-      translations[controlElement.key] = t(
-        key,
-        controlElement.default(label),
-        label,
-      )
+      translations[controlElement.key] = t(key, controlElement.default(label), label)
     }
   })
 

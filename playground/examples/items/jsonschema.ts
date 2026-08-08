@@ -27,9 +27,9 @@ import {
   type JsonSchema,
   NOT_APPLICABLE,
   type UISchemaElement,
-} from '@jsonforms/core';
-import { registerExamples } from '../register';
-import { StateProps } from '../example';
+} from '@jsonforms/core'
+import { registerExamples } from '../register'
+import type { StateProps } from '../example'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -50,15 +50,7 @@ export const schema = {
     },
     simpleTypes: {
       type: 'string',
-      enum: [
-        'array',
-        'boolean',
-        'integer',
-        'null',
-        'number',
-        'object',
-        'string',
-      ],
+      enum: ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string'],
     },
     stringArray: {
       type: 'array',
@@ -194,9 +186,9 @@ export const schema = {
     not: { $ref: '#' },
   },
   default: true,
-};
+}
 
-export const uischema: UISchemaElement = undefined as any as UISchemaElement;
+export const uischema: UISchemaElement = undefined as any as UISchemaElement
 
 export const data = {
   type: 'object',
@@ -245,7 +237,7 @@ export const data = {
     },
   },
   required: ['occupation', 'nationality'],
-};
+}
 
 const shouldContainTypeCondition = (type: string[]) => {
   return {
@@ -268,8 +260,8 @@ const shouldContainTypeCondition = (type: string[]) => {
         },
       ],
     },
-  };
-};
+  }
+}
 
 const typeIsSpecifiedCondition = {
   scope: '#/properties/type',
@@ -277,46 +269,30 @@ const typeIsSpecifiedCondition = {
     oneOf: [
       {
         type: 'string',
-        enum: [
-          'string',
-          'number',
-          'integer',
-          'array',
-          'object',
-          'boolean',
-          'null',
-        ],
+        enum: ['string', 'number', 'integer', 'array', 'object', 'boolean', 'null'],
       },
       {
         type: 'array',
         items: {
           type: 'string',
-          enum: [
-            'string',
-            'number',
-            'integer',
-            'array',
-            'object',
-            'boolean',
-            'null',
-          ],
+          enum: ['string', 'number', 'integer', 'array', 'object', 'boolean', 'null'],
         },
         minItems: 1,
         uniqueItems: true,
       },
     ],
   },
-};
+}
 
 const properties = {
   type: 'Control',
   scope: '#/properties/properties',
-};
+}
 
 const required = {
   type: 'Control',
   scope: '#/properties/required',
-};
+}
 
 const constraintsLayout = {
   type: 'Categorization',
@@ -419,45 +395,40 @@ const constraintsLayout = {
       ],
     },
   ],
-};
+}
 
 const controlLabel = (
   controlSchemaPath: string,
   controlLabel: string,
-  controlSchemaType: string | undefined = undefined
+  controlSchemaType: string | undefined = undefined,
 ) => {
   return {
     tester: (jsonSchema: JsonSchema, schemaPath: string, _path: string) => {
       if (
         controlSchemaPath === schemaPath &&
-        (controlSchemaType === undefined ||
-          controlSchemaType === jsonSchema.type)
+        (controlSchemaType === undefined || controlSchemaType === jsonSchema.type)
       ) {
-        return 2;
+        return 2
       }
-      return NOT_APPLICABLE;
+      return NOT_APPLICABLE
     },
     uischema: {
       type: 'Control',
       scope: '#',
       label: controlLabel,
     },
-  };
-};
+  }
+}
 
 export const uischemas = [
   controlLabel('#/properties/minItems', 'Min Items', 'number'),
   controlLabel('#/properties/maxItems', 'Max Items'),
   {
     tester: (jsonSchema: JsonSchema, schemaPath: string, path: string) => {
-      if (
-        path === 'type' &&
-        schemaPath === '#/properties/type' &&
-        jsonSchema.type === 'array'
-      ) {
-        return 2;
+      if (path === 'type' && schemaPath === '#/properties/type' && jsonSchema.type === 'array') {
+        return 2
       }
-      return NOT_APPLICABLE;
+      return NOT_APPLICABLE
     },
     uischema: {
       type: 'Control',
@@ -466,10 +437,10 @@ export const uischemas = [
   },
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
-      return 'http://json-schema.org/draft-07/schema#' ===
-        (jsonSchema as any).$id && jsonSchema.type === 'object'
+      return 'http://json-schema.org/draft-07/schema#' === (jsonSchema as any).$id &&
+        jsonSchema.type === 'object'
         ? 2
-        : NOT_APPLICABLE;
+        : NOT_APPLICABLE
     },
     uischema: {
       type: 'Categorization',
@@ -545,17 +516,17 @@ export const uischemas = [
   },
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
-      return 'http://json-schema.org/draft-07/schema#' ===
-        (jsonSchema as any).$id && jsonSchema.type === 'boolean'
+      return 'http://json-schema.org/draft-07/schema#' === (jsonSchema as any).$id &&
+        jsonSchema.type === 'boolean'
         ? 2
-        : NOT_APPLICABLE;
+        : NOT_APPLICABLE
     },
     uischema: {
       type: 'VerticalLayout',
       elements: [{ type: 'Control', scope: '#/' }],
     },
   },
-];
+]
 
 const actions = [
   {
@@ -564,21 +535,21 @@ const actions = [
       return {
         ...props,
         uischemas: uischemas,
-      };
+      }
     },
   },
   {
     label: 'Unregister UISchema',
     apply: (props: StateProps) => {
       const uischemas: JsonFormsUISchemaRegistryEntry[] =
-        undefined as any as JsonFormsUISchemaRegistryEntry[];
+        undefined as any as JsonFormsUISchemaRegistryEntry[]
       return {
         ...props,
         uischemas: uischemas,
-      };
+      }
     },
   },
-];
+]
 
 registerExamples([
   {
@@ -589,4 +560,4 @@ registerExamples([
     uischema,
     actions,
   },
-]);
+])

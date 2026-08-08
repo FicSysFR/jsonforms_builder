@@ -1,5 +1,5 @@
 import type { DefineComponent, InjectionKey } from 'vue'
-import { useControlAppliedOptions } from './composition'
+import type { useControlAppliedOptions } from './composition'
 import type { Theme } from '../theme'
 
 export const IsDynamicPropertyContext: InjectionKey<boolean> = Symbol.for(
@@ -20,12 +20,8 @@ export interface ControlWrapperProps {
   appliedOptions?: AppliedOptions
 }
 
-export type ControlWrapperType = DefineComponent<
-  ControlWrapperProps,
-  any,
-  any,
-  any
->
+export type ControlWrapperType = DefineComponent<ControlWrapperProps, any, any, any>
 
-export const ControlWrapperSymbol: InjectionKey<ControlWrapperType> =
-  Symbol.for('jsonforms-vue-nuxtui:ControlWrapper')
+export const ControlWrapperSymbol: InjectionKey<ControlWrapperType> = Symbol.for(
+  'jsonforms-vue-nuxtui:ControlWrapper',
+)

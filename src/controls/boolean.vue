@@ -37,9 +37,14 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isBooleanControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  isBooleanControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import UCheckbox from '@nuxt/ui/components/Checkbox.vue'
 import USwitch from '@nuxt/ui/components/Switch.vue'
 import { ControlWrapper } from '../common'
@@ -80,8 +85,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(1,
-    isBooleanControl,
-  ), // Matches schema properties with type "boolean"
+  tester: rankWith(1, isBooleanControl), // Matches schema properties with type "boolean"
 }
 </script>

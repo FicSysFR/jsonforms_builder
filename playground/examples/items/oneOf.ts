@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -54,14 +54,11 @@ export const schema = {
   properties: {
     name: { type: 'string' },
     addressOrUser: {
-      oneOf: [
-        { $ref: '#/definitions/address' },
-        { $ref: '#/definitions/user' },
-      ],
+      oneOf: [{ $ref: '#/definitions/address' }, { $ref: '#/definitions/user' }],
     },
   },
   required: ['name'],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -75,7 +72,7 @@ export const uischema = {
       scope: '#/properties/addressOrUser',
     },
   ],
-};
+}
 
 const data = {
   name: 'test',
@@ -83,7 +80,7 @@ const data = {
     name: 'User',
     mail: 'mail@example.com',
   },
-};
+}
 
 const schema_1265_array = {
   type: 'object',
@@ -134,7 +131,7 @@ const schema_1265_array = {
       },
     },
   },
-};
+}
 
 const schema_1265_object = {
   type: 'object',
@@ -192,7 +189,7 @@ const schema_1265_object = {
       additionalProperties: false,
     },
   },
-};
+}
 
 const schema_1265_simple = {
   type: 'object',
@@ -228,7 +225,7 @@ const schema_1265_simple = {
       enum: ['Circle', 'Triangle', 'Square'],
     },
   },
-};
+}
 
 const schema_1273 = {
   type: 'object',
@@ -276,7 +273,7 @@ const schema_1273 = {
       required: ['valueLow', 'valueHigh', 'unit'],
     },
   },
-};
+}
 
 const schema_1273_simple = {
   type: 'object',
@@ -292,7 +289,7 @@ const schema_1273_simple = {
       ],
     },
   },
-};
+}
 
 const data_1273 = {
   quantity: {
@@ -300,7 +297,7 @@ const data_1273 = {
     valueHigh: 100,
     unit: 'kg',
   },
-};
+}
 
 registerExamples([
   {
@@ -345,4 +342,4 @@ registerExamples([
     schema: schema_1273_simple,
     uischema: undefined,
   },
-]);
+])

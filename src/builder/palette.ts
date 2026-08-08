@@ -162,8 +162,7 @@ export const PALETTE_CONTAINERS: PaletteContainer[] = [
     key: 'Group',
     label: 'Groupe',
     icon: 'i-lucide-square-dashed',
-    create: () =>
-      ({ type: 'Group', label: 'Nouveau groupe', elements: [] }) as UISchemaElement,
+    create: () => ({ type: 'Group', label: 'Nouveau groupe', elements: [] }) as UISchemaElement,
   },
   {
     key: 'Categorization',

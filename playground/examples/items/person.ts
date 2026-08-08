@@ -7,15 +7,15 @@ export const personCoreSchema = {
       type: 'string',
       minLength: 3,
       description: 'Please enter your name',
-      "i18n": "name",
+      i18n: 'name',
     },
     vegetarian: {
       type: 'boolean',
     },
     phone: {
-      type: "string",
+      type: 'string',
       minLength: 10,
-      pattern: "^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
+      pattern: '^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$',
     },
     birthDate: {
       type: 'string',

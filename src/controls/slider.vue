@@ -22,9 +22,14 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, isRangeControl } from '@jsonforms/core'
+import {
+  type ControlElement,
+  type JsonFormsRendererRegistryEntry,
+  rankWith,
+  isRangeControl,
+} from '@jsonforms/core'
 import { defineComponent } from 'vue'
-import { rendererProps, useJsonFormsControl, RendererProps } from '@jsonforms/vue'
+import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import USlider from '@nuxt/ui/components/Slider.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
@@ -64,8 +69,6 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(4,
-    isRangeControl,
-  ), // Matches schema properties with type "number" or "integer" and with "range" option set to true
+  tester: rankWith(4, isRangeControl), // Matches schema properties with type "number" or "integer" and with "range" option set to true
 }
 </script>

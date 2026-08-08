@@ -4,64 +4,64 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "definitions": {
-    "address": {
-      "type": "object",
-      "title": "Address",
-      "properties": {
-        "street_address": {
-          "type": "string"
+  definitions: {
+    address: {
+      type: 'object',
+      title: 'Address',
+      properties: {
+        street_address: {
+          type: 'string',
         },
-        "city": {
-          "type": "string"
+        city: {
+          type: 'string',
         },
-        "state": {
-          "type": "string"
-        }
+        state: {
+          type: 'string',
+        },
       },
-      "required": ["street_address", "city", "state"]
+      required: ['street_address', 'city', 'state'],
     },
-    "user": {
-      "type": "object",
-      "title": "User",
-      "properties": {
-        "name": {
-          "type": "string"
+    user: {
+      type: 'object',
+      title: 'User',
+      properties: {
+        name: {
+          type: 'string',
         },
-        "mail": {
-          "type": "string"
-        }
+        mail: {
+          type: 'string',
+        },
       },
-      "required": ["name", "mail"]
-    }
+      required: ['name', 'mail'],
+    },
   },
-  "type": "object",
-  "properties": {
-    "addressOrUser": {
-      "oneOf": [
+  type: 'object',
+  properties: {
+    addressOrUser: {
+      oneOf: [
         {
-          "$ref": "#/definitions/address"
+          $ref: '#/definitions/address',
         },
         {
-          "$ref": "#/definitions/user"
-        }
-      ]
-    }
-  }
+          $ref: '#/definitions/user',
+        },
+      ],
+    },
+  },
 }
 
 export const uischema = {
-  "type": "VerticalLayout",
-  "elements": [
+  type: 'VerticalLayout',
+  elements: [
     {
-      "type": "Control",
-      "label": "Basic Information",
-      "scope": "#/properties/addressOrUser",
-      "options": {
-        "variant": "tab"
-      }
-    }
-  ]
+      type: 'Control',
+      label: 'Basic Information',
+      scope: '#/properties/addressOrUser',
+      options: {
+        variant: 'tab',
+      },
+    },
+  ],
 }
 
 export const data = {}

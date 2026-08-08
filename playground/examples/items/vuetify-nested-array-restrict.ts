@@ -4,54 +4,54 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "type": "object",
-  "properties": {
-    "exampleArray": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
+  type: 'object',
+  properties: {
+    exampleArray: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
           },
-          "choices": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
+          choices: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
       },
-      "minItems": 1,
-      "maxItems": 5
-    }
-  }
+      minItems: 1,
+      maxItems: 5,
+    },
+  },
 }
 
 export const uischema = {
-  "type": "HorizontalLayout",
-  "elements": [
+  type: 'HorizontalLayout',
+  elements: [
     {
-      "type": "Control",
-      "label": {
-        "text": "Example Array",
-        "show": true
+      type: 'Control',
+      label: {
+        text: 'Example Array',
+        show: true,
       },
-      "scope": "#/properties/exampleArray",
-      "options": {
-        "restrict": true
-      }
-    }
-  ]
+      scope: '#/properties/exampleArray',
+      options: {
+        restrict: true,
+      },
+    },
+  ],
 }
 
 export const data = {
-  "exampleArray": [
+  exampleArray: [
     {
-      "choices": ["This", "is", "an", "example"],
-      "name": "Hi there"
-    }
-  ]
+      choices: ['This', 'is', 'an', 'example'],
+      name: 'Hi there',
+    },
+  ],
 }
 
 registerExamples([

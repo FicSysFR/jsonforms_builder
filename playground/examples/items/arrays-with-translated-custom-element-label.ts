@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
-import { JsonSchema7, Translator } from '@jsonforms/core';
+import { registerExamples } from '../register'
+import type { JsonSchema7, Translator } from '@jsonforms/core'
 
 export const data = {
   article: {
@@ -49,7 +49,7 @@ export const data = {
       },
     ],
   },
-};
+}
 
 const schema: JsonSchema7 = {
   type: 'object',
@@ -111,7 +111,7 @@ const schema: JsonSchema7 = {
       },
     },
   },
-};
+}
 
 const detail = {
   type: 'VerticalLayout',
@@ -137,7 +137,7 @@ const detail = {
       scope: '#/properties/author/properties/role',
     },
   ],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -263,11 +263,11 @@ export const uischema = {
       ],
     },
   ],
-};
+}
 
 export const translate: Translator = (key) => {
-  return 'translator.' + key;
-};
+  return 'translator.' + key
+}
 
 registerExamples([
   {
@@ -281,4 +281,4 @@ registerExamples([
       locale: 'en',
     },
   },
-]);
+])

@@ -3,18 +3,13 @@ import { computed } from 'vue'
 import { isEmpty } from 'radash'
 import { useUiControl, type Options } from '../utils'
 
-export const resolveNumericStep = (
-  schema: JsonSchema | undefined,
-  options?: Options,
-): number => {
+export const resolveNumericStep = (schema: JsonSchema | undefined, options?: Options): number => {
   const defaultStep = schema?.type === 'integer' ? 1 : 0.1
 
   return options?.step ?? defaultStep
 }
 
-export const calculateNumericPrecision = (
-  step: number | undefined,
-): number | undefined => {
+export const calculateNumericPrecision = (step: number | undefined): number | undefined => {
   if (!step || Number.isInteger(step)) {
     return undefined
   }

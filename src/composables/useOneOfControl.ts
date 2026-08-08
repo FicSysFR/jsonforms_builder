@@ -41,10 +41,7 @@ export const resolveCombinatorBranches = (
  *
  * @returns L'index de la branche, ou `-1` si aucune ne correspond franchement.
  */
-export const detectOneOfVariant = (
-  data: unknown,
-  variants: JsonSchema[],
-): number => {
+export const detectOneOfVariant = (data: unknown, variants: JsonSchema[]): number => {
   if (!data || typeof data !== 'object') {
     return -1
   }
@@ -77,10 +74,7 @@ export const detectOneOfVariant = (
  * variante produirait un objet que `detectOneOfVariant` ne saurait plus rattacher à
  * aucune branche, et le sélecteur retomberait aussitôt sur la première.
  */
-export const createVariantValue = (
-  variant: JsonSchema,
-  rootSchema: JsonSchema,
-): unknown => {
+export const createVariantValue = (variant: JsonSchema, rootSchema: JsonSchema): unknown => {
   const value = createDefaultValue(variant, rootSchema) ?? {}
 
   if (!value || typeof value !== 'object') {

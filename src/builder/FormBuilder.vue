@@ -202,11 +202,7 @@ export default defineComponent({
     const isRootDropActive = ref(false)
 
     /** Remonter la définition à chaque modification rend le composant utilisable en `v-model`. */
-    watch(
-      builder.definition,
-      (value) => emit('update:modelValue', value),
-      { deep: true },
-    )
+    watch(builder.definition, (value) => emit('update:modelValue', value), { deep: true })
 
     const rootElements = computed<UISchemaElement[]>(
       () => (builder.definition.value.uischema as { elements?: UISchemaElement[] }).elements ?? [],
@@ -217,10 +213,11 @@ export default defineComponent({
      * cache ses renderers par chemin, et une simple mutation du uischema laisserait des
      * champs supprimés à l'écran.
      */
-    const previewKey = computed(() =>
-      JSON.stringify(builder.definition.value.uischema).length +
-      ':' +
-      JSON.stringify(builder.definition.value.schema).length,
+    const previewKey = computed(
+      () =>
+        JSON.stringify(builder.definition.value.uischema).length +
+        ':' +
+        JSON.stringify(builder.definition.value.schema).length,
     )
 
     const fieldGroups = computed(() => {
@@ -233,11 +230,7 @@ export default defineComponent({
       return [...groups].map(([name, fields]) => ({ name, fields }))
     })
 
-    const onPaletteDragStart = (
-      event: DragEvent,
-      kind: 'field' | 'container',
-      key: string,
-    ) => {
+    const onPaletteDragStart = (event: DragEvent, kind: 'field' | 'container', key: string) => {
       writeDragPayload(event, { kind, key } as never)
     }
 
@@ -336,12 +329,8 @@ export default defineComponent({
       }
     }
 
-    const schemaJson = computed(() =>
-      JSON.stringify(builder.definition.value.schema, null, 2),
-    )
-    const uischemaJson = computed(() =>
-      JSON.stringify(builder.definition.value.uischema, null, 2),
-    )
+    const schemaJson = computed(() => JSON.stringify(builder.definition.value.schema, null, 2))
+    const uischemaJson = computed(() => JSON.stringify(builder.definition.value.uischema, null, 2))
 
     return {
       ...builder,

@@ -33,9 +33,7 @@ describe('extractAutocompleteApiConfig', () => {
     const uiOptions = { api: { url: 'https://example.com/search' } }
     const applied = { api: { url: 'https://ignored.com' } }
 
-    expect(extractAutocompleteApiConfig(uiOptions, applied)).toEqual(
-      uiOptions.api,
-    )
+    expect(extractAutocompleteApiConfig(uiOptions, applied)).toEqual(uiOptions.api)
   })
 
   it('returns undefined when url missing', () => {

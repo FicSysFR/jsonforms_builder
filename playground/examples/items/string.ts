@@ -22,20 +22,20 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'string',
   title: 'String',
   description: 'The form output will be a string',
-};
+}
 
 export const uischema = {
   type: 'Control',
   scope: '#/',
-};
+}
 
-export const data = 'This is a test string';
+export const data = 'This is a test string'
 
 registerExamples([
   {
@@ -45,4 +45,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

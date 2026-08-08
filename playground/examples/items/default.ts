@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'object',
@@ -57,7 +57,7 @@ export const schema = {
     },
   },
   required: ['name', 'name_noDefault'],
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -95,7 +95,7 @@ export const uischema = {
       scope: '#/properties/dueDate',
     },
   ],
-};
+}
 
 export const data = {
   name: 'Send email to Adrian',
@@ -105,7 +105,7 @@ export const data = {
   rating: 1,
   cost: 3.14,
   dueDate: '2019-05-01',
-};
+}
 
 registerExamples([
   {
@@ -115,4 +115,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

@@ -8,13 +8,13 @@ export const schema = undefined
 export const uischema = undefined
 
 export const data = {
-  "name": "John Doe",
-  "vegetarian": false,
-  "birthDate": "1985-06-02",
-  "personalData": {
-    "age": 34
+  name: 'John Doe',
+  vegetarian: false,
+  birthDate: '1985-06-02',
+  personalData: {
+    age: 34,
   },
-  "postalCode": "12345"
+  postalCode: '12345',
 }
 
 registerExamples([

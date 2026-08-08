@@ -22,8 +22,8 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { ValidateFunctionContext } from '@jsonforms/core';
-import { registerExamples } from '../register';
+import type { ValidateFunctionContext } from '@jsonforms/core'
+import { registerExamples } from '../register'
 
 export const schema = {
   type: 'object',
@@ -50,7 +50,7 @@ export const schema = {
       enum: ['None', 'Vitamin A', 'Vitamin B', 'Vitamin C'],
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -116,9 +116,8 @@ export const uischema = {
               scope: '#',
               validate: (context: ValidateFunctionContext) => {
                 return (
-                  !(context.data as any).dead &&
-                  (context.data as any).kindOfVegetables !== 'All'
-                );
+                  !(context.data as any).dead && (context.data as any).kindOfVegetables !== 'All'
+                )
               },
             },
           },
@@ -126,13 +125,13 @@ export const uischema = {
       ],
     },
   ],
-};
+}
 
 export const data = {
   name: 'John Doe',
   dead: false,
   vegetables: false,
-};
+}
 
 registerExamples([
   {
@@ -142,4 +141,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

@@ -22,7 +22,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { registerExamples } from '../register';
+import { registerExamples } from '../register'
 
 export const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -59,7 +59,7 @@ export const schema = {
       ],
     },
   },
-};
+}
 
 export const uischema = {
   type: 'VerticalLayout',
@@ -74,7 +74,7 @@ export const uischema = {
       scope: '#/properties/shipping_address',
     },
   ],
-};
+}
 
 const data = {
   billing_address: {
@@ -82,7 +82,7 @@ const data = {
     city: 'Washington',
     state: 'DC',
   },
-};
+}
 
 registerExamples([
   {
@@ -92,4 +92,4 @@ registerExamples([
     schema,
     uischema,
   },
-]);
+])

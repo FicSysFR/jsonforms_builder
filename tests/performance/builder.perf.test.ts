@@ -103,8 +103,8 @@ describe('page builder — performances composants', () => {
         const builder = useFormBuilder(createEmptyDefinition())
 
         for (let i = 0; i < 80; i++) {
-          const length = (builder.definition.value.uischema as { elements?: unknown[] })
-            .elements?.length ?? 0
+          const length =
+            (builder.definition.value.uischema as { elements?: unknown[] }).elements?.length ?? 0
           builder.addField('text', [], length)
         }
 
