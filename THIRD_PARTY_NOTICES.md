@@ -2,6 +2,11 @@
 
 This project includes source code derived from the JSON Forms project, which is licensed under the MIT License by EclipseSource Munich (2017-2019). The MIT License text is reproduced below in accordance with its terms.
 
+The playground example corpus is derived from two EclipseSource repositories, both MIT licensed:
+
+- [`eclipsesource/jsonforms`](https://github.com/eclipsesource/jsonforms) — `packages/examples`
+- [`eclipsesource/jsonforms-vuetify-renderers`](https://github.com/eclipsesource/jsonforms-vuetify-renderers) — `example/src/examples` (files prefixed `vuetify-`)
+
 ## JSON Forms (MIT License)
 
 ```

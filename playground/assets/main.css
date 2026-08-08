@@ -13,22 +13,21 @@
 @source "../../src";
 
 /*
- * Le playground reprend le thème réel de QualiRail (apps/web/src/assets/css/main.css)
- * afin de vérifier que les renderers héritent des couleurs de marque du consommateur
- * sans une seule ligne de CSS propre à la librairie.
+ * Palette de démo : le playground vérifie que les renderers héritent des couleurs
+ * de marque du consommateur sans une seule ligne de CSS propre à la librairie.
  */
 @theme static {
-  --color-amot-50: #f7fbe9;
-  --color-amot-100: #eef7c8;
-  --color-amot-200: #ddef98;
-  --color-amot-300: #c5e25f;
-  --color-amot-400: #aacf30;
-  --color-amot-500: #8cb800;
-  --color-amot-600: #7aa000;
-  --color-amot-700: #658600;
-  --color-amot-800: #4f6800;
-  --color-amot-900: #425600;
-  --color-amot-950: #233000;
+  --color-brand-50: #f7fbe9;
+  --color-brand-100: #eef7c8;
+  --color-brand-200: #ddef98;
+  --color-brand-300: #c5e25f;
+  --color-brand-400: #aacf30;
+  --color-brand-500: #8cb800;
+  --color-brand-600: #7aa000;
+  --color-brand-700: #658600;
+  --color-brand-800: #4f6800;
+  --color-brand-900: #425600;
+  --color-brand-950: #233000;
 
   --color-cobalt-50: #eff6fc;
   --color-cobalt-100: #d9ebf8;
@@ -47,7 +46,7 @@
   --ui-radius: 0.375rem;
 }
 
-/* Thème sombre : primary = cobalt, comme côté QualiRail. */
+/* Thème sombre : primary = cobalt. */
 .dark {
   --ui-color-primary-50: var(--color-cobalt-50);
   --ui-color-primary-100: var(--color-cobalt-100);

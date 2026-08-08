@@ -10,7 +10,5 @@ export const getExamples: () => ExampleDescription[] = () => {
   const examples = Object.keys(knownExamples).map((key) => knownExamples[key])
   examples.sort((a, b) => a.label.localeCompare(b.label))
 
-  console.log('Known examples', knownExamples)
-
   return examples
 }

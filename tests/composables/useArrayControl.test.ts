@@ -2,8 +2,36 @@ import { describe, expect, it } from 'bun:test'
 import {
   isArrayAtCapacity,
   isArrayAtMinimum,
+  isPrimitiveItemSchema,
   resolveArrayItemLabel,
 } from '../../src/composables/useArrayControl'
+
+describe('isPrimitiveItemSchema', () => {
+  it('recognises scalar item schemas', () => {
+    expect(isPrimitiveItemSchema({ type: 'string' })).toBe(true)
+    expect(isPrimitiveItemSchema({ type: 'integer' })).toBe(true)
+    expect(isPrimitiveItemSchema({ type: 'number' })).toBe(true)
+    expect(isPrimitiveItemSchema({ type: 'boolean' })).toBe(true)
+  })
+
+  it('treats anything with properties as an object, whatever its declared type', () => {
+    expect(isPrimitiveItemSchema({ type: 'object', properties: {} })).toBe(false)
+    expect(
+      isPrimitiveItemSchema({ type: 'string', properties: { a: { type: 'string' } } } as any),
+    ).toBe(false)
+  })
+
+  it('resolves union types on their first entry', () => {
+    expect(isPrimitiveItemSchema({ type: ['string', 'null'] } as any)).toBe(true)
+    expect(isPrimitiveItemSchema({ type: ['object', 'null'] } as any)).toBe(false)
+  })
+
+  it('is false for an absent or untyped schema', () => {
+    expect(isPrimitiveItemSchema(undefined)).toBe(false)
+    expect(isPrimitiveItemSchema({})).toBe(false)
+    expect(isPrimitiveItemSchema({ type: 'array' })).toBe(false)
+  })
+})
 
 describe('resolveArrayItemLabel', () => {
   it('falls back to a 1-based positional label', () => {
@@ -12,9 +40,9 @@ describe('resolveArrayItemLabel', () => {
   })
 
   it('uses the configured property when it holds a value', () => {
-    const item = { company: 'AMOT Ferroviaire', count: 6 }
+    const item = { company: 'Entreprise Alpha', count: 6 }
 
-    expect(resolveArrayItemLabel(item, 0, 'company')).toBe('AMOT Ferroviaire')
+    expect(resolveArrayItemLabel(item, 0, 'company')).toBe('Entreprise Alpha')
   })
 
   it('stringifies non-string label values', () => {

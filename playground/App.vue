@@ -51,7 +51,7 @@ u-app
           size="sm"
           block
           class="justify-start"
-          @click="selected = item.name"
+          @click="selectExample(item.name)"
         )
 
       .min-w-0.flex-1.space-y-4
@@ -77,7 +77,7 @@ u-app
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useDark, useToggle } from '@vueuse/core'
 import { JsonForms, type JsonFormsChangeEvent } from '@jsonforms/vue'
 import type { JsonFormsI18nState } from '@jsonforms/core'
@@ -137,5 +137,17 @@ const i18n = computed<JsonFormsI18nState>(() => ({
 
 const onChange = (event: JsonFormsChangeEvent) => {
   data.value = event.data
+}
+
+/**
+ * Le formulaire est monté avec `:key="example.name"` : changer d'exemple démonte tout.
+ *
+ * Différé d'un tick, car si un menu déroulant était ouvert, le même clic le referme.
+ * Démonter dans la foulée laisse le `onClickOutside` de VueUse pointer sur une instance
+ * détruite (`Cannot read properties of null (reading 'subTree')`).
+ */
+const selectExample = async (name: string) => {
+  await nextTick()
+  selected.value = name
 }
 </script>

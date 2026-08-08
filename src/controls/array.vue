@@ -1,9 +1,7 @@
 <template lang="pug">
   .array-list(v-if="control.visible" :id="controlWrapper.id" :class="styles.arrayList.root")
     .flex.items-center.justify-between.gap-2(:class="styles.arrayList.legend")
-      div
-        h4(:class="styles.arrayList.label" v-text="computedLabel")
-        p.text-xs.text-muted(v-if="showDescription() && control.description" v-text="control.description")
+      h4(:class="styles.arrayList.label" v-text="computedLabel")
       u-button(
         :disabled="!canAdd"
         :class="styles.arrayList.addButton"
@@ -17,6 +15,58 @@
 
     p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") Aucun élément.
 
+    //- Valeurs simples : une ligne par entrée, sans carte ni titre. Le libellé et la
+    //- description de l'élément sont identiques d'une ligne à l'autre — les répéter
+    //- rendrait la liste illisible dès quelques entrées.
+    .space-y-1(v-else-if="isPrimitiveItems" :class="styles.arrayList.itemWrapper")
+      .flex.items-start.gap-1(
+        v-for="(item, index) in items"
+        :key="`${control.path}-${index}`"
+        :class="styles.arrayList.item"
+      )
+        .min-w-0.flex-1
+          dispatch-renderer(
+            :schema="control.schema"
+            :uischema="childUiSchema"
+            :path="childPath(index)"
+            :enabled="control.enabled"
+            :renderers="control.renderers"
+            :cells="control.cells"
+          )
+        u-button(
+          v-if="showSortButtons"
+          :disabled="index === 0 || !control.enabled"
+          :class="styles.arrayList.itemMoveUp"
+          icon="i-lucide-chevron-up"
+          aria-label="Monter l'élément"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          @click="moveUp(index)"
+        )
+        u-button(
+          v-if="showSortButtons"
+          :disabled="index === items.length - 1 || !control.enabled"
+          :class="styles.arrayList.itemMoveDown"
+          icon="i-lucide-chevron-down"
+          aria-label="Descendre l'élément"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          @click="moveDown(index)"
+        )
+        u-button(
+          :disabled="!canRemove"
+          :class="styles.arrayList.itemDelete"
+          icon="i-lucide-trash-2"
+          aria-label="Supprimer l'élément"
+          color="error"
+          variant="ghost"
+          size="sm"
+          @click="askRemove(index)"
+        )
+
+    //- Objets : une carte titrée, où le repère visuel vaut le coût vertical.
     .space-y-2(v-else :class="styles.arrayList.itemWrapper")
       u-card(
         v-for="(item, index) in items"
@@ -29,6 +79,7 @@
             span.text-sm.font-medium(:class="styles.arrayList.itemLabel" v-text="itemLabel(index)")
             .flex.items-center.gap-1
               u-button(
+                v-if="showSortButtons"
                 :disabled="index === 0 || !control.enabled"
                 :class="styles.arrayList.itemMoveUp"
                 icon="i-lucide-chevron-up"
@@ -39,6 +90,7 @@
                 @click="moveUp(index)"
               )
               u-button(
+                v-if="showSortButtons"
                 :disabled="index === items.length - 1 || !control.enabled"
                 :class="styles.arrayList.itemMoveDown"
                 icon="i-lucide-chevron-down"
@@ -56,7 +108,7 @@
                 color="error"
                 variant="ghost"
                 size="xs"
-                @click="removeItem(index)"
+                @click="askRemove(index)"
               )
 
         .space-y-4(:class="styles.arrayList.itemContent")
@@ -69,15 +121,28 @@
             :cells="control.cells"
           )
 
+    //- Une seule description, sous la liste. Portée par le tableau et non par chaque
+    //- ligne : le schéma d'élément étant commun, la répéter n'apprendrait rien.
+    p.text-xs.text-muted(v-if="control.description" v-text="control.description")
+
     p.text-sm.text-error(v-if="control.errors" v-text="control.errors")
+
+    confirm-dialog(
+      :open="pendingRemoveIndex !== null"
+      :title="`Supprimer ${pendingRemoveLabel} ?`"
+      description="Cette entrée sera retirée de la liste. L'action est irréversible."
+      @update:open="cancelRemove"
+      @confirm="confirmRemove"
+    )
 </template>
 
 <script lang="ts">
 import { ControlElement, JsonFormsRendererRegistryEntry, isObjectArrayControl, isPrimitiveArrayControl } from '@jsonforms/core'
-import { defineComponent } from 'vue'
+import { computed, defineComponent, nextTick, ref } from 'vue'
 import { DispatchRenderer, rendererProps, useJsonFormsArrayControl, RendererProps } from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCard from '@nuxt/ui/components/Card.vue'
+import { ConfirmDialog } from '../common'
 import { useArrayControl } from '../composables'
 
 /**
@@ -94,6 +159,7 @@ import { useArrayControl } from '../composables'
 const controlRenderer = defineComponent({
   name: 'ArrayControlRenderer',
   components: {
+    ConfirmDialog,
     DispatchRenderer,
     UButton,
     UCard,
@@ -102,9 +168,50 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    return useArrayControl({
+    const control = useArrayControl({
       jsonFormsControl: useJsonFormsArrayControl(props),
     })
+
+    /** Index en attente de confirmation ; `null` quand aucune modale n'est ouverte. */
+    const pendingRemoveIndex = ref<number | null>(null)
+
+    const pendingRemoveLabel = computed(() =>
+      pendingRemoveIndex.value === null
+        ? ''
+        : `« ${control.itemLabel(pendingRemoveIndex.value)} »`,
+    )
+
+    const askRemove = (index: number) => {
+      pendingRemoveIndex.value = index
+    }
+
+    const cancelRemove = () => {
+      pendingRemoveIndex.value = null
+    }
+
+    const confirmRemove = async () => {
+      const index = pendingRemoveIndex.value
+      pendingRemoveIndex.value = null
+
+      if (index === null) {
+        return
+      }
+
+      // Un tick avant de retirer la ligne : la modale se démonte au même instant, et
+      // supprimer dans la foulée rejouerait le défaut `onClickOutside` de VueUse
+      // (cf. la note du README sur `subTree`).
+      await nextTick()
+      control.removeItem(index)
+    }
+
+    return {
+      ...control,
+      pendingRemoveIndex,
+      pendingRemoveLabel,
+      askRemove,
+      cancelRemove,
+      confirmRemove,
+    }
   },
 })
 

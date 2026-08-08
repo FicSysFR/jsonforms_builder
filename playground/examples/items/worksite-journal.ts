@@ -2,8 +2,7 @@ import { registerExamples } from '../register'
 
 /**
  * Journal de chantier — exemple de référence pour les renderers ajoutés en v2
- * (Group, Array, OneOf, WYSIWYG), calqué sur le besoin de QualiRail#72 :
- * « contenu adaptable à l'activité ».
+ * (Group, Array, OneOf, WYSIWYG) : contenu adaptable à l'activité.
  *
  * L'idée : un tronc commun (date, météo, zone) plus une section `activity` en `oneOf`
  * dont les champs changent selon la nature du travail réalisé.
@@ -115,7 +114,7 @@ const data = {
   weather: 'Nuageux',
   zone: 'PK 12+400 → PK 13+100',
   staff: [
-    { company: 'AMOT Ferroviaire', count: 6 },
+    { company: 'Entreprise Alpha', count: 6 },
     { company: 'Sous-traitant TP', count: 3 },
   ],
   activity: {

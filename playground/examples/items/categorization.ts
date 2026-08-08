@@ -1,5 +1,5 @@
 import { Translator } from '@jsonforms/core'
-import get from 'lodash/get'
+import { get } from 'radash'
 import { registerExamples } from '../register'
 import { Layout, UISchemaElement, JsonSchema } from '@jsonforms/core'
 

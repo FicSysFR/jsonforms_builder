@@ -39,6 +39,25 @@ export const resolveArrayItemLabel = (
   return `Élément ${index + 1}`
 }
 
+const PRIMITIVE_TYPES = ['string', 'number', 'integer', 'boolean']
+
+/**
+ * Le schéma d'élément décrit-il une valeur simple ?
+ *
+ * Détermine la mise en page : une ligne compacte pour les valeurs simples, une carte
+ * dépliée pour les objets. Rendre une carte titrée par chaîne de caractères rend un
+ * tableau de cinq entrées illisible.
+ */
+export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean => {
+  if (!schema || schema.properties) {
+    return false
+  }
+
+  const type = Array.isArray(schema.type) ? schema.type[0] : schema.type
+
+  return typeof type === 'string' && PRIMITIVE_TYPES.includes(type)
+}
+
 /** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
 export const isArrayAtCapacity = (
   length: number,
@@ -80,12 +99,37 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       !isArrayAtMinimum(items.value.length, arraySchema.value?.minItems),
   )
 
+  /** Les éléments sont-ils des valeurs simples (chaîne, nombre, booléen) ? */
+  const isPrimitiveItems = computed(() =>
+    isPrimitiveItemSchema(control.control.value.schema),
+  )
+
+  /** Les flèches de réordonnancement suivent la convention JSONForms `showSortButtons`. */
+  const showSortButtons = computed(
+    () => !!control.appliedOptions.value?.showSortButtons,
+  )
+
   /**
    * Gabarit d'un élément : `options.detail` s'il est fourni, sinon un uischema
    * généré à partir du schéma de l'élément.
+   *
+   * Pour une valeur simple, on masque libellé et description : ils sont identiques
+   * d'une ligne à l'autre et ne feraient que répéter ce que porte déjà le tableau.
    */
-  const childUiSchema = computed<UISchemaElement>(() =>
-    findUISchema(
+  const childUiSchema = computed<UISchemaElement>(() => {
+    // Pour une valeur simple, on écrit le `Control` à la main plutôt que de passer par
+    // `Generate.uiSchema` : celui-ci enveloppe toujours le contrôle dans un layout, si
+    // bien que les options posées sur le résultat n'atteignent jamais le contrôle.
+    if (isPrimitiveItems.value) {
+      return {
+        type: 'Control',
+        scope: '#',
+        label: false,
+        options: { hideDescription: true },
+      } as unknown as UISchemaElement
+    }
+
+    return findUISchema(
       control.control.value.uischemas ?? [],
       control.control.value.schema,
       control.control.value.uischema.scope,
@@ -93,8 +137,8 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       () => Generate.uiSchema(control.control.value.schema, 'VerticalLayout'),
       control.control.value.uischema,
       control.control.value.rootSchema,
-    ),
-  )
+    )
+  })
 
   const childPath = (index: number) =>
     composePaths(control.control.value.path, `${index}`)
@@ -137,6 +181,8 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
     arraySchema,
     canAdd,
     canRemove,
+    isPrimitiveItems,
+    showSortButtons,
     childUiSchema,
     childPath,
     itemLabel,

@@ -194,7 +194,17 @@ export const useUiControl = <
     const { description, errors, label, visible, required } = input.control.value
     const id = input.control.value.id.replace(/#\//g, '').replace(/\//g, '_')
 
-    return { id, description, errors, label, visible, required }
+    // `hideDescription` supprime le texte d'aide pour ce champ précis. Utilisé par le
+    // renderer de tableau sur ses lignes de valeurs simples, où la description du schéma
+    // d'élément serait répétée à l'identique sous chaque ligne.
+    return {
+      id,
+      description: appliedOptions.value?.hideDescription ? undefined : description,
+      errors,
+      label,
+      visible,
+      required,
+    }
   })
 
   const computedLabel = useComputedLabel(input, appliedOptions)

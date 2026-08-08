@@ -64,7 +64,7 @@ export default defineConfig({
       colorMode: true,
       ui: {
         colors: {
-          primary: 'amot',
+          primary: 'brand',
           neutral: 'slate',
         },
       },

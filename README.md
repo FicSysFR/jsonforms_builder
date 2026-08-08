@@ -159,6 +159,27 @@ resolve: {
 
 Voir `playground/vite.config.ts` pour une configuration complète et commentée (y compris les stubs `#imports` requis par `@nuxt/icon` hors Nuxt).
 
+## Défaut amont connu — `Cannot read properties of null (reading 'subTree')`
+
+`@vueuse/core` 14.4.0 (dernière version à ce jour, tirée par Nuxt UI) contient dans
+`onClickOutside` :
+
+```js
+function hasMultipleRoots(target) {
+  const vm = toValue(target)
+  return vm && vm.$.subTree.shapeFlag === 16   // `vm` est protégé, `vm.$` ne l'est pas
+}
+```
+
+Après démontage d'un composant, `vm.$` vaut `null` : tout clic ultérieur atteignant un
+écouteur survivant lève l'erreur. Le cas déclenchant est **un menu ouvert dont le clic de
+sélection démonte le sous-arbre** — typiquement un changement de variante `oneOf`, ou la
+suppression d'une ligne de tableau.
+
+La parade, appliquée dans les renderers concernés, est de différer d'un `nextTick` la
+mutation qui démonte, afin que la fermeture du menu s'achève d'abord. À reproduire dans
+l'application hôte si elle démonte elle-même des sous-arbres depuis un `@update:model-value`.
+
 ## Développement
 
 Ce projet utilise **Bun** exclusivement ; `npm`, `yarn` et `pnpm` sont bloqués par le script `preinstall`.

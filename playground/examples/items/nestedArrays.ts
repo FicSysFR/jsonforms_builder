@@ -29,7 +29,7 @@ import {
   JsonSchema,
   NOT_APPLICABLE,
 } from '@jsonforms/core';
-import { StateProps } from '..';
+import { StateProps } from '../example';
 
 const schema = {
   definitions: {

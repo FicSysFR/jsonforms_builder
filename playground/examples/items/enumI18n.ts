@@ -23,8 +23,8 @@
   THE SOFTWARE.
 */
 import { registerExamples } from '../register';
-import { createTranslator, Translator } from '@jsonforms/core';
-import get from 'lodash/get';
+import { Translator } from '@jsonforms/core';
+import { get } from 'radash'
 
 export const schema = {
   type: 'object',
@@ -116,9 +116,9 @@ export const translations: Record<string, string> = {
   'status.rejected': 'Declined',
 };
 
-export const translate: Translator = createTranslator((key, defaultMessage) => {
+export const translate: Translator = (key, defaultMessage) => {
   return get(translations, key) ?? defaultMessage;
-});
+};
 
 registerExamples([
   {

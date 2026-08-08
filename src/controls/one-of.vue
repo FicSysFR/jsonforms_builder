@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { ControlElement, Generate, JsonFormsRendererRegistryEntry, isOneOfControl, rankWith, type JsonSchema } from '@jsonforms/core'
-import { computed, defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, nextTick, ref, watch } from 'vue'
 import { DispatchRenderer, rendererProps, useJsonFormsOneOfControl, RendererProps } from '@jsonforms/vue'
 import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
@@ -100,8 +100,16 @@ const controlRenderer = defineComponent({
         : undefined,
     )
 
-    /** Changer de variante réinitialise la donnée : les branches sont exclusives. */
-    const onVariantChange = (index: number) => {
+    /**
+     * Changer de variante réinitialise la donnée : les branches sont exclusives.
+     *
+     * Le remplacement du sous-arbre est différé d'un tick. Sans cela, le clic qui
+     * sélectionne l'option démonte le sous-formulaire *pendant* que le menu du `USelect`
+     * se referme — et le `onClickOutside` de VueUse, encore branché, déréférence alors
+     * une instance devenue nulle (`Cannot read properties of null (reading 'subTree')`,
+     * `@vueuse/core` 14.4.0, `hasMultipleRoots` teste `vm` mais pas `vm.$`).
+     */
+    const onVariantChange = async (index: number) => {
       if (index === selectedIndex.value) {
         return
       }
@@ -109,9 +117,12 @@ const controlRenderer = defineComponent({
       selectedIndex.value = index
 
       const schema = variants.value[index]
-      if (schema) {
-        control.onChange(createVariantValue(schema, control.control.value.rootSchema))
+      if (!schema) {
+        return
       }
+
+      await nextTick()
+      control.onChange(createVariantValue(schema, control.control.value.rootSchema))
     }
 
     return {

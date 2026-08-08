@@ -76,7 +76,7 @@
             :selected-path="selectedPath"
             :schema="definition.schema"
             @select="select"
-            @remove="remove"
+            @remove="askRemove"
             @shift="shift"
             @drop-item="onDropItem"
           )
@@ -121,10 +121,18 @@
         template(#header)
           span.text-xs.font-semibold.uppercase.tracking-wide.text-muted UI Schema
         pre.overflow-x-auto.p-3.text-xs(v-text="uischemaJson")
+
+    confirm-dialog(
+      :open="pendingRemovePath !== null"
+      title="Supprimer cet élément ?"
+      :description="removeDescription"
+      @update:open="cancelRemove"
+      @confirm="confirmRemove"
+    )
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch, type PropType } from 'vue'
+import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue'
 import type { JsonFormsRendererRegistryEntry, UISchemaElement } from '@jsonforms/core'
 import { JsonForms } from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
@@ -132,12 +140,13 @@ import UCard from '@nuxt/ui/components/Card.vue'
 import UIcon from '@nuxt/ui/components/Icon.vue'
 import UTabs from '@nuxt/ui/components/Tabs.vue'
 import BuilderInspector from './BuilderInspector.vue'
+import { ConfirmDialog } from '../common'
 import BuilderNode from './BuilderNode.vue'
 import { PALETTE_CONTAINERS, PALETTE_FIELDS } from './palette'
 import { readDragPayload, writeDragPayload, type DropEvent } from './drag'
 import { useFormBuilder, type FormDefinition } from './useFormBuilder'
 import { allRenderers } from '../renderers'
-import type { ElementPath } from './tree'
+import { getElementAt, type ElementPath } from './tree'
 
 /**
  * FormBuilder
@@ -148,7 +157,7 @@ import type { ElementPath } from './tree'
  * monte le vrai `<JsonForms>` avec les renderers v2, et un onglet JSON en lecture seule.
  *
  * L'édition brute du JSON est délibérément absente : les applications hôtes ont déjà
- * leur éditeur de code (Monaco côté QualiRail), et l'embarquer ici alourdirait la
+ * leur éditeur de code (Monaco, etc.), et l'embarquer ici alourdirait la
  * librairie pour tout le monde.
  *
  * @example
@@ -159,6 +168,7 @@ export default defineComponent({
   components: {
     BuilderInspector,
     BuilderNode,
+    ConfirmDialog,
     JsonForms,
     UButton,
     UCard,
@@ -273,6 +283,47 @@ export default defineComponent({
       applyDrop({ payload, parentPath: [], index: rootElements.value.length })
     }
 
+    /** Chemin en attente de confirmation ; `null` quand aucune modale n'est ouverte. */
+    const pendingRemovePath = ref<ElementPath | null>(null)
+
+    /**
+     * Supprimer un conteneur emporte ses descendants — et donc leurs propriétés de
+     * schéma. Le dire explicitement, l'arbre replié ne montrant pas ce qu'on perd.
+     */
+    const removeDescription = computed(() => {
+      if (!pendingRemovePath.value) {
+        return ''
+      }
+
+      const element = getElementAt(builder.definition.value.uischema, pendingRemovePath.value)
+      const children = (element as { elements?: unknown[] } | undefined)?.elements?.length ?? 0
+
+      return children
+        ? `Cet élément et ses ${children} enfant(s) seront retirés, ainsi que les propriétés de schéma qu'ils étaient seuls à référencer.`
+        : "L'élément et sa propriété de schéma seront retirés. L'action reste annulable."
+    })
+
+    const askRemove = (path: ElementPath) => {
+      pendingRemovePath.value = path
+    }
+
+    const cancelRemove = () => {
+      pendingRemovePath.value = null
+    }
+
+    const confirmRemove = async () => {
+      const path = pendingRemovePath.value
+      pendingRemovePath.value = null
+
+      if (!path) {
+        return
+      }
+
+      // Un tick avant de démonter : la modale se ferme au même instant.
+      await nextTick()
+      builder.remove(path)
+    }
+
     const onUpdateElement = (patch: Record<string, unknown>) => {
       if (builder.selectedPath.value) {
         builder.updateElement(builder.selectedPath.value, patch)
@@ -306,6 +357,11 @@ export default defineComponent({
       appendField,
       appendContainer,
       onDropItem,
+      pendingRemovePath,
+      removeDescription,
+      askRemove,
+      cancelRemove,
+      confirmRemove,
       onRootDrop,
       onUpdateElement,
       onUpdateProperty,

@@ -25,10 +25,9 @@
 import { registerExamples } from '../register';
 import {
   ArrayTranslationEnum,
-  createTranslator,
   Translator,
 } from '@jsonforms/core';
-import get from 'lodash/get';
+import { get } from 'radash'
 
 export const schema = {
   type: 'object',
@@ -92,9 +91,9 @@ export const translations = {
       'Are you sure you want to delete this comment?',
   },
 };
-export const translate: Translator = createTranslator((key, defaultMessage) => {
+export const translate: Translator = (key, defaultMessage) => {
   return get(translations, key) ?? defaultMessage;
-});
+};
 
 registerExamples([
   {
