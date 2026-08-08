@@ -1,31 +1,44 @@
 <template lang="pug">
   .form-builder.flex.flex-col.gap-3
-    .flex.items-center.gap-2
+    .flex.flex-wrap.items-center.gap-2
+      .flex.shrink-0.items-center(class="gap-0.5")
+        u-button(
+          :disabled="!canUndo"
+          icon="i-lucide-undo-2"
+          label="Précédent"
+          aria-label="Précédent"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          @click="undo"
+        )
+        u-button(
+          :disabled="!canRedo"
+          icon="i-lucide-redo-2"
+          label="Suivant"
+          aria-label="Suivant"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          @click="redo"
+        )
+        u-button(
+          icon="i-lucide-upload"
+          label="Importer"
+          color="neutral"
+          variant="outline"
+          size="sm"
+          @click="openImport"
+        )
+      .flex-1.min-w-0
       u-tabs(
         :model-value="view"
         :items="viewItems"
         value-key="value"
         size="sm"
+        class="min-w-0"
+        :ui="{ list: 'w-full sm:w-auto' }"
         @update:model-value="view = String($event)"
-      )
-      .flex-1
-      u-button(
-        :disabled="!canUndo"
-        icon="i-lucide-undo-2"
-        aria-label="Annuler"
-        color="neutral"
-        variant="ghost"
-        size="sm"
-        @click="undo"
-      )
-      u-button(
-        :disabled="!canRedo"
-        icon="i-lucide-redo-2"
-        aria-label="Rétablir"
-        color="neutral"
-        variant="ghost"
-        size="sm"
-        @click="redo"
       )
 
     //- ── Edit ────────────────────────────────────────────────────────────────
@@ -129,6 +142,54 @@
       @update:open="cancelRemove"
       @confirm="confirmRemove"
     )
+
+    u-modal(
+      v-model:open="importOpen"
+      title="Importer un formulaire"
+      description="Collez un JSON `{ schema, uischema }` (ou un JSON Schema seul), ou chargez un fichier."
+      :ui="{ content: 'sm:max-w-2xl' }"
+    )
+      .space-y-3
+        .flex.flex-wrap.items-center.gap-2
+          u-button(
+            icon="i-lucide-file-up"
+            label="Charger un fichier…"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="fileInput?.click()"
+          )
+          input.hidden(
+            ref="fileInput"
+            type="file"
+            accept="application/json,.json"
+            @change="onImportFile"
+          )
+          p.text-xs.text-muted Fichier .json — remplace le formulaire courant
+
+        u-form-field(label="JSON" :error="importError || undefined")
+          u-textarea(
+            v-model="importText"
+            :rows="14"
+            class="w-full font-mono text-xs"
+            placeholder='{\n  "schema": { "type": "object", "properties": { … } },\n  "uischema": { "type": "VerticalLayout", "elements": [ … ] }\n}'
+            @update:model-value="importError = ''"
+          )
+
+      template(#footer)
+        .flex.w-full.items-center.justify-end.gap-2
+          u-button(
+            label="Annuler"
+            color="neutral"
+            variant="ghost"
+            @click="importOpen = false"
+          )
+          u-button(
+            label="Importer"
+            color="primary"
+            :disabled="!importText.trim()"
+            @click="applyImport"
+          )
 </template>
 
 <script lang="ts">
@@ -137,14 +198,18 @@ import type { JsonFormsRendererRegistryEntry, UISchemaElement } from '@jsonforms
 import { JsonForms } from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCard from '@nuxt/ui/components/Card.vue'
+import UFormField from '@nuxt/ui/components/FormField.vue'
 import UIcon from '@nuxt/ui/components/Icon.vue'
+import UModal from '@nuxt/ui/components/Modal.vue'
 import UTabs from '@nuxt/ui/components/Tabs.vue'
+import UTextarea from '@nuxt/ui/components/Textarea.vue'
 import BuilderInspector from './BuilderInspector.vue'
 import { ConfirmDialog } from '../common'
 import BuilderNode from './BuilderNode.vue'
 import { PALETTE_CONTAINERS, PALETTE_FIELDS } from './palette'
 import { readDragPayload, writeDragPayload, type DropEvent } from './drag'
 import { useFormBuilder, type FormDefinition } from './useFormBuilder'
+import { FormImportError, parseFormImport } from './importForm'
 import { allRenderers } from '../renderers'
 import { getElementAt, type ElementPath } from './tree'
 
@@ -154,10 +219,8 @@ import { getElementAt, type ElementPath } from './tree'
  * Visual editor producing the `{ schema, uischema }` pair consumed by `<JsonForms>`.
  *
  * Three panels: palette, form tree, inspector — plus a Preview tab that mounts the
- * real `<JsonForms>` with v2 renderers, and a read-only JSON tab.
- *
- * Raw JSON editing is deliberately absent: host applications already have their own
- * code editor (Monaco, etc.), and embedding one here would bloat the library for everyone.
+ * real `<JsonForms>` with v2 renderers, a read-only JSON tab, and an import dialog
+ * (paste or file upload) to load an existing definition for editing.
  *
  * @example
  * <form-builder v-model="definition" />
@@ -171,8 +234,11 @@ export default defineComponent({
     JsonForms,
     UButton,
     UCard,
+    UFormField,
     UIcon,
+    UModal,
     UTabs,
+    UTextarea,
   },
   props: {
     /** Definition being edited. Supports `v-model`. */
@@ -199,6 +265,11 @@ export default defineComponent({
 
     const previewData = ref<Record<string, unknown>>({})
     const isRootDropActive = ref(false)
+
+    const importOpen = ref(false)
+    const importText = ref('')
+    const importError = ref('')
+    const fileInput = ref<HTMLInputElement | null>(null)
 
     /** Emitting the definition on every change makes the component usable with `v-model`. */
     watch(builder.definition, (value) => emit('update:modelValue', value), { deep: true })
@@ -330,6 +401,45 @@ export default defineComponent({
     const schemaJson = computed(() => JSON.stringify(builder.definition.value.schema, null, 2))
     const uischemaJson = computed(() => JSON.stringify(builder.definition.value.uischema, null, 2))
 
+    const openImport = () => {
+      importText.value = ''
+      importError.value = ''
+      importOpen.value = true
+    }
+
+    const applyImport = () => {
+      try {
+        const next = parseFormImport(importText.value)
+        builder.reset(next)
+        previewData.value = {}
+        view.value = 'edit'
+        importOpen.value = false
+        importError.value = ''
+      } catch (error) {
+        importError.value =
+          error instanceof FormImportError
+            ? error.message
+            : "Impossible d'importer ce formulaire."
+      }
+    }
+
+    const onImportFile = async (event: Event) => {
+      const input = event.target as HTMLInputElement
+      const file = input.files?.[0]
+      input.value = ''
+
+      if (!file) {
+        return
+      }
+
+      try {
+        importText.value = await file.text()
+        importError.value = ''
+      } catch {
+        importError.value = 'Impossible de lire ce fichier.'
+      }
+    }
+
     return {
       ...builder,
       view,
@@ -354,6 +464,13 @@ export default defineComponent({
       onUpdateProperty,
       schemaJson,
       uischemaJson,
+      importOpen,
+      importText,
+      importError,
+      fileInput,
+      openImport,
+      applyImport,
+      onImportFile,
     }
   },
 })

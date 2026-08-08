@@ -257,6 +257,25 @@ describe('useFormBuilder', () => {
     stop()
   })
 
+  it('adds a ListWithDetail field with a custom element type', () => {
+    const { api, stop } = mountBuilder()
+
+    api.addField('list-with-detail', [], 0)
+
+    expect(listPropertyNames(api.definition.value.schema)).toEqual(['listeDetail'])
+    expect(api.definition.value.uischema).toMatchObject({
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'ListWithDetail',
+          scope: '#/properties/listeDetail',
+        },
+      ],
+    })
+
+    stop()
+  })
+
   it('reset clears history and selection', () => {
     const { api, stop } = mountBuilder()
 

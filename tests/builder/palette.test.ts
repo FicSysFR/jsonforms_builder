@@ -63,6 +63,15 @@ describe('PALETTE_CONTAINERS', () => {
 describe('findPaletteField / findPaletteContainer', () => {
   it('finds a known entry', () => {
     expect(findPaletteField('textarea')?.options?.()).toEqual({ multi: true })
+    expect(findPaletteField('multi-enum')?.schema()).toMatchObject({ type: 'array' })
+    expect(findPaletteField('date-range')?.options?.()).toEqual({
+      format: 'calendar',
+      range: true,
+    })
+    expect(findPaletteField('list-with-detail')?.createElement?.('items')).toMatchObject({
+      type: 'ListWithDetail',
+      scope: '#/properties/items',
+    })
     expect(findPaletteContainer('Group')?.label).toBe('Groupe')
   })
 

@@ -98,6 +98,7 @@ const NODE_ICONS: Record<string, string> = {
   Categorization: 'i-lucide-panels-top-left',
   Category: 'i-lucide-panel-top',
   Label: 'i-lucide-heading',
+  ListWithDetail: 'i-lucide-panel-left',
 }
 
 /**

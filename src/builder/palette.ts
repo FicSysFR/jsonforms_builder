@@ -18,6 +18,11 @@ export interface PaletteField {
   schema: () => JsonSchema
   /** Uischema options to set on the `Control` (optional). */
   options?: () => Record<string, unknown>
+  /**
+   * Optional custom uischema element (e.g. `ListWithDetail`). When omitted, a standard
+   * `Control` is created via {@link createControl}.
+   */
+  createElement?: (property: string) => UISchemaElement
 }
 
 /**
@@ -161,6 +166,17 @@ export const PALETTE_FIELDS: PaletteField[] = [
     options: () => ({ format: 'tags' }),
   },
   {
+    key: 'multi-enum',
+    label: 'Cases multiples',
+    icon: 'i-lucide-list-checks',
+    group: 'Choix',
+    schema: () => ({
+      type: 'array',
+      uniqueItems: true,
+      items: { type: 'string', enum: ['Option A', 'Option B', 'Option C'] },
+    }),
+  },
+  {
     key: 'date',
     label: 'Date',
     icon: 'i-lucide-calendar',
@@ -190,6 +206,20 @@ export const PALETTE_FIELDS: PaletteField[] = [
     options: () => ({ format: 'calendar' }),
   },
   {
+    key: 'date-range',
+    label: 'Plage de dates',
+    icon: 'i-lucide-calendar-range',
+    group: 'Date & heure',
+    schema: () => ({
+      type: 'object',
+      properties: {
+        start: { type: 'string', format: 'date', title: 'Début' },
+        end: { type: 'string', format: 'date', title: 'Fin' },
+      },
+    }),
+    options: () => ({ format: 'calendar', range: true }),
+  },
+  {
     key: 'array',
     label: 'Liste répétable',
     icon: 'i-lucide-rows-3',
@@ -201,6 +231,41 @@ export const PALETTE_FIELDS: PaletteField[] = [
         properties: {
           label: { type: 'string', title: 'Libellé' },
         },
+      },
+    }),
+    options: () => ({ showSortButtons: true, elementLabelProp: 'label' }),
+  },
+  {
+    key: 'list-with-detail',
+    label: 'Liste + détail',
+    icon: 'i-lucide-panel-left',
+    group: 'Structure',
+    schema: () => ({
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          label: { type: 'string', title: 'Libellé' },
+          notes: { type: 'string', title: 'Notes' },
+        },
+      },
+    }),
+    createElement: (property) =>
+      ({
+        type: 'ListWithDetail',
+        scope: `#/properties/${property}`,
+        options: { showSortButtons: true, elementLabelProp: 'label' },
+      }) as UISchemaElement,
+  },
+  {
+    key: 'object',
+    label: 'Objet',
+    icon: 'i-lucide-braces',
+    group: 'Structure',
+    schema: () => ({
+      type: 'object',
+      properties: {
+        champ: { type: 'string', title: 'Champ' },
       },
     }),
   },

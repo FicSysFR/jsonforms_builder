@@ -47,7 +47,6 @@ import {
 import { computed, defineComponent, onMounted, provide, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import type { Editor } from '@tiptap/vue-3'
-import Image from '@tiptap/extension-image'
 import UEditor from '@nuxt/ui/components/Editor.vue'
 import UEditorToolbar from '@nuxt/ui/components/EditorToolbar.vue'
 import { ControlWrapper } from '../common'
@@ -58,7 +57,8 @@ import {
   imageUploadHandler,
   readFileAsDataUrl,
 } from './wysiwygImageUpload'
-import { ensureWysiwygImageResizeStyles } from './wysiwygImageResizeStyles'
+import { WysiwygResizableImage } from './wysiwygResizableImage'
+import { refreshWysiwygImageResizeStyles } from './wysiwygImageResizeStyles'
 
 /**
  * Default toolbar.
@@ -244,7 +244,7 @@ const DEFAULT_TOOLBAR = [
 
 const DEFAULT_IMAGE_RESIZE = {
   enabled: true,
-  directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'] as const,
+  directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const,
   minWidth: 48,
   minHeight: 48,
   alwaysPreserveAspectRatio: true,
@@ -286,9 +286,13 @@ const controlRenderer: Component = defineComponent({
 
     const control = useUiControl(useJsonFormsControl(props), adaptTarget, 300)
 
+    // Eager: styles must exist before the first image node view mounts.
+    if (typeof document !== 'undefined' && control.appliedOptions.value?.image !== false) {
+      refreshWysiwygImageResizeStyles()
+    }
     onMounted(() => {
       if (control.appliedOptions.value?.image !== false) {
-        ensureWysiwygImageResizeStyles()
+        refreshWysiwygImageResizeStyles()
       }
     })
 
@@ -306,11 +310,19 @@ const controlRenderer: Component = defineComponent({
       if (!imagesEnabled.value) return []
       const fromOptions = control.appliedOptions.value?.image
       const extra = fromOptions && typeof fromOptions === 'object' ? fromOptions : {}
+      const resize = {
+        ...DEFAULT_IMAGE_RESIZE,
+        ...(typeof (extra as { resize?: unknown }).resize === 'object' &&
+        (extra as { resize?: object }).resize
+          ? (extra as { resize: object }).resize
+          : {}),
+      }
+      const { resize: _ignored, ...imageRest } = extra as Record<string, unknown>
       return [
-        Image.configure({
+        WysiwygResizableImage.configure({
           allowBase64: true,
-          resize: { ...DEFAULT_IMAGE_RESIZE },
-          ...extra,
+          ...imageRest,
+          resize,
         }),
         ImageUpload,
       ]
@@ -392,12 +404,18 @@ const controlRenderer: Component = defineComponent({
      * contenteditable (do not add `sm:px-0` — it would zero out `p-3` on sm+).
      */
     const editorUi = {
-      base: (defaults: string) =>
-        `${String(defaults ?? '')
+      base: (defaults: string) => {
+        // Exclude resize chrome from Nuxt UI's selected-node wash (full-width green slab).
+        const withoutImageWash = String(defaults ?? '').replaceAll(
+          '[&_.ProseMirror-selectednode:not(img):not(pre):not([data-node-view-wrapper])]:bg-primary/20',
+          '[&_.ProseMirror-selectednode:not(img):not(pre):not([data-node-view-wrapper]):not([data-resize-container])]:bg-primary/20',
+        )
+        return `${withoutImageWash
           .replaceAll('*:my-5', '*:my-1')
           .replaceAll('sm:px-8', '')} min-h-40 p-3 focus:outline-none *:!my-1`
           .replace(/\s+/g, ' ')
-          .trim(),
+          .trim()
+      },
     }
 
     return {

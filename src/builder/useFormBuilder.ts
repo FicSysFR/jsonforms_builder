@@ -118,15 +118,11 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     const name = slugifyPropertyName(field.label, listPropertyNames(definition.value.schema))
 
     const property = { title: field.label, ...field.schema() }
+    const element = field.createElement?.(name) ?? createControl(name, field.options?.())
 
     commit({
       schema: addSchemaProperty(definition.value.schema, name, property),
-      uischema: insertElementAt(
-        definition.value.uischema,
-        parentPath,
-        index,
-        createControl(name, field.options?.()),
-      ),
+      uischema: insertElementAt(definition.value.uischema, parentPath, index, element),
     })
 
     select([...parentPath, index])
