@@ -45,7 +45,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
 
       "suspicious": {
         // Le socle v2 compte encore 159 `any` : les signaler sans bloquer `yarn lint`,
