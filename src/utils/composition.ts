@@ -1,9 +1,21 @@
 import { computeLabel, ControlElement, DispatchPropsOfControl, DispatchPropsOfMultiEnumControl, isDescriptionHidden, JsonFormsSubStates, JsonSchema, UISchemaElement } from '@jsonforms/core'
 import { debounce, get, isObject } from 'radash'
 import { defu } from 'defu'
-import { computed, ComputedRef, inject, ref } from 'vue'
+import { computed, ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
 import { IsDynamicPropertyContext } from './inject'
+
+/**
+ * Valeur de remplacement quand un champ est masqué par une règle : `default`
+ * du schéma s'il est défini, sinon `undefined`.
+ */
+export const resolveClearOnHideValue = (schema?: JsonSchema) => {
+  if (schema && Object.prototype.hasOwnProperty.call(schema, 'default')) {
+    return schema.default
+  }
+
+  return undefined
+}
 
 /**
  * Vérifie si un champ est en lecture seule en tenant compte de la compatibilité
@@ -151,6 +163,32 @@ export const useUiControl = <
 
   const appliedOptions = useControlAppliedOptions(input)
   const isFocused = ref(false)
+
+  /**
+   * Les règles SHOW/HIDE ne touchent que l'UI côté JSON Forms. Ici, dès qu'un
+   * contrôle devient invisible, on remet sa donnée au défaut du schéma (ou
+   * `undefined`) pour ne pas laisser de valeurs « fantômes » dans le modèle.
+   * Désactivable via `config` / `options.clearOnHide: false`.
+   */
+  watch(
+    () => input.control.value.visible,
+    (visible, wasVisible) => {
+      if (appliedOptions.value?.clearOnHide === false || !handleChange) {
+        return
+      }
+
+      if (wasVisible !== true || visible !== false) {
+        return
+      }
+
+      const clearValue = resolveClearOnHideValue(input.control.value.schema)
+      if (Object.is(input.control.value.data, clearValue)) {
+        return
+      }
+
+      handleChange(input.control.value.path, clearValue)
+    },
+  )
 
   const handleFocus = () => {
     isFocused.value = true
