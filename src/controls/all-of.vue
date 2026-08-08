@@ -2,10 +2,16 @@
   .all-of(v-if="control.visible" :id="controlWrapper.id" :class="styles.group.root")
     h4(v-if="computedLabel" :class="styles.group.label" v-text="computedLabel")
 
+    //-
+      Le schéma passé au dispatcher est l'original (avec `allOf`), pas le plat de
+      fusion. `Resolve` retrouve les propriétés via le repli sur les branches ; surtout,
+      la référence reste stable d'un tick à l'autre — un schéma synthétique recréé à
+      chaque invalidation faisait reboucler le `watch(() => props.schema)` de
+      `@jsonforms/vue` (`Maximum recursive updates exceeded`).
     dispatch-renderer(
-      v-if="mergedUiSchema"
-      :schema="mergedSchema"
-      :uischema="mergedUiSchema"
+      v-if="detailUiSchema"
+      :schema="control.schema"
+      :uischema="detailUiSchema"
       :path="control.path"
       :enabled="control.enabled"
       :renderers="control.renderers"
@@ -18,33 +24,26 @@
 <script lang="ts">
 import {
   type ControlElement,
-  Generate,
   type JsonFormsRendererRegistryEntry,
   isAllOfControl,
   rankWith,
-  resolveSchema,
-  type JsonSchema,
-  type UISchemaElement,
 } from '@jsonforms/core'
-import { computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import {
   DispatchRenderer,
   rendererProps,
   useJsonFormsAllOfControl,
   type RendererProps,
 } from '@jsonforms/vue'
-import { useUiControl } from '../utils'
+import { useAllOfControl } from '../composables'
 
 /**
  * AllOfControlRenderer
  *
  * Rend les schémas `allOf`. Contrairement à `oneOf`/`anyOf`, il n'y a rien à choisir :
- * **toutes** les branches s'appliquent simultanément. On les fusionne donc en un seul
- * objet, dont on déduit une disposition unique.
- *
- * La fusion est volontairement plate — on réunit les `properties` et les `required` —
- * plutôt qu'une composition JSON Schema complète : c'est ce dont a besoin le rendu, et
- * la validation reste de toute façon celle d'AJV sur le schéma d'origine.
+ * **toutes** les branches s'appliquent simultanément. On en déduit une disposition
+ * unique (fusion plate, y compris `allOf` imbriqués), puis on redispatche contre le
+ * schéma d'origine pour que la résolution JSON Forms reste correcte.
  */
 const controlRenderer = defineComponent({
   name: 'AllOfControlRenderer',
@@ -55,61 +54,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsAllOfControl(props))
-
-    /** Réunion des branches, `$ref` suivis. */
-    const mergedSchema = computed<JsonSchema>(() => {
-      const schema = control.control.value.schema
-      const branches: JsonSchema[] = Array.isArray(schema.allOf) ? schema.allOf : []
-      const rootSchema = control.control.value.rootSchema
-
-      const merged: JsonSchema & {
-        type: 'object'
-        properties: Record<string, JsonSchema>
-        required: string[]
-      } = { type: 'object', properties: {}, required: [] }
-
-      for (const branch of [schema, ...branches]) {
-        let resolved: JsonSchema = branch
-
-        if (branch?.$ref) {
-          try {
-            resolved = resolveSchema(rootSchema, branch.$ref, rootSchema) ?? branch
-          } catch {
-            resolved = branch
-          }
-        }
-
-        Object.assign(merged.properties, resolved?.properties ?? {})
-        merged.required.push(...(resolved?.required ?? []))
-      }
-
-      merged.required = [...new Set(merged.required)]
-
-      return merged
-    })
-
-    const mergedUiSchema = computed<UISchemaElement | undefined>(() => {
-      const detail = control.control.value.uischema.options?.detail as UISchemaElement | undefined
-      if (detail) {
-        return detail
-      }
-
-      // Aucune propriété récupérée : mieux vaut ne rien rendre que de dispatcher un
-      // `Control` sur `#`, qui reviendrait ici même en boucle.
-      if (!Object.keys(mergedSchema.value.properties ?? {}).length) {
-        return undefined
-      }
-
-      return Generate.uiSchema(
-        mergedSchema.value,
-        'VerticalLayout',
-        undefined,
-        control.control.value.rootSchema,
-      )
-    })
-
-    return { ...control, mergedSchema, mergedUiSchema }
+    return useAllOfControl({ jsonFormsControl: useJsonFormsAllOfControl(props) })
   },
 })
 

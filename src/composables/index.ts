@@ -1,6 +1,7 @@
 export * from './useHashState'
 export * from './useArrayControl'
 export * from './useOneOfControl'
+export * from './useAllOfControl'
 export * from './useObjectControl'
 export * from './useNumericControl'
 export * from './useInputControl'
