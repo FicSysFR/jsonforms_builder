@@ -5,6 +5,7 @@ import {
   findUISchema,
   Generate,
   hasType,
+  resolveSchema,
   schemaMatches,
   type JsonSchema,
   type UISchemaElement,
@@ -61,6 +62,35 @@ export const isCombinatorSchema = (schema: JsonSchema | undefined): boolean =>
   Array.isArray((schema as any)?.oneOf) || Array.isArray((schema as any)?.anyOf)
 
 /**
+ * Suit un `items: { $ref: … }` jusqu'au schéma visé.
+ *
+ * Un schéma récursif ne peut pas s'écrire autrement qu'en `$ref` — c'est le renvoi qui
+ * casse la boucle. Le combinateur n'est donc pas *dans* `items`, il est au bout du renvoi,
+ * et ne pas le suivre revient à ne jamais reconnaître un arbre.
+ *
+ * `isObjectArray` de JSONForms fait exactement cette déréférence pour son propre test ;
+ * on la reproduit ici plutôt que de la contourner.
+ */
+export const resolveItemsSchema = (
+  items: JsonSchema | undefined,
+  rootSchema: JsonSchema | undefined,
+): JsonSchema | undefined => {
+  const ref = (items as any)?.$ref
+
+  if (!ref || !rootSchema) {
+    return items
+  }
+
+  try {
+    // Un `$ref` cassé (définition absente, renvoi hors document) fait lever `resolveSchema` :
+    // le tableau retombe alors sur `items` non résolu, et le tester répond simplement « non ».
+    return resolveSchema(rootSchema, ref, rootSchema) ?? items
+  } catch {
+    return items
+  }
+}
+
+/**
  * Tester des tableaux dont les éléments sont un combinateur.
  *
  * `isObjectArrayControl` et `isPrimitiveArrayControl` de JSONForms exigent tous deux un
@@ -72,12 +102,13 @@ export const isCombinatorItemsArray = (
   schema: JsonSchema,
   context: any,
 ): boolean =>
-  schemaMatches(
-    (resolved) =>
-      hasType(resolved, 'array') &&
-      !Array.isArray((resolved as any).items) &&
-      isCombinatorSchema((resolved as any).items),
-  )(uischema, schema, context)
+  schemaMatches((resolved, rootSchema) => {
+    if (!hasType(resolved, 'array') || Array.isArray((resolved as any).items)) {
+      return false
+    }
+
+    return isCombinatorSchema(resolveItemsSchema((resolved as any).items, rootSchema))
+  })(uischema, schema, context)
 
 /** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
 export const isArrayAtCapacity = (length: number, maxItems: number | undefined): boolean => {

@@ -69,13 +69,20 @@ Palette, arbre réordonnable par glisser-déposer, inspecteur de propriétés, a
 | `string` + `options.multi` | `UTextarea` |
 | `string` + `format: password` | `UInput` + bascule de visibilité |
 | `string` + `options.wysiwyg` | `UEditor` + `UEditorToolbar` |
+| `string` + `options.format: pin` | `UPinInput` |
+| `string` + `format: color` | `UColorPicker` en popover + saisie |
+| `string` + `format: data-url` | `UFileUpload` |
 | `number` / `integer` | `UInputNumber` |
 | `number` + `options.slider` | `USlider` |
+| `number` + `options.format: rating` | `UInputRating` |
 | `boolean` | `UCheckbox` (`USwitch` via `options.toggle`) |
 | `enum` | `USelectMenu` |
+| `enum` + `options.format: select` | `USelect` (sans recherche) |
 | `enum` + `options.format: radio` | `URadioGroup` |
 | `string` + `options.api` | `UInputMenu` (recherche distante) |
 | `format: date` / `date-time` / `time` | `UInputDate` / `UInputTime` |
+| `format: date` + `options.format: calendar` | `UCalendar` déplié |
+| `array` de `string` + `options.format: tags` | `UInputTags` |
 | `array` | cartes répétables (ajout, réordonnancement, suppression) |
 | `oneOf` | sélecteur de variante + sous-formulaire |
 | `Group` | `UCard` titrée |
