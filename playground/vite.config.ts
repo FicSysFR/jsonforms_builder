@@ -3,7 +3,19 @@ import vue from '@vitejs/plugin-vue'
 import pugPlugin from 'vite-plugin-pug'
 import ui from '@nuxt/ui/vite'
 import type { Plugin } from 'vite'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { expressDevPlugin } from './express-server'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+/**
+ * GitHub Pages serves the site under `/jsonforms_builder/`. The playground SPA
+ * lives at `/jsonforms_builder/play/` (copied into `docs/public/play`) so it does
+ * not collide with the VitePress page `/playground`.
+ * Local `yarn start:dev` keeps `base: '/'`.
+ */
+const playgroundBase = process.env.PLAYGROUND_BASE ?? '/'
 
 /**
  * Stub for `#build/nuxt-icon-client-bundle`.
@@ -55,6 +67,7 @@ export const useAsyncData = async (_key, handler) => {
 }
 
 export default defineConfig({
+  base: playgroundBase,
   plugins: [
     nuxtIconVueShims(),
     // `ui()` first: it sets `optimizeDeps.exclude` on `@nuxt/ui` (required for Vite
@@ -86,6 +99,11 @@ export default defineConfig({
     }),
     expressDevPlugin(),
   ],
+
+  build: {
+    outDir: path.resolve(__dirname, '../docs/public/play'),
+    emptyOutDir: true,
+  },
 
   optimizeDeps: {
     /*

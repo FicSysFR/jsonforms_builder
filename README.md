@@ -1,6 +1,7 @@
 # JSON Forms Builder
 
 [![CI](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml/badge.svg)](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-00A86B)](https://tacxou.github.io/jsonforms_builder/)
 [![codecov](https://codecov.io/gh/tacxou/jsonforms_builder/branch/main/graph/badge.svg)](https://codecov.io/gh/tacxou/jsonforms_builder)
 ![NPM Version](https://img.shields.io/npm/v/@tacxou/jsonforms_builder)
 ![NPM Downloads](https://img.shields.io/npm/dm/@tacxou/jsonforms_builder)
@@ -68,7 +69,10 @@ Palette, drag-and-drop reorderable tree, property inspector, live preview, and J
 | `string` | `UInput` |
 | `string` + `options.multi` | `UTextarea` |
 | `string` + `format: password` | `UInput` + visibility toggle |
-| `object` + `options.wysiwyg` | `UEditor` + `UEditorToolbar` (ProseMirror JSON) |
+| `object` / `string` + `options.wysiwyg` | `UEditor` (JSON or HTML via `contentType`) |
+| WYSIWYG images | upload dropzone, drag-resize, bubble replace/delete |
+
+WYSIWYG image options: `onImageUpload(file) => Promise<url>` (default: data URL), `imageMaxSize`, `imageAccept`, or `image: false` to disable.
 | `string` + `options.format: pin` | `UPinInput` |
 | `string` + `format: color` | `UColorPicker` in a popover + text input |
 | `string` + `format: data-url` | `UFileUpload` |
@@ -204,7 +208,9 @@ as the sole package manager: `yarn.lock` is authoritative — do not install wit
 
 ```bash
 yarn install
-yarn start:dev        # playground: example gallery + builder
+yarn start:dev        # playground: documentation + examples + builder
+yarn docs:dev         # VitePress documentation site (local)
+yarn docs:build       # build docs + playground for GitHub Pages
 yarn build            # library build (es + cjs + declarations)
 yarn test             # Vitest suite
 yarn test:watch       # same, watch mode
@@ -212,6 +218,20 @@ yarn test:coverage    # v8 coverage → ./coverage/lcov.info
 yarn lint             # Biome: lint + format check
 yarn lint:fix         # apply safe fixes and reformat
 ```
+
+### Documentation site (GitHub Pages)
+
+The VitePress site in `docs/` is published to
+[GitHub Pages](https://tacxou.github.io/jsonforms_builder/) and embeds the
+interactive playground.
+
+In the playground sidebar:
+
+- **Documentation** — Nuxt UI control showcases (`nuxt-*`, control options, …)
+- **Examples** — JSONForms demos, layouts, compositions, and edge cases
+
+Enable Pages in the repository settings (**Settings → Pages → Source: GitHub Actions**).
+The workflow `.github/workflows/deploy-docs.yml` builds and deploys on every push to `main`.
 
 Linting and formatting are handled by **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
 replacing ESLint and Prettier. Two limits come from the Vue + Pug stack:

@@ -7,6 +7,11 @@ coverage/
 playground/auto-imports.d.ts
 playground/components.d.ts
 
+# VitePress
+docs/.vitepress/cache
+docs/.vitepress/dist
+docs/public/play/**
+
 yarn-debug.log*
 yarn-error.log*
 .env

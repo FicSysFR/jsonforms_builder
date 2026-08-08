@@ -1,0 +1,45 @@
+:root {
+  --vp-c-brand-1: #00a86b;
+  --vp-c-brand-2: #00c27a;
+  --vp-c-brand-3: #00945e;
+  --vp-c-brand-soft: rgba(0, 168, 107, 0.12);
+}
+
+.playground-frame {
+  width: 100%;
+  height: calc(100vh - var(--vp-nav-height) - 2rem);
+  min-height: 36rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+}
+
+.playground-page .VPDoc {
+  padding: 0 !important;
+}
+
+.playground-page .content-container {
+  max-width: 100% !important;
+}
+
+.playground-page .aside {
+  display: none !important;
+}
+
+/* API tables — denser, Quasar/Vuetify-like */
+.vp-doc table {
+  display: table;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.vp-doc table th:first-child,
+.vp-doc table td:first-child {
+  white-space: nowrap;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.85em;
+}
+
+.vp-doc table code {
+  white-space: nowrap;
+}

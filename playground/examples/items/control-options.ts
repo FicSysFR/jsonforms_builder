@@ -124,7 +124,11 @@ export const extendedSchema = {
     },
     objectDoc: {
       type: 'object',
-      description: 'WYSIWYG Example',
+      description: 'WYSIWYG Example (JSON)',
+    },
+    htmlDoc: {
+      type: 'string',
+      description: 'WYSIWYG Example (HTML)',
     },
     slider: {
       type: 'number',
@@ -166,6 +170,16 @@ export const extendedUischema = {
       scope: '#/properties/objectDoc',
       options: {
         wysiwyg: true,
+        contentType: 'json',
+      },
+    },
+    {
+      type: 'Control',
+      scope: '#/properties/htmlDoc',
+      options: {
+        wysiwyg: true,
+        contentType: 'html',
+        placeholder: 'Saisie HTML…',
       },
     },
     {
@@ -223,6 +237,7 @@ export const extendedUischema = {
 
 export const extendedData = {
   multilineString: 'Multi-\nline\nexample',
+  htmlDoc: '<p>Exemple en <strong>HTML</strong>.</p>',
   objectDoc: {
     type: 'doc',
     content: [

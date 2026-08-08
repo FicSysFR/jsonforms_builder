@@ -6,9 +6,17 @@ import type {
   UISchemaElement,
 } from '@jsonforms/core'
 
+/** Sidebar bucket in the playground: living docs vs demo / edge-case gallery. */
+export type ExampleSection = 'docs' | 'examples'
+
 export interface ExampleDescription {
   name: string
   label: string
+  /**
+   * `docs` — Nuxt UI showcases and option references (documentation).
+   * `examples` — JSONForms demos, edge cases, and sample forms (default).
+   */
+  section?: ExampleSection
   data: unknown
   schema: JsonSchema
   uischema: UISchemaElement

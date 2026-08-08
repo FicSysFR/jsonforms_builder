@@ -104,7 +104,7 @@ export const uischema = {
     {
       type: 'Control',
       scope: '#/properties/observations',
-      options: { wysiwyg: true, placeholder: 'Décrivez la journée…' },
+      options: { wysiwyg: true, contentType: 'json', placeholder: 'Décrivez la journée…' },
     },
   ],
 }

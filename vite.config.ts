@@ -38,6 +38,9 @@ export default defineConfig({
         /^@nuxt\/ui(\/.*)?$/,
         '@jsonforms/core',
         '@jsonforms/vue',
+        // TipTap is provided by the host via `@nuxt/ui` — keep a single copy so
+        // ProseMirror plugins stay identity-stable (and WYSIWYG image extensions resolve).
+        /^@tiptap\//,
         // Externalized to avoid shipping a duplicate: Nuxt UI already provides
         // `@internationalized/date`, and `defu`/`radash` are plain ESM with no interop trap.
         '@internationalized/date',

@@ -11,7 +11,7 @@ u-app
           title="JSONForms Builder — Nuxt UI Playground"
         ) JSONForms Builder
         u-button(
-          :label="mode === 'renderers' ? 'Open builder' : 'Back to examples'"
+          :label="mode === 'renderers' ? 'Open builder' : 'Back to gallery'"
           :icon="mode === 'renderers' ? 'i-lucide-pencil-ruler' : 'i-lucide-list'"
           color="neutral"
           variant="outline"
@@ -45,8 +45,17 @@ u-app
       //- independently of the form when it exceeds the viewport.
       //- The search bar stays outside the scroll area so it remains reachable.
       .flex.flex-col.gap-2(
-        class="max-h-56 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-56 lg:shrink-0"
+        class="max-h-72 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-64 lg:shrink-0"
       )
+        u-tabs(
+          v-model="gallerySection"
+          :items="sectionTabs"
+          value-key="value"
+          size="sm"
+          class="w-full"
+          :ui="{ list: 'w-full' }"
+        )
+        p.text-xs.text-muted.leading-snug {{ sectionHint }}
         u-input(
           v-model="exampleQuery"
           icon="i-lucide-search"
@@ -78,7 +87,7 @@ u-app
           )
           p.py-2.text-center.text-xs.text-muted(
             v-if="filteredExamples.length === 0"
-          ) No examples
+          ) {{ gallerySection === 'docs' ? 'No documentation samples' : 'No examples' }}
 
       .min-w-0.flex-1.space-y-3
         .flex.flex-wrap.items-center.gap-2
@@ -91,7 +100,7 @@ u-app
             :ui="{ list: 'w-full sm:w-auto' }"
           )
           u-button(
-            v-if="inspectTab !== 'form'"
+            v-if="inspectTab === 'data' || inspectTab === 'schema' || inspectTab === 'uischema'"
             :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
             :label="copied ? 'Copied' : 'Copy'"
             color="neutral"
@@ -101,28 +110,46 @@ u-app
           )
 
         //- Keep the form mounted (`v-show`) so switching tabs does not reset field state.
-        u-card(v-show="inspectTab === 'form'" :ui="{ body: 'p-6 sm:p-8' }")
-          json-forms(
-            :key="example.name"
-            :data="data"
-            :schema="example.schema"
-            :uischema="example.uischema"
-            :renderers="renderers"
-            :i18n="i18n"
-            :ajv="ajv"
-            :additional-errors="additionalErrors"
-            :config="{ ...example.config }"
-            validation-mode="ValidateAndShow"
-            @change="onChange"
+        .space-y-4(v-show="inspectTab === 'form'")
+          u-card(:ui="{ body: 'p-6 sm:p-8' }")
+            json-forms(
+              :key="example.name"
+              :data="data"
+              :schema="example.schema"
+              :uischema="example.uischema"
+              :renderers="renderers"
+              :i18n="i18n"
+              :ajv="ajv"
+              :additional-errors="additionalErrors"
+              :config="{ ...example.config }"
+              validation-mode="ValidateAndShow"
+              @change="onChange"
+            )
+          //- Quasar-style Props API under the live demo (Documentation section only).
+          u-card(
+            v-if="gallerySection === 'docs' && apiGroups.length > 0"
+            :ui="{ body: 'p-4 sm:p-6 space-y-1' }"
           )
+            .flex.flex-wrap.items-baseline.justify-between.gap-2.mb-3
+              h2.text-base.font-semibold.tracking-tight API — Options
+              p.text-xs.text-muted Name · Type · Default · Description
+            api-props-table(:groups="apiGroups")
 
-        u-card(v-if="inspectTab !== 'form'" :ui="{ body: 'p-0' }")
+        u-card(v-if="inspectTab === 'api'" :ui="{ body: 'p-4 sm:p-6' }")
+          .flex.flex-wrap.items-baseline.justify-between.gap-2.mb-3
+            h2.text-base.font-semibold.tracking-tight API — Options
+            p.text-xs.text-muted Name · Type · Default · Description
+          api-props-table(:groups="apiGroups")
+
+        u-card(
+          v-if="inspectTab === 'data' || inspectTab === 'schema' || inspectTab === 'uischema'"
+          :ui="{ body: 'p-0' }"
+        )
           //- `max-h-[calc(…)]` must be an attribute: Pug treats `/` as text otherwise.
           pre.overflow-auto.p-6.text-xs.leading-relaxed(
             class="max-h-[calc(100dvh-12rem)]"
             v-text="inspectJson"
-          )
-</template>
+          )</template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, toRaw, watch } from 'vue'
@@ -132,35 +159,84 @@ import type { JsonFormsI18nState } from '@jsonforms/core'
 import type { ErrorObject } from 'ajv'
 import { get } from 'radash'
 import { allRenderers, createAjv, FormBuilder, type FormDefinition } from '../src'
+import type { ExampleSection } from './examples/example'
 import { getExamples } from './examples/register'
+import ApiPropsTable from './docs-api/ApiPropsTable.vue'
+import { getApiGroupsForExample } from './docs-api/props'
 
 const examples = getExamples()
 const renderers = Object.freeze(allRenderers)
 const additionalErrors: ErrorObject[] = []
 const ajv = createAjv()
 
+const initialParams = new URLSearchParams(window.location.search)
+
+/** Documentation showcases vs demo / edge-case gallery; carried by `?section=`. */
+const gallerySection = ref<ExampleSection>(
+  initialParams.get('section') === 'examples' ? 'examples' : 'docs',
+)
+const sectionTabs = [
+  { label: 'Documentation', value: 'docs' as const },
+  { label: 'Examples', value: 'examples' as const },
+]
+const sectionHint = computed(() =>
+  gallerySection.value === 'docs'
+    ? 'Vitrines + tableaux API (Name / Type / Default / Description).'
+    : 'JSONForms demos, layouts, compositions, and edge cases.',
+)
+
 /** Filters the sidebar list by example label or technical name; carried by `?q=`. */
-const exampleQuery = ref(new URLSearchParams(window.location.search).get('q') ?? '')
+const exampleQuery = ref(initialParams.get('q') ?? '')
+
+/** The current example is carried by `?example=` so links stay shareable. */
+const selected = ref(initialParams.get('example') ?? '')
+
+/** Top-level view for the selected example: form preview, API props, or JSON sources. */
+type InspectTab = 'form' | 'api' | 'data' | 'schema' | 'uischema'
+const inspectTab = ref<InspectTab>(initialParams.get('tab') === 'api' ? 'api' : 'form')
+
 const filteredExamples = computed(() => {
+  const inSection = examples.filter((item) => item.section === gallerySection.value)
   const q = exampleQuery.value.trim().toLowerCase()
   if (!q) {
-    return examples
+    return inSection
   }
-  return examples.filter(
+  return inSection.filter(
     (item) => item.label.toLowerCase().includes(q) || item.name.toLowerCase().includes(q),
   )
 })
 
-watch(exampleQuery, (query) => {
+const syncGalleryParams = () => {
   const params = new URLSearchParams(window.location.search)
-  const trimmed = query.trim()
+  params.set('section', gallerySection.value)
+  const trimmed = exampleQuery.value.trim()
   if (trimmed) {
     params.set('q', trimmed)
   } else {
     params.delete('q')
   }
-  const search = params.toString()
-  window.history.replaceState({}, '', search ? `?${search}` : window.location.pathname)
+  if (selected.value) {
+    params.set('example', selected.value)
+  }
+  if (inspectTab.value === 'api') {
+    params.set('tab', 'api')
+  } else {
+    params.delete('tab')
+  }
+  window.history.replaceState({}, '', `?${params.toString()}`)
+}
+
+watch([exampleQuery, gallerySection, inspectTab], syncGalleryParams)
+
+watch(gallerySection, () => {
+  const stillVisible = filteredExamples.value.some((item) => item.name === selected.value)
+  if (!stillVisible && filteredExamples.value[0]) {
+    selected.value = filteredExamples.value[0].name
+    inspectTab.value = 'form'
+  }
+  if (gallerySection.value !== 'docs' && inspectTab.value === 'api') {
+    inspectTab.value = 'form'
+  }
 })
 
 const localeItems = [
@@ -186,18 +262,24 @@ const data = ref<unknown>({})
 const mode = ref<'renderers' | 'builder'>('renderers')
 const builderDefinition = ref<Partial<FormDefinition>>({})
 
-/** The current example is carried by `?example=` so links stay shareable. */
-const selected = ref(new URLSearchParams(window.location.search).get('example') ?? '')
+const example = computed(() => {
+  const byName = examples.find((e) => e.name === selected.value)
+  if (byName) {
+    return byName
+  }
+  return examples.find((e) => e.section === gallerySection.value) ?? examples[0]
+})
 
-const example = computed(() => examples.find((e) => e.name === selected.value) ?? examples[0])
+const apiGroups = computed(() => getApiGroupsForExample(example.value.name))
 
 watch(
   example,
   (current) => {
     selected.value = current.name
-    const params = new URLSearchParams(window.location.search)
-    params.set('example', current.name)
-    window.history.replaceState({}, '', `?${params.toString()}`)
+    if (current.section && current.section !== gallerySection.value) {
+      gallerySection.value = current.section
+    }
+    syncGalleryParams()
     /*
      * Copy the data *while preserving its shape*.
      *
@@ -236,19 +318,22 @@ const onChange = (event: JsonFormsChangeEvent) => {
   data.value = event.data
 }
 
-/** Top-level view for the selected example: form preview or JSON sources. */
-type InspectTab = 'form' | 'data' | 'schema' | 'uischema'
-const inspectTab = ref<InspectTab>('form')
-const inspectTabs = [
-  { label: 'Form', value: 'form' as const },
-  { label: 'Data', value: 'data' as const },
-  { label: 'Schema', value: 'schema' as const },
-  { label: 'UI Schema', value: 'uischema' as const },
-]
+const inspectTabs = computed(() => {
+  const tabs: { label: string; value: InspectTab }[] = [{ label: 'Form', value: 'form' }]
+  if (gallerySection.value === 'docs') {
+    tabs.push({ label: 'API', value: 'api' })
+  }
+  tabs.push(
+    { label: 'Data', value: 'data' },
+    { label: 'Schema', value: 'schema' },
+    { label: 'UI Schema', value: 'uischema' },
+  )
+  return tabs
+})
 
 const inspectJson = computed(() => {
   const tab = inspectTab.value
-  if (tab === 'form') {
+  if (tab === 'form' || tab === 'api') {
     return ''
   }
   const value =
@@ -258,7 +343,7 @@ const inspectJson = computed(() => {
 
 const { copy, copied } = useClipboard({ copiedDuring: 1500 })
 const copyInspectJson = () => {
-  if (inspectTab.value === 'form' || !inspectJson.value) {
+  if (inspectTab.value === 'form' || inspectTab.value === 'api' || !inspectJson.value) {
     return
   }
   void copy(inspectJson.value)
