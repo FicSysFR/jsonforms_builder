@@ -18,14 +18,14 @@ describe('isRenderableObjectSchema', () => {
 
   it('accepts a union that still declares properties', () => {
     expect(
-      isRenderableObjectSchema({ type: ['object', 'boolean'], properties: { a: {} } } as never),
+      isRenderableObjectSchema({ type: ['object', 'boolean'], properties: { a: {} } }),
     ).toBe(true)
   })
 
   it('accepts patternProperties as renderable content', () => {
-    expect(
-      isRenderableObjectSchema({ type: ['object', 'string'], patternProperties: {} } as never),
-    ).toBe(true)
+    expect(isRenderableObjectSchema({ type: ['object', 'string'], patternProperties: {} })).toBe(
+      true,
+    )
   })
 
   /**
@@ -36,12 +36,12 @@ describe('isRenderableObjectSchema', () => {
     expect(
       isRenderableObjectSchema({
         type: ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string'],
-      } as never),
+      }),
     ).toBe(false)
   })
 
   it('keeps a single-entry object union', () => {
-    expect(isRenderableObjectSchema({ type: ['object'] } as never)).toBe(true)
+    expect(isRenderableObjectSchema({ type: ['object'] })).toBe(true)
   })
 })
 

@@ -70,7 +70,7 @@ const controlRenderer = defineComponent({
      * `properties` exploitables, la disposition générée ne décrit que l'objet lui-même,
      * et la redispatcher ramènerait ici sans fin. Cf. `hasRenderableControl`.
      */
-    return useObjectControl({ jsonFormsControl: useJsonFormsControl(props) as any })
+    return useObjectControl({ jsonFormsControl: useJsonFormsControl(props) })
   },
 })
 

@@ -1,11 +1,12 @@
 import { computed } from 'vue'
 import { Generate, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
+import type { useJsonFormsControl } from '@jsonforms/vue'
 import { useUiControl } from '../utils'
 
-type UiControlInput = Parameters<typeof useUiControl>[0]
+type JsonFormsControl = ReturnType<typeof useJsonFormsControl>
 
 type UseObjectControlOptions = {
-  jsonFormsControl: UiControlInput
+  jsonFormsControl: JsonFormsControl
 }
 
 /**
@@ -22,13 +23,11 @@ type UseObjectControlOptions = {
  * c'est bien un objet, et le renderer y affiche les clés hors schéma.
  */
 export const isRenderableObjectSchema = (schema: JsonSchema | undefined): boolean => {
-  const node = schema as (JsonSchema & { patternProperties?: unknown }) | undefined
-
-  if (node?.properties || node?.patternProperties) {
+  if (schema?.properties || schema?.patternProperties) {
     return true
   }
 
-  const type = node?.type
+  const type = schema?.type
 
   return !Array.isArray(type) || type.every((entry) => entry === 'object')
 }
@@ -67,7 +66,7 @@ export const hasRenderableControl = (element: unknown): boolean => {
 /** Clés présentes dans la donnée mais absentes des `properties` du schéma. */
 export const collectExtraProperties = (
   data: unknown,
-  properties: Record<string, unknown> | undefined,
+  properties: JsonSchema['properties'],
 ): { key: string; value: string }[] => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return []
@@ -84,16 +83,14 @@ export const collectExtraProperties = (
 }
 
 export const useObjectControl = ({ jsonFormsControl }: UseObjectControlOptions) => {
-  // `as any` comme dans `useArrayControl` : `rootSchema` fait partie des props que
-  // JSONForms ajoute au contrôle, mais pas du type minimal attendu par `useUiControl`.
-  const control = useUiControl(jsonFormsControl as any)
+  const control = useUiControl(jsonFormsControl)
 
   /** `options.detail` prime, sinon on génère la disposition depuis le schéma. */
   const detailUiSchema = computed<UISchemaElement | undefined>(() => {
-    const detail = (control.control.value.uischema as any)?.options?.detail
+    const detail = control.control.value.uischema.options?.detail as UISchemaElement | undefined
 
     if (detail) {
-      return detail as UISchemaElement
+      return detail
     }
 
     const generated = Generate.uiSchema(
