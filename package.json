@@ -45,6 +45,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:regression": "vitest run tests/regression",
     "test:perf": "vitest run tests/performance",
     "coverage:renderers": "yarn build && tsx playground/examples/coverage.ts"
   },

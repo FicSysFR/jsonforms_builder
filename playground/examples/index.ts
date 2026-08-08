@@ -1,9 +1,9 @@
 /**
- * Import à effet de bord, chargé par `app.ts`.
+ * Side-effect import, loaded by `app.ts`.
  *
- * `eager: true` transforme le motif en imports statiques de chaque `items/*.ts`, dont le
- * corps appelle `registerExamples` au chargement. C'est ce qui peuple le registre que
- * `getExamples` restitue ensuite — le résultat du glob lui-même ne sert à rien, seul son
- * effet de bord compte.
+ * `eager: true` turns the pattern into static imports of each `items/*.ts`, whose
+ * body calls `registerExamples` on load. That is what populates the registry that
+ * `getExamples` later returns — the glob result itself is unused; only its side
+ * effect matters.
  */
 import.meta.glob('./items/*.ts', { eager: true })

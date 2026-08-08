@@ -11,7 +11,7 @@ type UseFileUploadControlOptions = {
 
 export type ParsedDataUrl = {
   mime: string
-  /** Nom du fichier, conservé dans le paramètre non standard `;name=`. */
+  /** File name, kept in the non-standard `;name=` parameter. */
   name?: string
   payload: string
   isBase64: boolean
@@ -21,11 +21,11 @@ const FALLBACK_MIME = 'application/octet-stream'
 const FALLBACK_NAME = 'fichier'
 
 /**
- * Découpe une URL de données `data:<mime>[;name=…][;base64],<charge utile>`.
+ * Parses a data URL `data:<mime>[;name=…][;base64],<payload>`.
  *
- * Le paramètre `name` ne fait pas partie de la RFC 2397 mais y est toléré : c'est le seul
- * endroit où loger le nom d'origine du fichier, qu'un schéma `type: "string"` n'a par
- * ailleurs aucun moyen de porter.
+ * The `name` parameter is not part of RFC 2397 but is tolerated there: it is the only
+ * place to store the original file name, which a `type: "string"` schema otherwise
+ * has no way to carry.
  */
 export const parseDataUrl = (value: unknown): ParsedDataUrl | undefined => {
   if (typeof value !== 'string') {
@@ -46,8 +46,8 @@ export const parseDataUrl = (value: unknown): ParsedDataUrl | undefined => {
     try {
       name = decodeURIComponent(rawName)
     } catch {
-      // Un `%` isolé dans le nom suffit à faire lever `decodeURIComponent` : mieux vaut
-      // afficher le nom tel quel qu'échouer à ouvrir le fichier.
+      // A lone `%` in the name is enough for `decodeURIComponent` to throw: better to
+      // show the name as-is than fail to open the file.
       name = rawName
     }
   }
@@ -74,7 +74,7 @@ export const buildDataUrl = ({
   return `data:${mime || FALLBACK_MIME}${namePart};base64,${payload}`
 }
 
-/** Filtre du sélecteur de fichiers : `options.accept` prime, sinon `contentMediaType`. */
+/** File picker filter: `options.accept` wins, otherwise `contentMediaType`. */
 export const resolveAccept = (
   optionAccept: unknown,
   schema: (JsonSchema & { contentMediaType?: string }) | undefined,
@@ -92,12 +92,12 @@ export const resolveAccept = (
   return schema?.contentMediaType ?? itemMediaType ?? '*'
 }
 
-/** Un schéma `array` accepte plusieurs fichiers ; une `string` un seul. */
+/** An `array` schema accepts multiple files; a `string` accepts one. */
 export const isMultipleFileSchema = (schema: JsonSchema | undefined): boolean => {
   return schema?.type === 'array'
 }
 
-/** Taille lisible, pour la ligne d'aide sous le dépôt. */
+/** Human-readable size, for the help line under the drop zone. */
 export const formatFileSize = (bytes: unknown): string => {
   const size = Number(bytes)
   if (!Number.isFinite(size) || size < 0) {
@@ -116,7 +116,7 @@ export const formatFileSize = (bytes: unknown): string => {
   return `${value >= 10 || unit === 0 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`
 }
 
-/** Reconstruit un `File` à partir d'une URL de données, pour réafficher un formulaire chargé. */
+/** Rebuilds a `File` from a data URL, to redisplay a loaded form. */
 export const dataUrlToFile = (value: unknown): File | undefined => {
   const parsed = parseDataUrl(value)
   if (!parsed || !parsed.isBase64) {
@@ -136,7 +136,7 @@ export const dataUrlToFile = (value: unknown): File | undefined => {
   }
 }
 
-/** Chemin aller : le `File` du composant vers l'URL de données stockée dans le modèle. */
+/** Outbound path: the component's `File` to the data URL stored in the model. */
 export const fileToDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

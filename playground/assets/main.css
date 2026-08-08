@@ -2,19 +2,19 @@
 @import "@nuxt/ui";
 
 /*
- * Tailwind 4 découvre ses classes en scannant les sources du projet, et ignore tout ce
- * qui sort de sa racine. Sans cette ligne, les utilitaires employés par les renderers
- * (`border-primary`, `bg-primary/5`, `text-dimmed`…) ne sont jamais générés : les classes
- * apparaissent bien dans le DOM, mais ne correspondent à aucune règle CSS.
+ * Tailwind 4 discovers its classes by scanning project sources, and ignores
+ * anything outside its root. Without this line, utilities used by the renderers
+ * (`border-primary`, `bg-primary/5`, `text-dimmed`…) are never generated: the
+ * classes appear in the DOM, but match no CSS rule.
  *
- * Une application qui consomme le paquet publié vise sa `dist` :
+ * An app that consumes the published package should target its `dist`:
  *   @source "../node_modules/@tacxou/jsonforms_builder/dist";
  */
 @source "../../src";
 
 /*
- * Palette de démo : le playground vérifie que les renderers héritent des couleurs
- * de marque du consommateur sans une seule ligne de CSS propre à la librairie.
+ * Demo palette: the playground checks that renderers inherit the consumer's
+ * brand colors without a single line of library-owned CSS.
  */
 @theme static {
   --color-brand-50: #f7fbe9;
@@ -46,7 +46,7 @@
   --ui-radius: 0.375rem;
 }
 
-/* Thème sombre : primary = cobalt. */
+/* Dark theme: primary = cobalt. */
 .dark {
   --ui-color-primary-50: var(--color-cobalt-50);
   --ui-color-primary-100: var(--color-cobalt-100);

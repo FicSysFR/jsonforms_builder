@@ -6,16 +6,9 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 import {
-  and,
   Generate,
-  isAllOfControl,
-  isAnyOfControl,
   isObjectControl,
-  isOneOfControl,
-  isStringControl,
-  or,
   rankWith,
-  schemaMatches,
   type ControlElement,
   type JsonSchema,
   type UISchemaElement,
@@ -39,38 +32,9 @@ import {
 } from '../../src/composables/useOneOfControl'
 import { useFormBuilder } from '../../src/builder/useFormBuilder'
 import { buildNestedAllOfSchema } from '../performance/helpers'
+import { resolveWinner } from './testers-mirror'
 
-/** Miroir des testers réels (object.vue / all-of.vue / one-of.vue / input.vue). */
-const objectTester = rankWith(2, and(isObjectControl, schemaMatches(isRenderableObjectSchema)))
 const bareObjectTester = rankWith(2, isObjectControl)
-const allOfTester = rankWith(4, isAllOfControl)
-const oneOfTester = rankWith(3, or(isOneOfControl, isAnyOfControl))
-const stringTester = rankWith(1, isStringControl)
-
-const regressionRegistry: Array<{ name: string; tester: ReturnType<typeof rankWith> }> = [
-    { name: 'StringControl', tester: stringTester },
-    { name: 'ObjectControl', tester: objectTester },
-    { name: 'OneOfControl', tester: oneOfTester },
-    { name: 'AllOfControl', tester: allOfTester },
-  ]
-
-const resolveBest = (
-  uischema: UISchemaElement,
-  schema: JsonSchema,
-  rootSchema: JsonSchema,
-): { name: string; rank: number } => {
-  const context = { rootSchema, config: {} }
-  let best = { name: 'none', rank: -1 }
-
-  for (const entry of regressionRegistry) {
-    const rank = entry.tester(uischema, schema, context)
-    if (rank > best.rank) {
-      best = { name: entry.name, rank }
-    }
-  }
-
-  return best
-}
 
 /** Chaîne GEDCOM-like : person → subject → conclusion. */
 const gedcomRoot: JsonSchema = {
@@ -120,11 +84,9 @@ describe('REGRESSION — dispatch allOf / object / union', () => {
      * n’affichait que les properties locales — jamais celles des branches.
      */
     const ui = { type: 'Control', scope: '#/properties/person' } as ControlElement
-    const best = resolveBest(ui, gedcomRoot, gedcomRoot)
+    const best = resolveWinner(ui, gedcomRoot, gedcomRoot)
 
     expect(best).toEqual({ name: 'AllOfControl', rank: 4 })
-    expect(allOfTester(ui, gedcomRoot, { rootSchema: gedcomRoot, config: {} })).toBe(4)
-    expect(objectTester(ui, gedcomRoot, { rootSchema: gedcomRoot, config: {} })).toBe(2)
   })
 
   it('REGRESSION: union sans properties n’est pas ObjectControl (carte vide)', () => {
@@ -136,17 +98,16 @@ describe('REGRESSION — dispatch allOf / object / union', () => {
     const context = { rootSchema: gedcomRoot, config: {} }
 
     expect(bareObjectTester(ui, gedcomRoot, context)).toBe(2)
-    expect(objectTester(ui, gedcomRoot, context)).toBe(-1)
     expect(isRenderableObjectSchema(gedcomRoot.properties?.editor as JsonSchema)).toBe(false)
 
-    const best = resolveBest(ui, gedcomRoot, gedcomRoot)
-    expect(best.name).toBe('StringControl')
-    expect(best.rank).toBe(1)
+    const best = resolveWinner(ui, gedcomRoot, gedcomRoot)
+    expect(best?.name).toBe('InputControl')
+    expect(best?.rank).toBe(1)
   })
 
   it('REGRESSION: objet franc avec properties reste ObjectControl', () => {
     const ui = { type: 'Control', scope: '#/properties/plain' } as ControlElement
-    expect(resolveBest(ui, gedcomRoot, gedcomRoot)).toEqual({ name: 'ObjectControl', rank: 2 })
+    expect(resolveWinner(ui, gedcomRoot, gedcomRoot)).toEqual({ name: 'ObjectControl', rank: 2 })
   })
 })
 

@@ -1,13 +1,13 @@
 /**
- * Rejoue la résolution de renderer de JSONForms sur tous les exemples, hors navigateur.
+ * Replays JSONForms renderer resolution across all examples, outside the browser.
  *
- * `DispatchRenderer` retient le renderer de rang maximal parmi ceux dont le tester
- * accepte l'élément ; si tous renvoient -1, il affiche « No applicable renderer found ».
- * On reproduit ce calcul ici pour lister les trous de couverture de façon vérifiable.
+ * `DispatchRenderer` keeps the highest-ranked renderer whose tester accepts the
+ * element; if all return -1, it shows « No applicable renderer found ».
+ * We reproduce that calculation here to list coverage gaps in a verifiable way.
  *
- * On charge la `dist` réelle — donc les vrais testers — après avoir réécrit ses imports
- * de composants Nuxt UI vers un module vide : seuls les testers nous intéressent, et ce
- * sont des fonctions pures.
+ * We load the real `dist` — hence the real testers — after rewriting its Nuxt UI
+ * component imports to an empty module: only the testers matter, and they are
+ * pure functions.
  */
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -33,9 +33,9 @@ const loadRenderers = async (): Promise<RendererEntry[]> => {
   const dist = join(ROOT, 'dist', 'json-formbuilder.es.js')
 
   /*
-   * Le bundle réécrit doit vivre *sous le projet*, pas dans le répertoire temporaire du
-   * système : il conserve des imports nus (`@jsonforms/core`, `vue`…) que Node ne résout
-   * qu'en remontant l'arborescence à la recherche d'un `node_modules`.
+   * The rewritten bundle must live *under the project*, not in the system temp
+   * directory: it keeps bare imports (`@jsonforms/core`, `vue`…) that Node only
+   * resolves by walking up the tree looking for a `node_modules`.
    */
   const cache = join(ROOT, 'node_modules', '.cache')
   mkdirSync(cache, { recursive: true })
@@ -52,8 +52,8 @@ const loadRenderers = async (): Promise<RendererEntry[]> => {
 
     return mod.allRenderers as RendererEntry[]
   } finally {
-    // Le module est déjà en mémoire à ce stade : on peut retirer les fichiers sans
-    // laisser un `jf-coverage-*` de plus à chaque exécution.
+    // The module is already in memory at this point: we can remove the files
+    // without leaving another `jf-coverage-*` behind on every run.
     rmSync(dir, { recursive: true, force: true })
   }
 }
@@ -62,8 +62,8 @@ const allRenderers = await loadRenderers()
 
 const itemsDir = join(HERE, 'items')
 for (const file of readdirSync(itemsDir).filter((f) => f.endsWith('.ts'))) {
-  // `pathToFileURL` : un chemin Windows absolu (`C:\…`) n'est pas un spécificateur
-  // d'import valide, il doit être converti en URL `file://`.
+  // `pathToFileURL`: an absolute Windows path (`C:\…`) is not a valid import
+  // specifier; it must be converted to a `file://` URL.
   await import(pathToFileURL(join(itemsDir, file)).href)
 }
 
@@ -74,16 +74,16 @@ type Gap = {
 }
 
 /**
- * Garde-fou du parcours, **sans valeur de diagnostic**.
+ * Walk guardrail, **not a diagnostic value**.
  *
- * On déplie ici les dispositions générées de façon avide, alors que le navigateur ne
- * déplie que ce qu'il affiche : un schéma légitimement récursif (le méta-schéma JSON
- * Schema, par exemple) descendrait sans fin. Atteindre ce plafond n'est donc pas un
- * défaut, juste une limite d'exploration.
+ * Here we eagerly expand generated layouts, whereas the browser only expands what
+ * it displays: a legitimately recursive schema (the JSON Schema meta-schema, for
+ * example) would descend forever. Hitting this ceiling is therefore not a defect,
+ * just an exploration limit.
  */
 const MAX_DEPTH = 12
 
-/** Renderer retenu pour cet élément — nom et rang —, ou `null` si aucun ne convient. */
+/** Renderer chosen for this element — name and rank — or `null` if none apply. */
 const winner = (
   uischema: UISchemaElement,
   schema: JsonSchema,
@@ -94,7 +94,7 @@ const winner = (
     try {
       rank = entry.tester(uischema, schema, { rootSchema, config: undefined })
     } catch {
-      // Un tester qui lève sur un schéma exotique ne « prend » pas l'élément.
+      // A tester that throws on an exotic schema does not "claim" the element.
     }
 
     if (rank < 0 || (best && rank <= best.rank)) {
@@ -105,10 +105,10 @@ const winner = (
   }, null)
 
 /**
- * Parcourt l'arbre du uischema et collecte les éléments problématiques.
+ * Walks the uischema tree and collects problematic elements.
  *
- * Descend aussi dans les dispositions **générées** par les renderers d'objet, seul moyen
- * de repérer une boucle : celle-ci n'existe pas dans le uischema écrit à la main.
+ * Also descends into layouts **generated** by object renderers — the only way to
+ * spot a loop: it does not exist in the hand-written uischema.
  */
 const walk = (
   uischema: WalkUiSchema,
@@ -128,10 +128,9 @@ const walk = (
     return
   }
 
-  // Les enfants d'un layout reçoivent **le même schéma** que lui : ce sont les testers
-  // qui résolvent le `scope` eux-mêmes (`schemaMatches` appelle `resolveSchema`). Leur
-  // passer un schéma déjà résolu leur ferait résoudre deux fois, et tout paraîtrait
-  // non couvert.
+  // Layout children receive **the same schema** as the layout: the testers resolve
+  // `scope` themselves (`schemaMatches` calls `resolveSchema`). Passing them an
+  // already-resolved schema would resolve twice, and everything would look uncovered.
   if (Array.isArray(uischema.elements)) {
     for (const child of uischema.elements) {
       walk(child, schema, rootSchema, gaps, depth + 1)
@@ -139,7 +138,7 @@ const walk = (
     return
   }
 
-  // Un `Control` sur un objet : on rejoue ce que le renderer produirait.
+  // A `Control` over an object: replay what the renderer would produce.
   if (uischema.type !== 'Control' || !uischema.scope) return
 
   let resolved: JsonSchema | undefined
@@ -150,9 +149,9 @@ const walk = (
   }
 
   /*
-   * Combinateur : chaque branche doit être **résolue** avant d'atteindre le dispatcher.
-   * Lui transmettre un `{ $ref: … }` nu le ferait résoudre un scope contre un schéma qui
-   * n'est qu'un renvoi, et `resolveSchema` part alors en boucle côté navigateur.
+   * Combinator: each branch must be **resolved** before reaching the dispatcher.
+   * Passing it a bare `{ $ref: … }` would resolve a scope against a schema that is
+   * only a pointer, and `resolveSchema` then loops in the browser.
    */
   const branches: JsonSchema[] = resolved?.oneOf ?? resolved?.anyOf ?? []
   for (const branch of branches) {
@@ -186,12 +185,12 @@ const walk = (
   const generated = Generate.uiSchema(resolved, 'VerticalLayout') as WalkUiSchema
 
   /*
-   * Cas dégénéré : faute de `properties`, la génération renvoie un `Control` sur l'objet
-   * lui-même. Redispatché, il bouclerait — c'est ce que le garde-fou du renderer d'objet
-   * intercepte désormais, au prix d'un rendu vide.
+   * Degenerate case: without `properties`, generation returns a `Control` on the
+   * object itself. Redispatched, it would loop — that is what the object renderer's
+   * guardrail now intercepts, at the cost of an empty render.
    *
-   * Ce n'est un défaut que pour `ObjectControlRenderer` : les schémas `allOf` atterrissent
-   * sur leur propre renderer, qui fusionne les branches au lieu de générer à l'aveugle.
+   * This is only a defect for `ObjectControlRenderer`: `allOf` schemas land on their
+   * own renderer, which merges branches instead of generating blindly.
    */
   if (generated?.type === 'Control') {
     if (chosen.name === 'ObjectControlRenderer') {

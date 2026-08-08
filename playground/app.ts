@@ -8,8 +8,8 @@ import ui from '@nuxt/ui/vue-plugin'
 import App from './App.vue'
 
 /**
- * Le playground n'a pas de routes, mais `ULink` — utilisé en interne par `UButton` —
- * injecte la position de route. Sans routeur, chaque bouton émet un avertissement Vue.
+ * The playground has no routes, but `ULink` — used internally by `UButton` —
+ * injects the route location. Without a router, every button emits a Vue warning.
  */
 const router = createRouter({
   history: createWebHistory(),

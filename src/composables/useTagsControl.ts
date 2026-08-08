@@ -10,10 +10,10 @@ type UseTagsControlOptions = {
 }
 
 /**
- * `UInputTags` émet un tableau de chaînes. On écarte les entrées vides (une virgule
- * isolée, un espace validé par `addOnBlur`) et on retombe sur `clearValue` quand il ne
- * reste rien — laisser un `[]` dans le modèle ferait échouer un `minItems: 1` avec un
- * message qui ne correspond à rien de visible à l'écran.
+ * `UInputTags` emits a string array. We drop empty entries (a lone comma,
+ * whitespace confirmed via `addOnBlur`) and fall back to `clearValue` when nothing
+ * remains — leaving `[]` in the model would fail a `minItems: 1` with a
+ * message that matches nothing visible on screen.
  */
 export const createTagsAdaptTarget = (clearValue: unknown) => {
   return (value: unknown): unknown => {
@@ -29,7 +29,7 @@ export const createTagsAdaptTarget = (clearValue: unknown) => {
   }
 }
 
-/** Normalise la donnée stockée vers le tableau attendu par le composant. */
+/** Normalizes stored data to the array expected by the component. */
 export const toTagsModel = (data: unknown): string[] => {
   if (!Array.isArray(data)) {
     return []
@@ -39,14 +39,14 @@ export const toTagsModel = (data: unknown): string[] => {
 }
 
 /**
- * `duplicate` de `UInputTags` autorise les doublons ; `uniqueItems` du schéma les interdit.
- * Les deux disent la même chose en sens inverse.
+ * `UInputTags`' `duplicate` allows duplicates; schema `uniqueItems` forbids them.
+ * The two say the same thing in opposite directions.
  */
 export const allowsDuplicateTags = (uniqueItems: boolean | undefined): boolean => {
   return uniqueItems !== true
 }
 
-/** Séparateurs de saisie : `options.delimiter`, sinon la virgule. */
+/** Input separators: `options.delimiter`, otherwise comma. */
 export const resolveTagsDelimiter = (delimiter: unknown): string => {
   return typeof delimiter === 'string' ? delimiter : ','
 }
@@ -67,7 +67,7 @@ export const useTagsControl = ({
 
   const delimiter = computed(() => resolveTagsDelimiter(control.appliedOptions.value?.delimiter))
 
-  /** Longueur maximale d'une étiquette, tirée du schéma des éléments. */
+  /** Maximum length of a single tag, taken from the items schema. */
   const maxLength = computed(() => {
     const items = control.control.value.schema?.items
 

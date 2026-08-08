@@ -11,16 +11,16 @@ type UseAllOfControlOptions = {
 }
 
 /**
- * Fusionne récursivement les branches `allOf` (et les `$ref`) en un schéma plat
- * exploitable par `Generate.uiSchema`.
+ * Recursively flattens `allOf` branches (and `$ref`s) into a flat schema
+ * usable by `Generate.uiSchema`.
  *
- * Un `allOf` peut lui-même renvoyer vers un autre `allOf` (ex. `person` → `subject` →
- * `conclusion` dans GEDCOM X). Une fusion à un seul niveau perdait alors toutes les
- * propriétés des branches imbriquées.
+ * An `allOf` may itself point to another `allOf` (e.g. `person` → `subject` →
+ * `conclusion` in GEDCOM X). A single-level merge would then lose all
+ * properties from nested branches.
  *
- * Le résultat ne sert qu'à **générer la disposition** : le dispatcher reçoit toujours le
- * schéma d'origine (référence stable), pour que `Resolve` retrouve les propriétés via
- * le repli sur `allOf` et que le `watch(() => props.schema)` de JSON Forms ne reboucle pas.
+ * The result is used only to **generate the layout**: the dispatcher always receives the
+ * original schema (stable reference), so that `Resolve` finds properties via
+ * the `allOf` fallback and JSON Forms' `watch(() => props.schema)` does not loop.
  */
 export const flattenAllOfSchema = (
   schema: JsonSchema | undefined,
@@ -33,7 +33,7 @@ export const flattenAllOfSchema = (
     try {
       current = resolveSchema(rootSchema, current.$ref, rootSchema) ?? current
     } catch {
-      // Renvoi cassé : on garde la forme d'origine plutôt que de faire échouer le rendu.
+      // Broken reference: keep the original shape rather than failing the render.
     }
   }
 
@@ -41,7 +41,7 @@ export const flattenAllOfSchema = (
     return { type: 'object', properties: {}, required: [] }
   }
 
-  // Cycle de `$ref` / allOf : on s'arrête pour ne pas empiler la pile d'appels.
+  // `$ref` / allOf cycle: stop so we do not blow the call stack.
   if (seen.has(current)) {
     return { type: 'object', properties: {}, required: [] }
   }
@@ -73,13 +73,13 @@ export const useAllOfControl = ({ jsonFormsControl }: UseAllOfControlOptions) =>
   const control = useUiControl(jsonFormsControl)
 
   /**
-   * Disposition des branches fusionnées.
+   * Layout for the merged branches.
    *
-   * On mémorise sur l'identité de `schema` / `rootSchema` : le wrapper `control` est
-   * invalidé à chaque erreur ou donnée, mais ces deux références restent stables. Sans
-   * ce cache, `Generate.uiSchema` produirait un nouvel arbre à chaque tick et forcerait
-   * un remount inutile des enfants — le schéma passé au dispatcher, lui, doit rester
-   * l'original (voir le template).
+   * We memoize on the identity of `schema` / `rootSchema`: the `control` wrapper is
+   * invalidated on every error or data change, but those two references stay stable. Without
+   * this cache, `Generate.uiSchema` would produce a new tree every tick and force
+   * an unnecessary remount of children — the schema passed to the dispatcher must remain
+   * the original (see the template).
    */
   let cachedSchema: JsonSchema | undefined
   let cachedRoot: JsonSchema | undefined

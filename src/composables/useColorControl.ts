@@ -9,29 +9,29 @@ type UseColorControlOptions = {
   debounceWait?: number
 }
 
-/** Formats de sortie acceptés par `UColorPicker`. */
+/** Output formats accepted by `UColorPicker`. */
 export const COLOR_FORMATS = ['hex', 'rgb', 'hsl', 'cmyk', 'lab'] as const
 
 export type ColorFormat = (typeof COLOR_FORMATS)[number]
 
-/** Couleur affichée dans la pastille quand le champ est encore vide. */
+/** Color shown in the swatch when the field is still empty. */
 export const DEFAULT_COLOR = '#000000'
 
 export const resolveColorFormat = (option: unknown): ColorFormat => {
   return COLOR_FORMATS.includes(option as ColorFormat) ? (option as ColorFormat) : 'hex'
 }
 
-/** `#abc`, `#aabbcc`, `#aabbccdd` — les trois notations hexadécimales usuelles. */
+/** `#abc`, `#aabbcc`, `#aabbccdd` — the three usual hexadecimal notations. */
 export const isHexColor = (value: unknown): boolean => {
   return typeof value === 'string' && /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)
 }
 
 /**
- * Valeur passée à `background-color` pour la pastille de prévisualisation.
+ * Value passed to `background-color` for the preview swatch.
  *
- * On retombe sur `fallback` plutôt que de laisser une chaîne partielle (`#ab`, saisie en
- * cours) : le navigateur ignore silencieusement une couleur invalide et la pastille
- * garderait celle d'avant, ce qui se lit comme un bug.
+ * We fall back to `fallback` rather than leaving a partial string (`#ab`, mid-typing):
+ * the browser silently ignores an invalid color and the swatch would keep the previous
+ * one, which reads as a bug.
  */
 export const toSwatch = (value: unknown, fallback: string = DEFAULT_COLOR): string => {
   if (typeof value !== 'string') {
@@ -47,7 +47,7 @@ export const toSwatch = (value: unknown, fallback: string = DEFAULT_COLOR): stri
     return isHexColor(trimmed) ? trimmed : fallback
   }
 
-  // `rgb(...)`, `hsl(...)`, `rebeccapurple`… : on fait confiance au navigateur.
+  // `rgb(...)`, `hsl(...)`, `rebeccapurple`…: trust the browser.
   return trimmed
 }
 
@@ -77,12 +77,12 @@ export const useColorControl = ({
     typeof control.control.value.data === 'string' ? control.control.value.data : '',
   )
 
-  /** Couleur de la pastille : la valeur si elle est exploitable, le défaut sinon. */
+  /** Swatch color: the value if usable, otherwise the default. */
   const swatch = computed(() =>
     toSwatch(control.control.value.data, control.control.value.schema?.default ?? DEFAULT_COLOR),
   )
 
-  /** Le champ texte accompagne la pipette ; `options.showInput: false` le retire. */
+  /** The text field accompanies the eyedropper; `options.showInput: false` removes it. */
   const showInput = computed(() => control.appliedOptions.value?.showInput !== false)
 
   return {

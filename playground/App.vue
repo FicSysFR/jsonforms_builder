@@ -1,17 +1,17 @@
 <template lang="pug">
 u-app
   .min-h-screen.bg-default.text-default
-    //- `bg-default/75` va en attribut : Pug ne sait pas lire un `/` dans le raccourci
-    //- de classe et recrache le reste de la ligne en texte brut.
+    //- `bg-default/75` goes in an attribute: Pug cannot parse `/` in the class
+    //- shorthand and dumps the rest of the line as plain text.
     header.sticky.top-0.z-10.border-b.border-default(class="bg-default/75 backdrop-blur")
-      //- `flex-wrap` + `min-w-0` : dans un panneau étroit la barre d'outils passe à la
-      //- ligne au lieu de pousser la page en débordement horizontal.
+      //- `flex-wrap` + `min-w-0`: in a narrow pane the toolbar wraps instead of
+      //- pushing the page into horizontal overflow.
       .flex.flex-wrap.items-center.gap-2.px-4.py-3
         h1.min-w-0.truncate.text-sm.font-semibold.tracking-tight(
           title="JSONForms Builder — Nuxt UI Playground"
         ) JSONForms Builder
         u-button(
-          :label="mode === 'renderers' ? 'Ouvrir le builder' : 'Retour aux exemples'"
+          :label="mode === 'renderers' ? 'Open builder' : 'Back to examples'"
           :icon="mode === 'renderers' ? 'i-lucide-pencil-ruler' : 'i-lucide-list'"
           color="neutral"
           variant="outline"
@@ -31,26 +31,26 @@ u-app
           :aria-pressed="isDark"
           color="neutral"
           variant="ghost"
-          aria-label="Basculer le thème"
+          aria-label="Toggle theme"
           @click="toggleDark()"
         )
 
     .p-4(v-if="mode === 'builder'")
       form-builder(v-model="builderDefinition")
 
-    //- Colonne unique par défaut, barre latérale à partir de `lg` : une largeur fixe
-    //- imposée dès le mobile ferait déborder la page horizontalement.
+    //- Single column by default, sidebar from `lg`: a fixed width from mobile
+    //- would overflow the page horizontally.
     .flex.flex-col.items-stretch.gap-4.p-4(class="lg:flex-row lg:items-start" v-else)
-      //- Sticky + max-height sous le header : la liste d'exemples scrolle
-      //- indépendamment du formulaire quand elle dépasse la fenêtre.
-      //- La barre de recherche reste hors du scroll pour rester accessible.
+      //- Sticky + max-height under the header: the example list scrolls
+      //- independently of the form when it exceeds the viewport.
+      //- The search bar stays outside the scroll area so it remains reachable.
       .flex.flex-col.gap-2(
         class="max-h-56 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-56 lg:shrink-0"
       )
         u-input(
           v-model="exampleQuery"
           icon="i-lucide-search"
-          placeholder="Rechercher…"
+          placeholder="Search…"
           size="sm"
           :ui="{ trailing: 'pe-1' }"
         )
@@ -61,7 +61,7 @@ u-app
               variant="link"
               size="sm"
               icon="i-lucide-x"
-              aria-label="Effacer la recherche"
+              aria-label="Clear search"
               @click="exampleQuery = ''"
             )
         nav.space-y-1.min-h-0.flex-1.overflow-y-auto
@@ -78,7 +78,7 @@ u-app
           )
           p.py-2.text-center.text-xs.text-muted(
             v-if="filteredExamples.length === 0"
-          ) Aucun exemple
+          ) No examples
 
       .min-w-0.flex-1.space-y-4
         u-card
@@ -98,7 +98,7 @@ u-app
 
         u-card(:ui="{ body: 'p-0' }")
           template(#header)
-            span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Données
+            span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Data
           pre.overflow-x-auto.p-4.text-xs(v-text="JSON.stringify(data, null, 2)")
 </template>
 
@@ -117,7 +117,7 @@ const renderers = Object.freeze(allRenderers)
 const additionalErrors: ErrorObject[] = []
 const ajv = createAjv()
 
-/** Filtre la liste latérale sur le libellé ou le nom technique de l'exemple. */
+/** Filters the sidebar list by example label or technical name. */
 const exampleQuery = ref('')
 const filteredExamples = computed(() => {
   const q = exampleQuery.value.trim().toLowerCase()
@@ -134,25 +134,25 @@ const localeItems = [
   { label: 'English', value: 'en' },
 ]
 
-// Hors Nuxt, `useColorMode` n'existe pas : le plugin color-mode de Nuxt UI s'appuie
-// simplement sur `useDark` de VueUse, qui pose la classe `.dark` sur <html>.
+// Outside Nuxt, `useColorMode` does not exist: Nuxt UI's color-mode plugin simply
+// relies on VueUse's `useDark`, which sets the `.dark` class on <html>.
 //
-// À appeler avec des parenthèses (`toggleDark()`) : `useToggle` teste `arguments.length`
-// et, s'il reçoit quoi que ce soit — le `MouseEvent` d'un `@click="toggleDark"` —,
-// l'*assigne* au lieu de basculer.
+// Call with parentheses (`toggleDark()`): `useToggle` checks `arguments.length`
+// and, if it receives anything — the `MouseEvent` from `@click="toggleDark"` —
+// *assigns* it instead of toggling.
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
 const locale = ref<'fr' | 'en'>('fr')
-// `unknown` et non `Record<…>` : la racine d'un exemple peut être un tableau, un scalaire
-// ou rien du tout — cf. le commentaire du `watch` ci-dessous.
+// `unknown` rather than `Record<…>`: an example root may be an array, a scalar,
+// or nothing at all — see the `watch` comment below.
 const data = ref<unknown>({})
 
-/** Bascule entre la galerie de renderers et le builder visuel. */
+/** Toggles between the renderer gallery and the visual builder. */
 const mode = ref<'renderers' | 'builder'>('renderers')
 const builderDefinition = ref<Partial<FormDefinition>>({})
 
-/** L'exemple courant est porté par `?example=` pour garder les liens partageables. */
+/** The current example is carried by `?example=` so links stay shareable. */
 const selected = ref(new URLSearchParams(window.location.search).get('example') ?? '')
 
 const example = computed(() => examples.find((e) => e.name === selected.value) ?? examples[0])
@@ -165,13 +165,13 @@ watch(
     params.set('example', current.name)
     window.history.replaceState({}, '', `?${params.toString()}`)
     /*
-     * Recopier la donnée *en conservant sa forme*.
+     * Copy the data *while preserving its shape*.
      *
-     * Le `{ ...(current.data ?? {}) }` d'avant en faisait toujours un objet : un exemple
-     * dont la racine est un tableau devenait `{ 0: …, 1: … }`, et un exemple sans donnée
-     * (`json-editor`) recevait `{}` là où il déclare `undefined`. Le formulaire partait
-     * alors d'une valeur que son propre schéma rejette — et `addItem` de JSONForms, qui
-     * fait `array.push` sans vérifier, levait `array.push is not a function`.
+     * The previous `{ ...(current.data ?? {}) }` always forced an object: an example
+     * whose root is an array became `{ 0: …, 1: … }`, and an example with no data
+     * (`json-editor`) received `{}` where it declares `undefined`. The form then
+     * started from a value its own schema rejects — and JSONForms' `addItem`, which
+     * does `array.push` without checking, threw `array.push is not a function`.
      */
     data.value =
       current.data === undefined || current.data === null
@@ -184,9 +184,9 @@ watch(
 const i18n = computed<JsonFormsI18nState>(() => ({
   locale: locale.value,
   /**
-   * Sans traduction ni message par défaut, renvoyer `''` plutôt que la clé brute
-   * (`exampleRadioEnum.description`) — JSONForms appelle toujours le traducteur
-   * même quand le schéma n'a pas de description (`defaultMessage` vaut `undefined`).
+   * With neither a translation nor a default message, return `''` rather than the
+   * raw key (`exampleRadioEnum.description`) — JSONForms always calls the translator
+   * even when the schema has no description (`defaultMessage` is `undefined`).
    */
   translate: (key: string, defaultMessage?: string) => {
     const dict = get(example.value.i18n, locale.value, {}) as Record<string, unknown>
@@ -203,11 +203,11 @@ const onChange = (event: JsonFormsChangeEvent) => {
 }
 
 /**
- * Le formulaire est monté avec `:key="example.name"` : changer d'exemple démonte tout.
+ * The form is mounted with `:key="example.name"`: switching examples unmounts everything.
  *
- * Différé d'un tick, car si un menu déroulant était ouvert, le même clic le referme.
- * Démonter dans la foulée laisse le `onClickOutside` de VueUse pointer sur une instance
- * détruite (`Cannot read properties of null (reading 'subTree')`).
+ * Deferred by one tick, because if a dropdown was open, the same click closes it.
+ * Unmounting immediately leaves VueUse's `onClickOutside` pointing at a destroyed
+ * instance (`Cannot read properties of null (reading 'subTree')`).
  */
 const selectExample = async (name: string) => {
   await nextTick()

@@ -10,10 +10,10 @@ type UseRatingControlOptions = {
   debounceWait?: number
 }
 
-/** Nombre d'icônes par défaut, aligné sur `UInputRating`. */
+/** Default number of icons, aligned with `UInputRating`. */
 export const DEFAULT_RATING_LENGTH = 5
 
-/** Ordre de résolution : `options.length` → `maximum` du schéma → défaut. */
+/** Resolution order: `options.length` → schema `maximum` → default. */
 export const resolveRatingLength = (
   optionLength: unknown,
   schemaMaximum: number | undefined,
@@ -31,8 +31,8 @@ export const resolveRatingLength = (
 }
 
 /**
- * `step` de `UInputRating` compte les *subdivisions par icône*, là où `multipleOf` décrit
- * un pas de valeur : `multipleOf: 0.5` (demi-étoiles) correspond donc à `step: 2`.
+ * `UInputRating`'s `step` counts *subdivisions per icon*, whereas `multipleOf` describes
+ * a value step: `multipleOf: 0.5` (half-stars) therefore maps to `step: 2`.
  */
 export const resolveRatingStep = (multipleOf: number | undefined): number => {
   if (!isNumber(multipleOf) || multipleOf <= 0 || multipleOf >= 1) {
@@ -45,9 +45,9 @@ export const resolveRatingStep = (multipleOf: number | undefined): number => {
 }
 
 /**
- * `UInputRating` remet la note à `0` quand on reclique l'icône courante (mode `clearable`).
- * Si le schéma exige un minimum strictement positif, ce `0` n'est pas une note : c'est une
- * absence de note, et on la propage comme telle plutôt que comme une valeur invalide.
+ * `UInputRating` resets the rating to `0` when the current icon is clicked again (`clearable` mode).
+ * If the schema requires a strictly positive minimum, that `0` is not a rating: it is an
+ * absence of rating, and we propagate it as such rather than as an invalid value.
  */
 export const createRatingAdaptTarget = (clearValue: unknown, minimum?: number) => {
   return (value: unknown): unknown => {
@@ -73,8 +73,8 @@ export const useRatingControl = ({
   clearValue,
   debounceWait,
 }: UseRatingControlOptions) => {
-  // `useUiControl` fige `adaptTarget` : le `minimum` est donc relu à chaque appel plutôt
-  // que capturé à la construction, pour suivre un schéma qui changerait en cours de route.
+  // `useUiControl` freezes `adaptTarget`: `minimum` is therefore re-read on each call rather
+  // than captured at construction time, so we follow a schema that may change along the way.
   const adaptTarget = (value: unknown) =>
     createRatingAdaptTarget(clearValue, jsonFormsControl.control.value.schema?.minimum)(value)
 
@@ -95,7 +95,7 @@ export const useRatingControl = ({
     return isNumber(data) ? data : 0
   })
 
-  /** Sans minimum imposé, la note se remet à zéro d'un second clic. */
+  /** Without an imposed minimum, the rating resets to zero on a second click. */
   const clearable = computed(() => {
     if (control.appliedOptions.value?.clearable !== undefined) {
       return Boolean(control.appliedOptions.value.clearable)

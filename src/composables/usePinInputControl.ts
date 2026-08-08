@@ -9,14 +9,14 @@ type UsePinInputControlOptions = {
   debounceWait?: number
 }
 
-/** Longueur retenue quand ni le uischema ni le schéma ne la contraignent. */
+/** Length used when neither the uischema nor the schema constrains it. */
 export const DEFAULT_PIN_LENGTH = 5
 
 /**
- * Longueur déduite d'un quantificateur d'expression régulière : `^\d{6}$` → 6.
+ * Length inferred from a regular-expression quantifier: `^\d{6}$` → 6.
  *
- * Un intervalle (`{4,6}`) renvoie sa borne haute : `UPinInput` a un nombre de cases fixe,
- * mieux vaut en afficher assez que d'empêcher la saisie de valeurs pourtant valides.
+ * A range (`{4,6}`) returns its upper bound: `UPinInput` has a fixed number of cells;
+ * better to show enough of them than to block input of values that are still valid.
  */
 export const readPatternLength = (pattern: string | undefined): number | undefined => {
   const match = pattern?.match(/\{(\d+)(?:,(\d+))?\}/)
@@ -29,7 +29,7 @@ export const readPatternLength = (pattern: string | undefined): number | undefin
   return Number.isInteger(length) && length > 0 ? length : undefined
 }
 
-/** Ordre de résolution : `options.length` → `maxLength` → `minLength` → motif → défaut. */
+/** Resolution order: `options.length` → `maxLength` → `minLength` → pattern → default. */
 export const resolvePinLength = (
   optionLength: unknown,
   schema: { maxLength?: number; minLength?: number; pattern?: string } | undefined,
@@ -51,8 +51,8 @@ export const resolvePinLength = (
 }
 
 /**
- * `UPinInput` travaille sur un tableau de caractères ; le schéma, lui, décrit une chaîne.
- * On recolle donc les cases avant de propager.
+ * `UPinInput` works on a character array; the schema describes a string.
+ * We therefore join the cells before propagating.
  */
 export const createPinAdaptTarget = (clearValue: unknown) => {
   return (value: unknown): unknown => {
@@ -68,7 +68,7 @@ export const createPinAdaptTarget = (clearValue: unknown) => {
   }
 }
 
-/** Chemin inverse : la chaîne stockée vers le tableau de cases. */
+/** Inverse path: the stored string to the array of cells. */
 export const splitPinValue = (value: unknown): string[] => {
   if (typeof value === 'number') {
     return String(value).split('')
@@ -78,8 +78,8 @@ export const splitPinValue = (value: unknown): string[] => {
 }
 
 /**
- * Type de champ des cases. `number` restreint la saisie au pavé numérique sur mobile :
- * on l'active dès que le motif du schéma n'admet que des chiffres.
+ * Cell input type. `number` restricts input to the numeric keypad on mobile:
+ * enabled as soon as the schema pattern only allows digits.
  */
 export const resolvePinType = (
   optionType: unknown,
@@ -116,10 +116,10 @@ export const usePinInputControl = ({
     resolvePinType(control.appliedOptions.value?.type, control.control.value.schema?.pattern),
   )
 
-  /** `options.mask: true` masque les caractères saisis (code confidentiel). */
+  /** `options.mask: true` masks entered characters (confidential code). */
   const mask = computed(() => Boolean(control.appliedOptions.value?.mask))
 
-  /** `options.otp: true` active l'autocomplétion du code reçu par SMS. */
+  /** `options.otp: true` enables autocompletion of the code received by SMS. */
   const otp = computed(() => Boolean(control.appliedOptions.value?.otp))
 
   const modelValue = computed(() => splitPinValue(control.control.value.data))
