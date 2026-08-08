@@ -27,21 +27,21 @@
 
 <script lang="ts">
 import {
+  and,
   type ControlElement,
-  Generate,
   type JsonFormsRendererRegistryEntry,
   isObjectControl,
   rankWith,
-  type UISchemaElement,
+  schemaMatches,
 } from '@jsonforms/core'
-import { computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import {
   DispatchRenderer,
   rendererProps,
   useJsonFormsControl,
   type RendererProps,
 } from '@jsonforms/vue'
-import { useUiControl } from '../utils'
+import { isRenderableObjectSchema, useObjectControl } from '../composables'
 
 /**
  * ObjectControlRenderer
@@ -65,62 +65,12 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsControl(props) as any)
-
-    /**
-     * `options.detail` prime, sinon on génère la disposition depuis le schéma.
-     *
-     * On génère à partir des seules `properties` : passer le schéma entier à
-     * `Generate.uiSchema` produirait un `Control` sur l'objet lui-même, que ce même
-     * renderer reprendrait — récursion infinie.
+    /*
+     * Le garde-fou contre la récursion infinie vit dans `useObjectControl` : faute de
+     * `properties` exploitables, la disposition générée ne décrit que l'objet lui-même,
+     * et la redispatcher ramènerait ici sans fin. Cf. `hasRenderableControl`.
      */
-    const detailUiSchema = computed<UISchemaElement | undefined>(() => {
-      const detail = (control.control.value.uischema as any)?.options?.detail
-
-      if (detail) {
-        return detail as UISchemaElement
-      }
-
-      const generated = Generate.uiSchema(
-        control.control.value.schema,
-        'VerticalLayout',
-        undefined,
-        control.control.value.rootSchema,
-      )
-
-      /*
-       * Garde-fou contre la récursion infinie.
-       *
-       * Faute de `properties`, `Generate.uiSchema` ne peut pas bâtir de disposition et
-       * retombe sur un `Control` de scope `#` — c'est-à-dire sur l'objet lui-même. Le
-       * dispatcher le renverrait à ce même renderer, indéfiniment
-       * (`Maximum call stack size exceeded`).
-       */
-      if ((generated as any)?.type === 'Control') {
-        return undefined
-      }
-
-      return generated
-    })
-
-    /** Clés présentes dans la donnée mais absentes des `properties` du schéma. */
-    const extraProperties = computed(() => {
-      const data = control.control.value.data
-      const known = Object.keys(control.control.value.schema?.properties ?? {})
-
-      if (!data || typeof data !== 'object' || Array.isArray(data)) {
-        return []
-      }
-
-      return Object.entries(data as Record<string, unknown>)
-        .filter(([key]) => !known.includes(key))
-        .map(([key, value]) => ({
-          key,
-          value: typeof value === 'object' ? JSON.stringify(value) : String(value),
-        }))
-    })
-
-    return { ...control, detailUiSchema, extraProperties }
+    return useObjectControl({ jsonFormsControl: useJsonFormsControl(props) as any })
   },
 })
 
@@ -131,7 +81,11 @@ export const entry: JsonFormsRendererRegistryEntry = {
   /**
    * Rang 2, sous le `oneOf` (3) et le WYSIWYG (3) : un objet porteur d'un `oneOf` ou
    * marqué `options.wysiwyg` doit rester à son renderer spécialisé.
+   *
+   * `isRenderableObjectSchema` écarte les types *union* sans `properties`, que ce rang 2
+   * ferait sinon gagner contre les renderers scalaires (rang 1) — pour n'afficher qu'une
+   * carte vide.
    */
-  tester: rankWith(2, isObjectControl),
+  tester: rankWith(2, and(isObjectControl, schemaMatches(isRenderableObjectSchema))),
 }
 </script>

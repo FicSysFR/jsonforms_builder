@@ -81,7 +81,7 @@ u-app
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, toRaw, watch } from 'vue'
 import { useDark, useToggle } from '@vueuse/core'
 import { JsonForms, type JsonFormsChangeEvent } from '@jsonforms/vue'
 import type { JsonFormsI18nState } from '@jsonforms/core'
@@ -110,7 +110,9 @@ const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
 const locale = ref<'fr' | 'en'>('fr')
-const data = ref<Record<string, unknown>>({})
+// `unknown` et non `Record<…>` : la racine d'un exemple peut être un tableau, un scalaire
+// ou rien du tout — cf. le commentaire du `watch` ci-dessous.
+const data = ref<unknown>({})
 
 /** Bascule entre la galerie de renderers et le builder visuel. */
 const mode = ref<'renderers' | 'builder'>('renderers')
@@ -128,7 +130,19 @@ watch(
     const params = new URLSearchParams(window.location.search)
     params.set('example', current.name)
     window.history.replaceState({}, '', `?${params.toString()}`)
-    data.value = { ...(current.data ?? {}) }
+    /*
+     * Recopier la donnée *en conservant sa forme*.
+     *
+     * Le `{ ...(current.data ?? {}) }` d'avant en faisait toujours un objet : un exemple
+     * dont la racine est un tableau devenait `{ 0: …, 1: … }`, et un exemple sans donnée
+     * (`json-editor`) recevait `{}` là où il déclare `undefined`. Le formulaire partait
+     * alors d'une valeur que son propre schéma rejette — et `addItem` de JSONForms, qui
+     * fait `array.push` sans vérifier, levait `array.push is not a function`.
+     */
+    data.value =
+      current.data === undefined || current.data === null
+        ? current.data
+        : structuredClone(toRaw(current.data))
   },
   { immediate: true },
 )

@@ -146,6 +146,16 @@ export default defineNuxtConfig({
 })
 ```
 
+> **À la mise à jour de la librairie** — si le navigateur lève
+> `does not provide an export named '…'` sur `@jsonforms/vue` ou `@jsonforms/core`,
+> c'est le pré-bundle de Vite qui est périmé : une nouvelle version peut importer d'une
+> dépendance *déjà optimisée* un export qu'elle n'importait pas avant, et Vite n'invalide
+> pas toujours son cache pour autant. Un redémarrage avec cache vidé suffit :
+>
+> ```bash
+> rm -rf node_modules/.vite && vite --force
+> ```
+
 ### Vue + Vite (sans Nuxt)
 
 ```ts
