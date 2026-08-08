@@ -8,6 +8,7 @@
   )
     u-input-time(
       v-if="inputType === 'time'"
+      ref="inputRef"
       v-bind="uiProps('inputTime')"
       :id="control.id + '-input'"
       :model-value="dateValue"
@@ -18,13 +19,42 @@
       :granularity="optionPattern.includes('s') ? 'second' : 'minute'"
       :locale="appliedOptions.locale ?? 'fr-FR'"
       hour-cycle="24"
-      icon="i-lucide-clock"
       @update:model-value="onChangeDateValue"
       @focus="handleFocus"
       @blur="handleBlur"
     )
+      template(#trailing)
+        u-popover(
+          v-if="!isDisabled && !isReadonly"
+          v-model:open="pickerOpen"
+          :content="{ align: 'end' }"
+          :reference="popoverReference"
+        )
+          u-button(
+            icon="i-lucide-clock"
+            color="neutral"
+            variant="link"
+            size="sm"
+            class="px-0"
+            aria-label="Ouvrir le sélecteur d'heure"
+            tabindex="-1"
+          )
+          template(#content)
+            u-card(v-bind="uiProps('timeCard')" :ui="{ body: 'p-3' }")
+              time-picker(
+                :hour="timeParts.hour"
+                :minute="timeParts.minute"
+                :second="timeParts.second"
+                :show-seconds="showSeconds"
+                :ui-props="uiProps"
+                @update:hour="onHourChange"
+                @update:minute="onMinuteChange"
+                @update:second="onSecondChange"
+              )
+        u-icon(v-else name="i-lucide-clock" class="text-dimmed size-5")
     u-input-date(
       v-else
+      ref="inputRef"
       v-bind="uiProps('inputDate')"
       :id="control.id + '-input'"
       :model-value="dateValue"
@@ -35,11 +65,57 @@
       :granularity="granularity"
       :locale="appliedOptions.locale ?? 'fr-FR'"
       hour-cycle="24"
-      :icon="inputType === 'datetime-local' ? 'i-lucide-calendar-clock' : 'i-lucide-calendar'"
       @update:model-value="onChangeDateValue"
       @focus="handleFocus"
       @blur="handleBlur"
     )
+      template(#trailing)
+        u-popover(
+          v-if="!isDisabled && !isReadonly"
+          v-model:open="pickerOpen"
+          :content="{ align: 'end' }"
+          :reference="popoverReference"
+        )
+          u-button(
+            :icon="calendarIcon"
+            color="neutral"
+            variant="link"
+            size="sm"
+            class="px-0"
+            :aria-label="pickerAriaLabel"
+            tabindex="-1"
+          )
+          template(#content)
+            u-card(v-bind="uiProps('calendarCard')" :ui="{ body: 'p-2' }")
+              .flex.flex-col.gap-3.items-stretch(class="sm:flex-row")
+                u-calendar(
+                  v-bind="uiProps('calendar')"
+                  :model-value="calendarValue"
+                  :locale="appliedOptions.locale ?? 'fr-FR'"
+                  :color="control.errors ? 'error' : undefined"
+                  :number-of-months="appliedOptions.months"
+                  :week-numbers="!!appliedOptions.weekNumbers"
+                  @update:model-value="onCalendarSelect"
+                )
+                .flex.flex-col.justify-center.border-t.border-default.pt-3(
+                  v-if="inputType === 'datetime-local'"
+                  class="sm:border-t-0 sm:border-s sm:pt-0 sm:ps-3"
+                )
+                  time-picker(
+                    :hour="timeParts.hour"
+                    :minute="timeParts.minute"
+                    :second="timeParts.second"
+                    :show-seconds="showSeconds"
+                    :ui-props="uiProps"
+                    @update:hour="onHourChange"
+                    @update:minute="onMinuteChange"
+                    @update:second="onSecondChange"
+                  )
+        u-icon(
+          v-else
+          :name="calendarIcon"
+          class="text-dimmed size-5"
+        )
 </template>
 
 <script lang="ts">
@@ -52,13 +128,30 @@ import {
   isDateTimeControl,
   isTimeControl,
 } from '@jsonforms/core'
-import { defineComponent, type Component } from 'vue'
+import {
+  CalendarDate,
+  CalendarDateTime,
+  Time,
+  getLocalTimeZone,
+  today,
+  type DateValue,
+} from '@internationalized/date'
+import { computed, defineComponent, ref, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
+import UButton from '@nuxt/ui/components/Button.vue'
+import UCalendar from '@nuxt/ui/components/Calendar.vue'
+import UCard from '@nuxt/ui/components/Card.vue'
+import UIcon from '@nuxt/ui/components/Icon.vue'
 import UInputDate from '@nuxt/ui/components/InputDate.vue'
 import UInputTime from '@nuxt/ui/components/InputTime.vue'
-import { ControlWrapper } from '../common'
+import UPopover from '@nuxt/ui/components/Popover.vue'
+import { ControlWrapper, TimePicker } from '../common'
 import { determineClearValue } from '../utils'
 import { useDateControl } from '../composables'
+
+type InputExpose = {
+  inputsRef?: Array<{ $el?: HTMLElement } | null | undefined>
+}
 
 /**
  * DateControlRenderer
@@ -69,6 +162,9 @@ import { useDateControl } from '../composables'
  * zone d'édition à part entière, avec incrément aux flèches et navigation clavier
  * fournis nativement — là où la v1 réimplémentait masque, curseur et flèches à la main
  * par-dessus un `q-input`, doublé d'un `q-popup-proxy` contenant `q-date` / `q-time`.
+ *
+ * L'icône ouvre un popover dans une `UCard` : calendrier (`date`), spinners d'heure
+ * (`time`), ou les deux côte à côte (`date-time`) — comme `q-date` + `q-time` en v1.
  *
  * Ils travaillent sur des objets `@internationalized/date` et non des chaînes : la
  * conversion aller-retour vers le motif du schéma est faite par `useDateControl`
@@ -82,8 +178,14 @@ const controlRenderer: Component = defineComponent({
   name: 'DateControlRenderer',
   components: {
     ControlWrapper,
+    TimePicker,
+    UButton,
+    UCalendar,
+    UCard,
+    UIcon,
     UInputDate,
     UInputTime,
+    UPopover,
   },
   props: {
     ...rendererProps<ControlElement>(),
@@ -92,11 +194,140 @@ const controlRenderer: Component = defineComponent({
     const jsonFormsControl = useJsonFormsControl(props)
     const clearValue = determineClearValue(undefined)
 
-    return useDateControl({
+    const control = useDateControl({
       jsonFormsControl,
       clearValue,
       debounceWait: 100,
     })
+
+    const inputRef = ref<InputExpose | null>(null)
+    const pickerOpen = ref(false)
+
+    const calendarIcon = computed(() =>
+      control.inputType.value === 'datetime-local'
+        ? 'i-lucide-calendar-clock'
+        : 'i-lucide-calendar',
+    )
+
+    const pickerAriaLabel = computed(() =>
+      control.inputType.value === 'datetime-local'
+        ? "Ouvrir le calendrier et l'heure"
+        : 'Ouvrir le calendrier',
+    )
+
+    const showSeconds = computed(() => {
+      const pattern = control.optionPattern.value
+      return typeof pattern === 'string' && pattern.includes('s')
+    })
+
+    /**
+     * Ancre le popover sur le dernier segment du champ (recommandation Nuxt UI) pour
+     * aligner le panneau sur le champ plutôt que sur le seul bouton.
+     */
+    const popoverReference = computed(() => {
+      const inputs = inputRef.value?.inputsRef
+      if (!Array.isArray(inputs) || inputs.length === 0) {
+        return undefined
+      }
+
+      const segments = inputs.filter(Boolean)
+      return segments[segments.length - 1]?.$el
+    })
+
+    /**
+     * `null` et non `undefined` pour l'absence de valeur : `undefined` fait basculer
+     * `UCalendar` en mode non contrôlé. Pour `date-time`, on ne passe que la partie jour.
+     */
+    const calendarValue = computed(() => {
+      const value = control.dateValue.value
+      if (!value || !('year' in value)) {
+        return null
+      }
+
+      return new CalendarDate(value.year, value.month, value.day)
+    })
+
+    const timeParts = computed(() => {
+      const value = control.dateValue.value
+      if (value && 'hour' in value) {
+        return {
+          hour: value.hour,
+          minute: value.minute,
+          second: 'second' in value ? (value.second ?? 0) : 0,
+        }
+      }
+
+      return { hour: 0, minute: 0, second: 0 }
+    })
+
+    const applyTime = (hour: number, minute: number, second: number) => {
+      if (control.inputType.value === 'time') {
+        control.onChangeDateValue(new Time(hour, minute, second))
+        return
+      }
+
+      const current = control.dateValue.value
+      if (current && 'year' in current) {
+        control.onChangeDateValue(
+          new CalendarDateTime(current.year, current.month, current.day, hour, minute, second),
+        )
+        return
+      }
+
+      const now = today(getLocalTimeZone())
+      control.onChangeDateValue(
+        new CalendarDateTime(now.year, now.month, now.day, hour, minute, second),
+      )
+    }
+
+    const onHourChange = (hour: number) => {
+      applyTime(hour, timeParts.value.minute, timeParts.value.second)
+    }
+
+    const onMinuteChange = (minute: number) => {
+      applyTime(timeParts.value.hour, minute, timeParts.value.second)
+    }
+
+    const onSecondChange = (second: number) => {
+      applyTime(timeParts.value.hour, timeParts.value.minute, second)
+    }
+
+    const onCalendarSelect = (value: DateValue | null | undefined) => {
+      if (!value) {
+        control.onChangeDateValue(null)
+        if (control.inputType.value === 'date') {
+          pickerOpen.value = false
+        }
+        return
+      }
+
+      if (control.inputType.value === 'datetime-local') {
+        const { hour, minute, second } = timeParts.value
+        control.onChangeDateValue(
+          new CalendarDateTime(value.year, value.month, value.day, hour, minute, second),
+        )
+        return
+      }
+
+      control.onChangeDateValue(new CalendarDate(value.year, value.month, value.day))
+      pickerOpen.value = false
+    }
+
+    return {
+      ...control,
+      inputRef,
+      pickerOpen,
+      calendarIcon,
+      pickerAriaLabel,
+      showSeconds,
+      popoverReference,
+      calendarValue,
+      timeParts,
+      onHourChange,
+      onMinuteChange,
+      onSecondChange,
+      onCalendarSelect,
+    }
   },
 })
 

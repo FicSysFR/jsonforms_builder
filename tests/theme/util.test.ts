@@ -7,6 +7,14 @@ describe('classes', () => {
 
     expect(result).toBe('btn btn--primary')
   })
+
+  it('ignore null et undefined comme interpolations', () => {
+    expect(classes`a ${null} b ${undefined} c`).toBe('a  b  c')
+  })
+
+  it('stringify les valeurs truthy non-string', () => {
+    expect(classes`n-${2} ok-${true}`).toBe('n-2 ok-true')
+  })
 })
 
 describe('mergeStyles', () => {
@@ -50,5 +58,24 @@ describe('mergeStyles', () => {
 
     expect((base.control as Record<string, unknown>).input).toBeUndefined()
     expect((override.control as Record<string, unknown>).root).toBeUndefined()
+  })
+
+  it('remplace une valeur non-objet par l’override', () => {
+    const merged = mergeStyles(
+      { control: { root: 'mb-4' } },
+      { control: { root: { nested: 'x' } as unknown as string } },
+    )
+
+    expect(merged.control?.root).toEqual({ nested: 'x' })
+  })
+
+  it('conserve la base quand l’override est undefined en profondeur', () => {
+    const merged = mergeStyles(
+      { control: { root: 'keep', input: 'a' } },
+      { control: { root: undefined as unknown as string } },
+    )
+
+    expect(merged.control?.root).toBe('keep')
+    expect(merged.control?.input).toBe('a')
   })
 })

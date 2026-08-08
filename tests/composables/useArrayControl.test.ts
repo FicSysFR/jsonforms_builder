@@ -1,13 +1,18 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { ControlElement, JsonSchema } from '@jsonforms/core'
+import { computed, createApp, effectScope, nextTick, ref } from 'vue'
 import {
   isArrayAtCapacity,
   isArrayAtMinimum,
   isCombinatorItemsArray,
+  isCombinatorSchema,
   isPrimitiveItemSchema,
   resolveArrayItemLabel,
   resolveItemsSchema,
+  useArrayControl,
 } from '../../src/composables/useArrayControl'
+import { flattenAllOfSchema } from '../../src/composables/useAllOfControl'
+import { hasRenderableControl } from '../../src/composables/useObjectControl'
 
 describe('isPrimitiveItemSchema', () => {
   it('recognises scalar item schemas', () => {
@@ -158,5 +163,315 @@ describe('isCombinatorItemsArray', () => {
     const rootSchema: JsonSchema = { ...schema, definitions: { file: { type: 'object' } } }
 
     expect(isCombinatorItemsArray(uischema, schema, { rootSchema })).toBe(false)
+  })
+
+  /** Cas allOf-perf : tableau d’entités `allOf` via `$ref`. */
+  it('recognises allOf items reached through a $ref', () => {
+    const schema = schemaWith({ $ref: '#/definitions/entity' })
+    const rootSchema: JsonSchema = {
+      ...schema,
+      definitions: {
+        base: { type: 'object', properties: { id: { type: 'string' } } },
+        entity: {
+          allOf: [
+            { $ref: '#/definitions/base' },
+            { properties: { note: { type: 'string' } } },
+          ],
+        },
+      },
+    }
+
+    expect(isCombinatorItemsArray(uischema, schema, { rootSchema })).toBe(true)
+  })
+
+  it('recognises an inline allOf item schema', () => {
+    const schema = schemaWith({
+      allOf: [{ properties: { a: { type: 'string' } } }, { properties: { b: { type: 'number' } } }],
+    })
+
+    expect(isCombinatorItemsArray(uischema, schema, { rootSchema: schema })).toBe(true)
+  })
+
+  it('rejects a missing items schema', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: { children: { type: 'array' } },
+    }
+
+    expect(isCombinatorItemsArray(uischema, schema, { rootSchema: schema })).toBe(false)
+  })
+})
+
+describe('isCombinatorSchema', () => {
+  it('detects oneOf, anyOf and allOf', () => {
+    expect(isCombinatorSchema({ oneOf: [] })).toBe(true)
+    expect(isCombinatorSchema({ anyOf: [{ type: 'string' }] })).toBe(true)
+    expect(isCombinatorSchema({ allOf: [{ type: 'object' }] })).toBe(true)
+  })
+
+  it('rejects plain schemas and undefined', () => {
+    expect(isCombinatorSchema(undefined)).toBe(false)
+    expect(isCombinatorSchema({ type: 'object', properties: {} })).toBe(false)
+    expect(isCombinatorSchema({ type: 'string' })).toBe(false)
+  })
+})
+
+describe('allOf array item pipeline', () => {
+  /**
+   * Garantit le chaînage playground allOf-perf : le tester voit un combinator,
+   * et la fusion produit une disposition réellement déployable.
+   */
+  it('flattens $ref allOf items into renderable controls', () => {
+    const rootSchema: JsonSchema = {
+      type: 'object',
+      definitions: {
+        layer0: { type: 'object', properties: { flag: { type: 'boolean' } } },
+        entity: {
+          allOf: [
+            { $ref: '#/definitions/layer0' },
+            { properties: { note: { type: 'string' } }, required: ['note'] },
+          ],
+        },
+      },
+      properties: {
+        entries: { type: 'array', items: { $ref: '#/definitions/entity' } },
+      },
+    }
+
+    const items = resolveItemsSchema(
+      (rootSchema.properties?.entries as JsonSchema).items as JsonSchema,
+      rootSchema,
+    )
+    expect(isCombinatorSchema(items)).toBe(true)
+
+    const flattened = flattenAllOfSchema(items, rootSchema)
+    expect(Object.keys(flattened.properties ?? {}).sort()).toEqual(['flag', 'note'])
+    expect(flattened.required).toContain('note')
+    expect(
+      hasRenderableControl({
+        type: 'VerticalLayout',
+        elements: Object.keys(flattened.properties ?? {}).map((key) => ({
+          type: 'Control',
+          scope: `#/properties/${key}`,
+        })),
+      }),
+    ).toBe(true)
+  })
+})
+
+describe('useArrayControl', () => {
+  type ControlState = {
+    schema: JsonSchema
+    rootSchema: JsonSchema
+    arraySchema: JsonSchema
+    uischema: ControlElement
+    uischemas: unknown[]
+    path: string
+    config: Record<string, unknown>
+    label: string
+    description: string
+    required: boolean
+    enabled: boolean
+    errors: string
+    data: unknown
+    id: string
+    visible: boolean
+  }
+
+  const mountArray = (state: { value: ControlState }) => {
+    const app = createApp({})
+    app.provide('jsonforms', { core: { schema: state.value.rootSchema } })
+    const scope = effectScope()
+    const addItem = vi.fn(() => vi.fn())
+    const removeItems = vi.fn(() => vi.fn())
+    const moveUp = vi.fn(() => vi.fn())
+    const moveDown = vi.fn(() => vi.fn())
+    let result: ReturnType<typeof useArrayControl> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        const control = computed(() => state.value)
+        result = useArrayControl({
+          jsonFormsControl: {
+            control,
+            handleChange: vi.fn(),
+            addItem,
+            removeItems,
+            moveUp,
+            moveDown,
+          } as never,
+        })
+      })
+    })
+
+    return { scope, result: result!, addItem, removeItems, moveUp, moveDown }
+  }
+
+  const baseState = (overrides: Partial<ControlState> = {}): ControlState => {
+    const itemSchema: JsonSchema = {
+      type: 'object',
+      properties: { name: { type: 'string' } },
+    }
+    const arraySchema: JsonSchema = {
+      type: 'array',
+      items: itemSchema,
+      minItems: 1,
+      maxItems: 3,
+    }
+
+    return {
+      schema: itemSchema,
+      rootSchema: { type: 'object', properties: { children: arraySchema } },
+      arraySchema,
+      uischema: { type: 'Control', scope: '#/properties/children' },
+      uischemas: [],
+      path: 'children',
+      config: {},
+      label: 'Children',
+      description: '',
+      required: false,
+      enabled: true,
+      errors: '',
+      data: [{ name: 'Ada' }],
+      id: '#/properties/children',
+      visible: true,
+      ...overrides,
+    }
+  }
+
+  it('expose items / canAdd / canRemove selon minItems et maxItems', () => {
+    const state = ref(baseState({ data: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] }))
+    const { result, scope } = mountArray(state)
+
+    expect(result.items.value).toHaveLength(3)
+    expect(result.canAdd.value).toBe(false)
+    expect(result.canRemove.value).toBe(true)
+
+    scope.stop()
+  })
+
+  it('bloque la suppression au minItems', () => {
+    const state = ref(baseState({ data: [{ name: 'only' }] }))
+    const { result, scope } = mountArray(state)
+
+    // minItems: 1 et length: 1 → retrait interdit
+    expect(result.canRemove.value).toBe(false)
+    expect(result.canAdd.value).toBe(true)
+
+    scope.stop()
+  })
+
+  it('traite une donnée non-tableau comme liste vide', () => {
+    const state = ref(baseState({ data: null }))
+    const { result, scope } = mountArray(state)
+
+    expect(result.items.value).toEqual([])
+    expect(result.canRemove.value).toBe(false)
+
+    scope.stop()
+  })
+
+  it('génère un Control self-scope pour les items combinator (allOf)', () => {
+    const itemSchema: JsonSchema = {
+      allOf: [{ properties: { a: { type: 'string' } } }],
+    }
+    const state = ref(
+      baseState({
+        schema: itemSchema,
+        data: [{}],
+        arraySchema: { type: 'array', items: itemSchema },
+      }),
+    )
+    const { result, scope } = mountArray(state)
+
+    expect(result.childUiSchema.value).toEqual({ type: 'Control', scope: '#' })
+    expect(result.isPrimitiveItems.value).toBe(false)
+
+    scope.stop()
+  })
+
+  it('génère un Control compact pour les items primitifs', () => {
+    const itemSchema: JsonSchema = { type: 'string' }
+    const state = ref(
+      baseState({
+        schema: itemSchema,
+        data: ['x'],
+        arraySchema: { type: 'array', items: itemSchema },
+      }),
+    )
+    const { result, scope } = mountArray(state)
+
+    expect(result.isPrimitiveItems.value).toBe(true)
+    expect(result.childUiSchema.value).toMatchObject({
+      type: 'Control',
+      scope: '#',
+      label: false,
+      options: { hideDescription: true },
+    })
+
+    scope.stop()
+  })
+
+  it('compose childPath et itemLabel', () => {
+    const state = ref(
+      baseState({
+        data: [{ name: 'Ada' }, { name: 'Grace' }],
+        config: { elementLabelProp: 'name' },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/children',
+          options: { elementLabelProp: 'name' },
+        },
+      }),
+    )
+    const { result, scope } = mountArray(state)
+
+    expect(result.childPath(1)).toBe('children.1')
+    expect(result.itemLabel(0)).toBe('Ada')
+    expect(result.itemLabel(1)).toBe('Grace')
+
+    scope.stop()
+  })
+
+  it('délègue addItem / removeItem / moveUp / moveDown aux thunks JSON Forms', () => {
+    const state = ref(baseState({ data: [{ name: 'a' }, { name: 'b' }] }))
+    const { result, scope, addItem, removeItems, moveUp, moveDown } = mountArray(state)
+
+    result.addItem()
+    expect(addItem).toHaveBeenCalledWith('children', expect.anything())
+
+    result.removeItem(0)
+    expect(removeItems).toHaveBeenCalledWith('children', [0])
+
+    result.moveUp(1)
+    expect(moveUp).toHaveBeenCalledWith('children', 1)
+
+    result.moveDown(0)
+    expect(moveDown).toHaveBeenCalledWith('children', 0)
+
+    result.moveUp(0)
+    expect(moveUp).toHaveBeenCalledTimes(1)
+
+    result.moveDown(1)
+    expect(moveDown).toHaveBeenCalledTimes(1)
+
+    scope.stop()
+  })
+
+  it('met à jour canAdd quand la longueur change', async () => {
+    const state = ref(baseState({ data: [{ name: 'a' }] }))
+    const { result, scope } = mountArray(state)
+
+    expect(result.canAdd.value).toBe(true)
+
+    state.value = {
+      ...state.value,
+      data: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
+    }
+    await nextTick()
+
+    expect(result.canAdd.value).toBe(false)
+
+    scope.stop()
   })
 })

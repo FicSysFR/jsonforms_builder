@@ -22,7 +22,7 @@ export const schema = {
     reference: {
       type: 'string',
       title: 'Date de référence',
-      description: 'Sans option "calendar" : champ segmenté UInputDate, pour comparaison.',
+      description: 'Champ segmenté UInputDate — icône ouvre le calendrier en card.',
       format: 'date',
     },
   },

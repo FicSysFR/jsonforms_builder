@@ -126,4 +126,101 @@ describe('createVariantValue', () => {
   it('leaves non-object branches untouched', () => {
     expect(createVariantValue({ type: 'string' }, { type: 'object' })).not.toBeInstanceOf(Object)
   })
+
+  it('remplit plusieurs const sur la même branche', () => {
+    const variant: JsonSchema = {
+      type: 'object',
+      required: ['kind', 'mode'],
+      properties: {
+        kind: { const: 'track' } as JsonSchema,
+        mode: { const: 'new' } as JsonSchema,
+        metersLaid: { type: 'integer' },
+      },
+    }
+
+    const value = createVariantValue(variant, { type: 'object' }) as Record<string, unknown>
+
+    expect(value.kind).toBe('track')
+    expect(value.mode).toBe('new')
+    expect(detectOneOfVariant(value, [variant])).toBe(0)
+  })
+
+  it('ne plante pas sur une branche sans properties', () => {
+    expect(() => createVariantValue({ type: 'object', required: ['x'] }, { type: 'object' })).not.toThrow()
+  })
+})
+
+describe('detectOneOfVariant edge cases', () => {
+  it('prend la première branche qui matche quand plusieurs pourraient', () => {
+    const ambiguous: JsonSchema[] = [
+      {
+        required: ['shared'],
+        properties: { shared: { type: 'string' }, a: { type: 'string' } },
+      },
+      {
+        required: ['shared'],
+        properties: { shared: { type: 'string' }, b: { type: 'string' } },
+      },
+    ]
+
+    expect(detectOneOfVariant({ shared: 'x', a: '1', b: '2' }, ambiguous)).toBe(0)
+  })
+
+  it('accepte une required sans const tant que la clé est présente', () => {
+    const variantsLocal: JsonSchema[] = [
+      {
+        required: ['name'],
+        properties: { name: { type: 'string' } },
+      },
+    ]
+
+    expect(detectOneOfVariant({ name: 'Ada' }, variantsLocal)).toBe(0)
+    expect(detectOneOfVariant({ name: '' }, variantsLocal)).toBe(0)
+    expect(detectOneOfVariant({ name: 0 }, variantsLocal)).toBe(0)
+    expect(detectOneOfVariant({ name: false }, variantsLocal)).toBe(0)
+    expect(detectOneOfVariant({ name: null }, variantsLocal)).toBe(0)
+  })
+
+  it('refuse une liste de variantes vide', () => {
+    expect(detectOneOfVariant({ kind: 'track' }, [])).toBe(-1)
+  })
+
+  it('refuse un tableau comme donnée', () => {
+    expect(detectOneOfVariant(['track'], variants)).toBe(-1)
+  })
+})
+
+describe('resolveCombinatorBranches edge cases', () => {
+  it('préfère oneOf à anyOf si les deux sont présents', () => {
+    const schema: JsonSchema = {
+      oneOf: [{ type: 'string' }],
+      anyOf: [{ type: 'number' }],
+    }
+
+    expect(resolveCombinatorBranches(schema, refRoot)).toEqual([{ type: 'string' }])
+  })
+
+  it('résout un mélange de $ref et de littéraux', () => {
+    const schema: JsonSchema = {
+      oneOf: [{ $ref: '#/definitions/address' }, { type: 'string', title: 'Libre' }],
+    }
+    const branches = resolveCombinatorBranches(schema, refRoot)
+
+    expect(branches).toHaveLength(2)
+    expect(branches[0].properties?.street).toBeDefined()
+    expect(branches[1]).toEqual({ type: 'string', title: 'Libre' })
+  })
+
+  it('conserve l’ordre des branches', () => {
+    const schema: JsonSchema = {
+      anyOf: [
+        { $ref: '#/definitions/user' },
+        { $ref: '#/definitions/address' },
+      ],
+    }
+    const branches = resolveCombinatorBranches(schema, refRoot)
+
+    expect(branches[0].properties?.name).toBeDefined()
+    expect(branches[1].properties?.street).toBeDefined()
+  })
 })

@@ -52,7 +52,7 @@ const getRuntimeWindow = (): WindowLike | undefined => {
  * @param {string} hash - The raw hash string, with or without the leading `#`.
  * @returns {HashState} Parsed key-value mapping representing the hash parameters.
  */
-function parseHash(hash: string): HashState {
+export function parseHash(hash: string): HashState {
   const raw = hash.startsWith('#') ? hash.slice(1) : hash
   const params = new URLSearchParams(raw)
   const obj: HashState = {}
@@ -70,7 +70,7 @@ function parseHash(hash: string): HashState {
  * @param {HashState} obj - The hash state that should be converted back to a string.
  * @returns {string} The normalized hash fragment including the leading `#` when applicable.
  */
-function stringifyHash(obj: HashState): string {
+export function stringifyHash(obj: HashState): string {
   const params = new URLSearchParams()
   const cleaned = shake(obj)
 
