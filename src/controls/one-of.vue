@@ -37,7 +37,7 @@ import { DispatchRenderer, rendererProps, useJsonFormsOneOfControl, RendererProp
 import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
-import { createVariantValue, detectOneOfVariant } from '../composables'
+import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } from '../composables'
 
 /**
  * CombinatorControlRenderer
@@ -60,19 +60,25 @@ const controlRenderer = defineComponent({
   setup(props: RendererProps<ControlElement>) {
     const control = useUiControl(useJsonFormsOneOfControl(props) as any)
 
-    // `anyOf` autorise plusieurs branches valides là où `oneOf` en impose exactement
-    // une ; le sélecteur reste la présentation la plus lisible dans les deux cas, et
-    // c'est aussi ce que font les jeux de renderers officiels.
-    const variants = computed<JsonSchema[]>(
-      () => control.control.value.schema?.oneOf ?? control.control.value.schema?.anyOf ?? [],
+    /** Branches du combinateur, `$ref` suivis. Cf. `resolveCombinatorBranches`. */
+    const variants = computed<JsonSchema[]>(() =>
+      resolveCombinatorBranches(
+        control.control.value.schema,
+        control.control.value.rootSchema,
+      ),
     )
 
-    const variantItems = computed(() =>
-      variants.value.map((variant, index) => ({
-        label: variant.title ?? `Option ${index + 1}`,
+    const variantItems = computed(() => {
+      const schema = control.control.value.schema as any
+      const raw: any[] = schema?.oneOf ?? schema?.anyOf ?? []
+
+      // Le libellé peut vivre sur le renvoi (`{ $ref, title }`) comme sur la cible :
+      // on regarde les deux plutôt que de perdre le titre en résolvant.
+      return variants.value.map((variant, index) => ({
+        label: raw[index]?.title ?? variant.title ?? `Option ${index + 1}`,
         value: index,
-      })),
-    )
+      }))
+    })
 
     const selectedIndex = ref(
       Math.max(detectOneOfVariant(control.control.value.data, variants.value), 0),
@@ -99,7 +105,7 @@ const controlRenderer = defineComponent({
 
     const selectedUiSchema = computed(() =>
       selectedSchema.value
-        ? Generate.uiSchema(selectedSchema.value, 'VerticalLayout')
+        ? Generate.uiSchema(selectedSchema.value, 'VerticalLayout', undefined, control.control.value.rootSchema)
         : undefined,
     )
 

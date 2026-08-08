@@ -69,7 +69,12 @@ const controlRenderer = defineComponent({
         return detail as UISchemaElement
       }
 
-      const generated = Generate.uiSchema(control.control.value.schema, 'VerticalLayout')
+      const generated = Generate.uiSchema(
+        control.control.value.schema,
+        'VerticalLayout',
+        undefined,
+        control.control.value.rootSchema,
+      )
 
       /*
        * Garde-fou contre la récursion infinie.

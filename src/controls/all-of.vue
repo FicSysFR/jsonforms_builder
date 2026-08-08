@@ -83,7 +83,12 @@ const controlRenderer = defineComponent({
         return undefined
       }
 
-      return Generate.uiSchema(mergedSchema.value, 'VerticalLayout')
+      return Generate.uiSchema(
+        mergedSchema.value,
+        'VerticalLayout',
+        undefined,
+        control.control.value.rootSchema,
+      )
     })
 
     return { ...control, mergedSchema, mergedUiSchema }

@@ -1,32 +1,56 @@
 import { registerExamples } from '../register'
 
 export const schema = {
-  "type": "object",
-  "properties": {
-    "exampleRadioEnum": {
-      "type": "string",
-      "enum": ["Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Black", "White"],
-    }
-  }
+  type: 'object',
+  properties: {
+    exampleRadioEnum: {
+      type: 'string',
+      description: 'Choisissez une couleur',
+      enum: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange', 'Black', 'White'],
+    },
+    exampleRadioInline: {
+      type: 'string',
+      description: 'Même contrôle en disposition horizontale',
+      enum: ['Low', 'Medium', 'High'],
+    },
+  },
 }
 
 export const uischema = {
-  "type": "Control",
-  "scope": "#/properties/exampleRadioEnum",
-  "options": {
-    "format": "radio",
-    // Démonstration de `uiProps` : tout ce qui est sous la clé du composant est
-    // transmis tel quel au `URadioGroup`.
-    "radioGroup": {
-      "color": "primary",
-      "variant": "table",
-      "size": "md"
-    }
-  }
+  type: 'VerticalLayout',
+  elements: [
+    {
+      type: 'Control',
+      scope: '#/properties/exampleRadioEnum',
+      options: {
+        format: 'radio',
+        // Variante `list` : pastilles radio classiques (indicateur circulaire).
+        radioGroup: {
+          color: 'primary',
+          variant: 'list',
+          size: 'md',
+        },
+      },
+    },
+    {
+      type: 'Control',
+      scope: '#/properties/exampleRadioInline',
+      options: {
+        format: 'radio',
+        vertical: false,
+        radioGroup: {
+          color: 'primary',
+          variant: 'list',
+          size: 'md',
+        },
+      },
+    },
+  ],
 }
 
 export const data = {
   exampleRadioEnum: 'Green',
+  exampleRadioInline: 'Medium',
 }
 
 registerExamples([

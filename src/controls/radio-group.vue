@@ -12,7 +12,7 @@
       :items="control.options"
       :class="styles.control.input"
       :disabled="disable"
-      :orientation="appliedOptions.vertical ? 'vertical' : 'horizontal'"
+      :orientation="orientation"
       :color="control.errors ? 'error' : undefined"
       value-key="value"
       label-key="label"
@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { ControlElement, JsonFormsRendererRegistryEntry, rankWith, and, isEnumControl, optionIs } from '@jsonforms/core'
-import { defineComponent } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { rendererProps, useJsonFormsEnumControl, RendererProps } from '@jsonforms/vue'
 import URadioGroup from '@nuxt/ui/components/RadioGroup.vue'
 import { ControlWrapper } from '../common'
@@ -34,8 +34,9 @@ import { useRadioGroupControl } from '../composables'
  *
  * Rend les enums marqués `options.format: "radio"` avec un `URadioGroup`.
  *
- * Disposition horizontale par défaut (équivalent de l'`inline` de `q-option-group`) ;
- * `options.vertical: true` bascule en colonne quand les libellés sont longs.
+ * Disposition verticale par défaut (comme `URadioGroup` et le multi-enum) ;
+ * `options.vertical: false` ou `options.orientation: "horizontal"` bascule en ligne.
+ * `options.radioGroup.orientation` prime toujours via `v-bind` + calcul ci-dessous.
  */
 const controlRenderer = defineComponent({
   name: 'RadioGroupControlRenderer',
@@ -50,10 +51,38 @@ const controlRenderer = defineComponent({
     const jsonFormsControl = useJsonFormsEnumControl(props)
     const clearValue = determineClearValue(undefined)
 
-    return useRadioGroupControl({
+    const control = useRadioGroupControl({
       jsonFormsControl,
       clearValue,
     })
+
+    /**
+     * Ordre de résolution : `radioGroup.orientation` → `orientation` → `vertical`
+     * → verticale (défaut Nuxt UI). Évite la rangée horizontale saturée dès qu'il y a
+     * plus de 3–4 options (variante `table` surtout).
+     */
+    const orientation = computed(() => {
+      const fromUi = control.uiProps('radioGroup').orientation
+      if (fromUi === 'horizontal' || fromUi === 'vertical') {
+        return fromUi
+      }
+
+      const fromOptions = control.appliedOptions.value.orientation
+      if (fromOptions === 'horizontal' || fromOptions === 'vertical') {
+        return fromOptions
+      }
+
+      if (control.appliedOptions.value.vertical === false) {
+        return 'horizontal'
+      }
+
+      return 'vertical'
+    })
+
+    return {
+      ...control,
+      orientation,
+    }
   },
 })
 

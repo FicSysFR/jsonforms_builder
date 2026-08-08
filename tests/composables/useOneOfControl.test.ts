@@ -3,7 +3,68 @@ import type { JsonSchema } from '@jsonforms/core'
 import {
   createVariantValue,
   detectOneOfVariant,
+  resolveCombinatorBranches,
 } from '../../src/composables/useOneOfControl'
+
+/**
+ * Schéma à `$ref` : c'est la forme qui faisait boucler `resolveSchema` côté navigateur
+ * quand le renderer transmettait la branche non résolue au dispatcher.
+ */
+const refRoot: JsonSchema = {
+  definitions: {
+    address: {
+      type: 'object',
+      properties: { street: { type: 'string' } },
+      required: ['street'],
+    },
+    user: {
+      type: 'object',
+      properties: { name: { type: 'string' } },
+      required: ['name'],
+    },
+  },
+  type: 'object',
+  properties: {
+    addressOrUser: {
+      anyOf: [{ $ref: '#/definitions/address' }, { $ref: '#/definitions/user' }],
+    },
+  },
+} as JsonSchema
+
+describe('resolveCombinatorBranches', () => {
+  it('suit les $ref pour rendre chaque branche exploitable', () => {
+    const branches = resolveCombinatorBranches(
+      (refRoot as any).properties.addressOrUser,
+      refRoot,
+    )
+
+    expect(branches).toHaveLength(2)
+    // La garantie qui compte : plus aucun `$ref` nu ne peut atteindre le dispatcher.
+    expect(branches.some((b: any) => b.$ref !== undefined)).toBe(false)
+    expect((branches[0] as any).properties.street).toBeDefined()
+    expect((branches[1] as any).properties.name).toBeDefined()
+  })
+
+  it('laisse les branches déjà littérales intactes', () => {
+    const branches = resolveCombinatorBranches({ oneOf: variants } as JsonSchema, refRoot)
+
+    expect(branches).toEqual(variants)
+  })
+
+  it('conserve une branche irrésolvable plutôt que de l’écarter', () => {
+    const branches = resolveCombinatorBranches(
+      { anyOf: [{ $ref: '#/definitions/inconnu' }] } as JsonSchema,
+      refRoot,
+    )
+
+    expect(branches).toHaveLength(1)
+  })
+
+  it('renvoie une liste vide hors combinateur', () => {
+    expect(resolveCombinatorBranches({ type: 'string' } as JsonSchema, refRoot)).toEqual([])
+    expect(resolveCombinatorBranches(undefined, refRoot)).toEqual([])
+  })
+})
 
 const variants: JsonSchema[] = [
   {

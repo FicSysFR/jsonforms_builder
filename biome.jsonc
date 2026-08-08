@@ -1,0 +1,76 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/coverage",
+      "!playground/auto-imports.d.ts",
+      "!playground/components.d.ts"
+    ]
+  },
+
+  "formatter": {
+    "enabled": true,
+    "useEditorconfig": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 180,
+    "lineEnding": "lf"
+  },
+
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "arrowParentheses": "always",
+      "bracketSpacing": true
+    }
+  },
+
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "suspicious": {
+        // Le socle v2 est encore parsemé de `any` (60 occurrences) : les signaler sans
+        // faire échouer `yarn lint`, le temps de les résorber.
+        "noExplicitAny": "warn",
+        // Les scripts d'outillage (`coverage.ts`) et les avertissements de développement
+        // des renderers écrivent volontairement sur la console.
+        "noConsole": "off"
+      },
+
+      "correctness": {
+        // Les composables exposent des paramètres qu'ils n'utilisent pas tous, et les
+        // signatures de testers JSONForms sont imposées de l'extérieur.
+        "noUnusedFunctionParameters": "off"
+      },
+
+      "complexity": {
+        // `<any>expr` reste nécessaire face aux typages incomplets de `vite-plugin-pug`.
+        "noBannedTypes": "off"
+      }
+    }
+  },
+
+  "assist": {
+    "actions": {
+      "source": {
+        // Laissé inactif volontairement : l'activer réordonnerait les imports de tout le
+        // dépôt d'un coup. À basculer sur `"on"` lors d'une passe dédiée.
+        "organizeImports": "off"
+      }
+    }
+  }
+}

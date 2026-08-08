@@ -9,8 +9,7 @@
  * de composants Nuxt UI vers un module vide : seuls les testers nous intéressent, et ce
  * sont des fonctions pures.
  */
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Generate, hasType, resolveSchema } from '@jsonforms/core'
@@ -22,7 +21,15 @@ const ROOT = join(HERE, '..', '..')
 
 const loadRenderers = async (): Promise<any[]> => {
   const dist = join(ROOT, 'dist', 'json-formbuilder.es.js')
-  const dir = mkdtempSync(join(tmpdir(), 'jf-coverage-'))
+
+  /*
+   * Le bundle réécrit doit vivre *sous le projet*, pas dans le répertoire temporaire du
+   * système : il conserve des imports nus (`@jsonforms/core`, `vue`…) que Node ne résout
+   * qu'en remontant l'arborescence à la recherche d'un `node_modules`.
+   */
+  const cache = join(ROOT, 'node_modules', '.cache')
+  mkdirSync(cache, { recursive: true })
+  const dir = mkdtempSync(join(cache, 'jf-coverage-'))
 
   writeFileSync(join(dir, 'stub.js'), 'export default {}\n')
   writeFileSync(
@@ -30,9 +37,15 @@ const loadRenderers = async (): Promise<any[]> => {
     readFileSync(dist, 'utf8').replace(/"@nuxt\/ui\/[^"]+"/g, '"./stub.js"'),
   )
 
-  const mod = await import(pathToFileURL(join(dir, 'bundle.mjs')).href)
+  try {
+    const mod = await import(pathToFileURL(join(dir, 'bundle.mjs')).href)
 
-  return mod.allRenderers
+    return mod.allRenderers
+  } finally {
+    // Le module est déjà en mémoire à ce stade : on peut retirer les fichiers sans
+    // laisser un `jf-coverage-*` de plus à chaque exécution.
+    rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 const allRenderers = await loadRenderers()
@@ -40,11 +53,15 @@ const allRenderers = await loadRenderers()
 const itemsDir = join(HERE, 'items')
 for (const file of readdirSync(itemsDir).filter((f) => f.endsWith('.ts'))) {
   // `pathToFileURL` : un chemin Windows absolu (`C:\…`) n'est pas un spécificateur
-  // d'import valide pour Node, contrairement à Bun qui l'acceptait.
+  // d'import valide, il doit être converti en URL `file://`.
   await import(pathToFileURL(join(itemsDir, file)).href)
 }
 
-type Gap = { type: string; scope?: string; reason: 'aucun renderer' | 'rendu vide' }
+type Gap = {
+  type: string
+  scope?: string
+  reason: 'aucun renderer' | 'rendu vide' | '$ref non résolu'
+}
 
 /**
  * Garde-fou du parcours, **sans valeur de diagnostic**.
@@ -121,6 +138,38 @@ const walk = (
   } catch {
     return
   }
+
+  /*
+   * Combinateur : chaque branche doit être **résolue** avant d'atteindre le dispatcher.
+   * Lui transmettre un `{ $ref: … }` nu le ferait résoudre un scope contre un schéma qui
+   * n'est qu'un renvoi, et `resolveSchema` part alors en boucle côté navigateur.
+   */
+  const branches: any[] = resolved?.oneOf ?? resolved?.anyOf ?? []
+  for (const branch of branches) {
+    if (!branch?.$ref) continue
+
+    let target: any
+    try {
+      target = resolveSchema(rootSchema, branch.$ref, rootSchema)
+    } catch {
+      target = undefined
+    }
+
+    if (!target) {
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: '$ref non résolu' })
+      return
+    }
+
+    walk(
+      Generate.uiSchema(target, 'VerticalLayout', undefined, rootSchema),
+      target,
+      rootSchema,
+      gaps,
+      depth + 1,
+    )
+  }
+
+  if (branches.length) return
 
   if (!resolved || !hasType(resolved, 'object')) return
 

@@ -55,7 +55,6 @@ export const uischema = {
           scope: '#/properties/exampleRadioEnum',
           options: {
             format: 'radio',
-            orientation: 'vertical',
           },
         },
       ],

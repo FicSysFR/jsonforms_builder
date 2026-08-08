@@ -165,7 +165,14 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       control.control.value.schema,
       control.control.value.uischema.scope,
       control.control.value.path,
-      () => Generate.uiSchema(control.control.value.schema, 'VerticalLayout'),
+      () =>
+        Generate.uiSchema(
+          control.control.value.schema,
+          'VerticalLayout',
+          undefined,
+          // Sans le schéma racine, le générateur ne sait pas suivre les `$ref`.
+          control.control.value.rootSchema,
+        ),
       control.control.value.uischema,
       control.control.value.rootSchema,
     )

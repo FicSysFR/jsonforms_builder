@@ -135,8 +135,19 @@ watch(
 
 const i18n = computed<JsonFormsI18nState>(() => ({
   locale: locale.value,
-  translate: (key: string, defaultMessage?: string) =>
-    get(get(example.value.i18n, locale.value, {}), key, defaultMessage ?? key),
+  /**
+   * Sans traduction ni message par défaut, renvoyer `''` plutôt que la clé brute
+   * (`exampleRadioEnum.description`) — JSONForms appelle toujours le traducteur
+   * même quand le schéma n'a pas de description (`defaultMessage` vaut `undefined`).
+   */
+  translate: (key: string, defaultMessage?: string) => {
+    const dict = get(example.value.i18n, locale.value, {}) as Record<string, unknown>
+    const translated = get(dict, key) as string | undefined
+    if (translated !== undefined) {
+      return translated
+    }
+    return defaultMessage ?? ''
+  },
 }))
 
 const onChange = (event: JsonFormsChangeEvent) => {

@@ -1,4 +1,34 @@
-import { createDefaultValue, type JsonSchema } from '@jsonforms/core'
+import { createDefaultValue, resolveSchema, type JsonSchema } from '@jsonforms/core'
+
+/**
+ * Branches d'un `oneOf` / `anyOf`, **`$ref` suivis**.
+ *
+ * Une branche écrite `{ $ref: '#/definitions/address' }` ne décrit rien par elle-même.
+ * La transmettre telle quelle au dispatcher lui ferait résoudre un scope contre un
+ * schéma qui n'est qu'un renvoi, et `resolveSchema` part alors en boucle
+ * (`Maximum call stack size exceeded`). La résolution appartient donc au renderer.
+ *
+ * Une branche irrésolvable est conservée en l'état plutôt qu'écartée : mieux vaut une
+ * variante pauvre qu'un sélecteur amputé d'une option que le schéma déclare.
+ */
+export const resolveCombinatorBranches = (
+  schema: JsonSchema | undefined,
+  rootSchema: JsonSchema,
+): JsonSchema[] => {
+  const branches: any[] = (schema as any)?.oneOf ?? (schema as any)?.anyOf ?? []
+
+  return branches.map((branch) => {
+    if (!branch?.$ref) {
+      return branch
+    }
+
+    try {
+      return resolveSchema(rootSchema, branch.$ref, rootSchema) ?? branch
+    } catch {
+      return branch
+    }
+  })
+}
 
 /**
  * Devine quelle branche d'un `oneOf` décrit la donnée actuelle.
