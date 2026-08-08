@@ -40,7 +40,8 @@
     "postbuild": "cpr README.md dist/README.md && cpr LICENSE dist/LICENSE && cpr package.json dist/package.json",
     "start:dev": "cd playground && bunx vite --host",
     "test": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "coverage:renderers": "bun run build && bun run playground/examples/coverage.ts"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.1",

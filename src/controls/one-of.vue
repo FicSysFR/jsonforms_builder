@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { ControlElement, Generate, JsonFormsRendererRegistryEntry, isOneOfControl, rankWith, type JsonSchema } from '@jsonforms/core'
+import { ControlElement, Generate, JsonFormsRendererRegistryEntry, isAnyOfControl, isOneOfControl, or, rankWith, type JsonSchema } from '@jsonforms/core'
 import { computed, defineComponent, nextTick, ref, watch } from 'vue'
 import { DispatchRenderer, rendererProps, useJsonFormsOneOfControl, RendererProps } from '@jsonforms/vue'
 import USelect from '@nuxt/ui/components/Select.vue'
@@ -40,15 +40,15 @@ import { useUiControl } from '../utils'
 import { createVariantValue, detectOneOfVariant } from '../composables'
 
 /**
- * OneOfControlRenderer
+ * CombinatorControlRenderer
  *
- * Rend les schémas `oneOf` : un sélecteur de variante, puis le sous-formulaire de la
- * branche retenue.
+ * Rend les schémas `oneOf` et `anyOf` : un sélecteur de variante, puis le
+ * sous-formulaire de la branche retenue.
  *
  * Absent de la v1, alors que le thème déclarait déjà un slot `oneOf`.
  */
 const controlRenderer = defineComponent({
-  name: 'OneOfControlRenderer',
+  name: 'CombinatorControlRenderer',
   components: {
     ControlWrapper,
     DispatchRenderer,
@@ -60,8 +60,11 @@ const controlRenderer = defineComponent({
   setup(props: RendererProps<ControlElement>) {
     const control = useUiControl(useJsonFormsOneOfControl(props) as any)
 
+    // `anyOf` autorise plusieurs branches valides là où `oneOf` en impose exactement
+    // une ; le sélecteur reste la présentation la plus lisible dans les deux cas, et
+    // c'est aussi ce que font les jeux de renderers officiels.
     const variants = computed<JsonSchema[]>(
-      () => control.control.value.schema?.oneOf ?? [],
+      () => control.control.value.schema?.oneOf ?? control.control.value.schema?.anyOf ?? [],
     )
 
     const variantItems = computed(() =>
@@ -141,6 +144,6 @@ export default controlRenderer
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  tester: rankWith(3, isOneOfControl),
+  tester: rankWith(3, or(isOneOfControl, isAnyOfControl)),
 }
 </script>

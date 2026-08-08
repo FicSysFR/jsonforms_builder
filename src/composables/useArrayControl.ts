@@ -4,6 +4,8 @@ import {
   createDefaultValue,
   findUISchema,
   Generate,
+  hasType,
+  schemaMatches,
   type JsonSchema,
   type UISchemaElement,
 } from '@jsonforms/core'
@@ -57,6 +59,29 @@ export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean =
 
   return typeof type === 'string' && PRIMITIVE_TYPES.includes(type)
 }
+
+/** Le schéma d'élément est-il un combinateur (`oneOf` / `anyOf`) ? */
+export const isCombinatorSchema = (schema: JsonSchema | undefined): boolean =>
+  Array.isArray((schema as any)?.oneOf) || Array.isArray((schema as any)?.anyOf)
+
+/**
+ * Tester des tableaux dont les éléments sont un combinateur.
+ *
+ * `isObjectArrayControl` et `isPrimitiveArrayControl` de JSONForms exigent tous deux un
+ * `items.type` explicite ; un `items: { oneOf: [...] }` n'en a pas, et échappait donc
+ * aux deux — le tableau n'avait alors aucun renderer.
+ */
+export const isCombinatorItemsArray = (
+  uischema: UISchemaElement,
+  schema: JsonSchema,
+  context: any,
+): boolean =>
+  schemaMatches(
+    (resolved) =>
+      hasType(resolved, 'array') &&
+      !Array.isArray((resolved as any).items) &&
+      isCombinatorSchema((resolved as any).items),
+  )(uischema, schema, context)
 
 /** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
 export const isArrayAtCapacity = (
@@ -127,6 +152,12 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
         label: false,
         options: { hideDescription: true },
       } as unknown as UISchemaElement
+    }
+
+    // Un élément combinateur se confie tel quel au renderer de `oneOf`/`anyOf` : lui
+    // générer une disposition ici perdrait le sélecteur de variante.
+    if (isCombinatorSchema(control.control.value.schema)) {
+      return { type: 'Control', scope: '#' } as unknown as UISchemaElement
     }
 
     return findUISchema(

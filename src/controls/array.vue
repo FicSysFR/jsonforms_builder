@@ -143,7 +143,7 @@ import { DispatchRenderer, rendererProps, useJsonFormsArrayControl, RendererProp
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCard from '@nuxt/ui/components/Card.vue'
 import { ConfirmDialog } from '../common'
-import { useArrayControl } from '../composables'
+import { isCombinatorItemsArray, useArrayControl } from '../composables'
 
 /**
  * ArrayControlRenderer
@@ -227,6 +227,14 @@ export const entry: JsonFormsRendererRegistryEntry = {
    */
   tester: (uischema, schema, context) => {
     if (isObjectArrayControl(uischema, schema, context)) {
+      return 2
+    }
+
+    // Tableau dont les éléments sont un combinateur (`items: { oneOf: [...] }`) : ni
+    // objet ni primitive au sens de JSONForms, donc ignoré par les deux testers
+    // ci-dessus. C'est pourtant bien une liste, chaque entrée étant ensuite confiée au
+    // renderer de combinateur.
+    if (isCombinatorItemsArray(uischema, schema, context)) {
       return 2
     }
 

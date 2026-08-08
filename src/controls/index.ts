@@ -11,6 +11,9 @@ export { default as TextareaControlRenderer } from './textarea.vue'
 export { default as AutocompleteControlRenderer } from './autocomplete.vue'
 export { default as ArrayControlRenderer } from './array.vue'
 export { default as OneOfControlRenderer } from './one-of.vue'
+export { default as ObjectControlRenderer } from './object.vue'
+export { default as MultiEnumControlRenderer } from './multi-enum.vue'
+export { default as ConstControlRenderer } from './const.vue'
 
 import { entry as inputControlRendererEntry } from './input.vue'
 import { entry as booleanControlRendererEntry } from './boolean.vue'
@@ -24,6 +27,9 @@ import { entry as textareaControlRendererEntry } from './textarea.vue'
 import { entry as autocompleteControlRendererEntry } from './autocomplete.vue'
 import { entry as arrayControlRendererEntry } from './array.vue'
 import { entry as oneOfControlRendererEntry } from './one-of.vue'
+import { entry as objectControlRendererEntry } from './object.vue'
+import { entry as multiEnumControlRendererEntry } from './multi-enum.vue'
+import { entry as constControlRendererEntry } from './const.vue'
 
 export const controlsRenderers = [
   inputControlRendererEntry,
@@ -38,4 +44,7 @@ export const controlsRenderers = [
   autocompleteControlRendererEntry,
   arrayControlRendererEntry,
   oneOfControlRendererEntry,
+  objectControlRendererEntry,
+  multiEnumControlRendererEntry,
+  constControlRendererEntry,
 ]
