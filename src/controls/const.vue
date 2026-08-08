@@ -34,15 +34,15 @@ import { useUiControl } from '../utils'
 /**
  * ConstControlRenderer
  *
- * Affiche, en lecture seule, une propriété dont le schéma fixe la valeur par `const`
- * sans déclarer de `type`.
+ * Displays, read-only, a property whose schema fixes the value via `const` without
+ * declaring a `type`.
  *
- * Ce n'est pas qu'un cas d'école : c'est la forme même des **discriminants de variantes**
- * (`kind: { const: 'track' }`). Sans ce renderer, chaque branche d'un `oneOf` affichait
- * « No applicable renderer found » en regard de son discriminant.
+ * Not just a textbook case: this is the form of **variant discriminants**
+ * (`kind: { const: 'track' }`). Without this renderer, each `oneOf` branch showed
+ * « No applicable renderer found » next to its discriminant.
  *
- * Le champ est désactivé plutôt que masqué : la valeur renseigne l'utilisateur sur la
- * branche dans laquelle il se trouve.
+ * The field is disabled rather than hidden: the value tells the user which branch they
+ * are in.
  */
 const controlRenderer = defineComponent({
   name: 'ConstControlRenderer',
@@ -71,9 +71,9 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Rang 3 pour passer devant les contrôles typés : un schéma qui porte à la fois
-   * `type: 'string'` et `const` reste une valeur figée, pas une saisie libre.
-   * `enum` est exclu — il relève du sélecteur, même à une seule entrée.
+   * Rank 3 to beat typed controls: a schema with both `type: 'string'` and `const` is
+   * a fixed value, not free input. `enum` is excluded — it belongs to the selector,
+   * even with a single entry.
    */
   tester: rankWith(
     3,

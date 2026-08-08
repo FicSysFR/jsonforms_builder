@@ -146,7 +146,7 @@ export const fileToDataUrl = (file: File): Promise<string> => {
       const result = String(reader.result ?? '')
       const parsed = parseDataUrl(result)
 
-      // `FileReader` n'écrit jamais le nom : on le réinjecte pour ne pas le perdre.
+      // `FileReader` never writes the name: we reinject it so it is not lost.
       resolve(
         parsed
           ? buildDataUrl({ mime: parsed.mime, name: file.name, payload: parsed.payload })
@@ -181,10 +181,10 @@ export const useFileUploadControl = ({
   const files = ref<File[]>([])
 
   /**
-   * Dernière valeur émise par ce contrôle. Le `watch` ci-dessous doit distinguer une
-   * modification venue de l'extérieur (chargement d'un brouillon, règle JSONForms) de
-   * l'écho de notre propre `onChange` — sans quoi chaque dépôt de fichier reconstruirait
-   * un `File` neuf, et le composant repartirait dans un cycle de rendu.
+   * Last value emitted by this control. The `watch` below must distinguish an
+   * external change (draft load, JSONForms rule) from the echo of our own
+   * `onChange` — otherwise each file drop would rebuild a fresh `File` and the
+   * component would enter a render loop.
    */
   const lastEmitted = ref<string>('')
 
@@ -225,7 +225,7 @@ export const useFileUploadControl = ({
 
   const modelValue = computed(() => (multiple.value ? files.value : (files.value[0] ?? null)))
 
-  /** Récapitulatif « 2 fichiers · 1,4 Mo », affiché sous la zone de dépôt. */
+  /** Summary like « 2 fichiers · 1,4 Mo », shown under the drop zone. */
   const summary = computed(() => {
     if (!files.value.length) {
       return ''

@@ -66,14 +66,14 @@ import { useColorControl } from '../composables'
 /**
  * ColorControlRenderer
  *
- * Rend les chaînes de `format: "color"` (ou `options.format: "color"`) avec un
- * `UColorPicker` en popover, précédé d'une pastille de prévisualisation.
+ * Renders strings with `format: "color"` (or `options.format: "color"`) with a
+ * `UColorPicker` in a popover, preceded by a preview swatch.
  *
- * La pipette est délibérément *à côté* d'un champ texte plutôt qu'à sa place : une valeur
- * de marque se copie-colle (`#1B4F72`), elle ne se retrouve pas à la souris. Le champ se
- * retire avec `options.showInput: false`.
+ * The eyedropper is deliberately *beside* a text field rather than replacing it: a brand
+ * value is copy-pasted (`#1B4F72`), not picked with the mouse. The field is omitted with
+ * `options.showInput: false`.
  *
- * `options.colorFormat` choisit la notation émise par la pipette (`hex` par défaut,
+ * `options.colorFormat` chooses the notation emitted by the picker (`hex` by default,
  * `rgb`, `hsl`, `cmyk`, `lab`).
  */
 const controlRenderer = defineComponent({

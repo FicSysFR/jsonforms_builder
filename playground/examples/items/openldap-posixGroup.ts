@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * posixGroup (nis.schema / RFC 2307) — groupe Unix.
- * MUST : cn, gidNumber. Membres via memberUid (login), pas de DN.
+ * posixGroup (nis.schema / RFC 2307) — Unix group.
+ * MUST: cn, gidNumber. Members via memberUid (login), not DN.
  */
 export const schema = {
   type: 'object',

@@ -54,12 +54,12 @@ import {
 } from './helpers'
 
 /**
- * Performances des chemins composants : résolution de renderer (testers),
- * libellés de tableaux, combinateurs oneOf / allOf, suggestions.
+ * Component-path performance: renderer resolution (testers),
+ * array labels, oneOf / allOf combinators, suggestions.
  *
- * On n'importe pas les SFC Vue (elles tirent `@nuxt/ui` et les alias Nuxt).
- * Le registre ci-dessous reprend les *mêmes* prédicats `rankWith` que les
- * renderers du package, afin de chronométrer le coût réel de sélection.
+ * Vue SFCs are not imported (they pull `@nuxt/ui` and Nuxt aliases).
+ * The registry below reuses the *same* `rankWith` predicates as the
+ * package renderers, so we time the real selection cost.
  */
 
 const stubRenderer = {} as Component
@@ -106,8 +106,8 @@ const resolveBestRenderer = (
   return bestRank
 }
 
-describe('composants — résolution des renderers', () => {
-  it('résout le meilleur renderer pour un formulaire plat dense', () => {
+describe('components — renderer resolution', () => {
+  it('resolves the best renderer for a dense flat form', () => {
     const count = 120
     const schema = buildFlatObjectSchema(count) as JsonSchema
     const uischema = buildFlatVerticalUiSchema(count) as UISchemaElement
@@ -132,10 +132,10 @@ describe('composants — résolution des renderers', () => {
       expect(matched).toBe(count)
     })
 
-    expectWithinBudget('testers 120 contrôles string', result, 80)
+    expectWithinBudget('testers 120 string controls', result, 80)
   })
 
-  it('évalue le registre complet sur un panel de contrôles typiques', () => {
+  it('evaluates the full registry on a panel of typical controls', () => {
     const schema = {
       type: 'object',
       properties: {
@@ -193,7 +193,7 @@ describe('composants — résolution des renderers', () => {
       },
       {
         uischema: { type: 'Control', scope: '#/properties/nested' } as UISchemaElement,
-        // `isObjectControl` résout le scope contre le schéma passé : il faut le root.
+        // `isObjectControl` resolves the scope against the passed schema: root is required.
         schema,
       },
       {
@@ -201,7 +201,7 @@ describe('composants — résolution des renderers', () => {
         schema: schema.properties!.variant as JsonSchema,
       },
       { uischema: { type: 'VerticalLayout', elements: [] } as UISchemaElement, schema },
-      { uischema: { type: 'Label', text: 'Titre' } as UISchemaElement, schema },
+      { uischema: { type: 'Label', text: 'Title' } as UISchemaElement, schema },
     ]
 
     const context: TesterContext = { rootSchema: schema, config: {} }
@@ -215,20 +215,20 @@ describe('composants — résolution des renderers', () => {
             entry.schema,
             context,
           )
-          // Un rank -1 signalerait un trou dans le registre miroir des renderers.
+          // A -1 rank would signal a hole in the mirrored renderer registry.
           if (bestRank < 0) {
             throw new Error(
-              `aucun tester pour type=${entry.uischema.type} scope=${(entry.uischema as ControlElement).scope}`,
+              `no tester for type=${entry.uischema.type} scope=${(entry.uischema as ControlElement).scope}`,
             )
           }
         }
       }
     })
 
-    expectWithinBudget('registre testers × 50 tours (10 cas)', result, 100)
+    expectWithinBudget('tester registry × 50 rounds (10 cases)', result, 100)
   })
 
-  it('reste rapide sur un uischema profondément imbriqué', () => {
+  it('stays fast on a deeply nested uischema', () => {
     const deep = buildDeepUiSchema(8, 4) as UISchemaElement
     const rootSchema = { type: 'object', properties: {} } as JsonSchema
     const stringSchema = { type: 'string' } as JsonSchema
@@ -249,21 +249,21 @@ describe('composants — résolution des renderers', () => {
       expect(visited).toBeGreaterThan(20)
     })
 
-    expectWithinBudget('parcours uischema profondeur 8', result, 60)
+    expectWithinBudget('uischema walk depth 8', result, 60)
   })
 })
 
-describe('composants — tableaux et contrôles', () => {
-  it('calcule les libellés d’un grand tableau d’objets', () => {
+describe('components — arrays and controls', () => {
+  it('computes labels for a large object array', () => {
     const items = Array.from({ length: 2_000 }, (_, i) => ({
-      // Un sur 17 sans libellé → repli sur « Élément N »
-      company: i % 17 === 1 ? '' : `Société ${i}`,
+      // One in 17 without a label → fallback to « Élément N » (production string)
+      company: i % 17 === 1 ? '' : `Company ${i}`,
       count: i,
     }))
 
     const result = measure(() => {
       const labels = items.map((item, index) => resolveArrayItemLabel(item, index, 'company'))
-      expect(labels[0]).toBe('Société 0')
+      expect(labels[0]).toBe('Company 0')
       expect(labels[1]).toBe('Élément 2')
       expect(labels).toHaveLength(2_000)
     })
@@ -271,7 +271,7 @@ describe('composants — tableaux et contrôles', () => {
     expectWithinBudget('resolveArrayItemLabel × 2000', result, 40)
   })
 
-  it('évalue les garde-fous de capacité sur une longue série d’ajouts', () => {
+  it('evaluates capacity guards over a long add series', () => {
     const result = measure(() => {
       let length = 0
       const maxItems = 5_000
@@ -282,10 +282,10 @@ describe('composants — tableaux et contrôles', () => {
       expect(isPrimitiveItemSchema({ type: 'string' })).toBe(true)
     })
 
-    expectWithinBudget('isArrayAtCapacity jusqu’à 5000', result, 20)
+    expectWithinBudget('isArrayAtCapacity up to 5000', result, 20)
   })
 
-  it('détecte la variante oneOf sur un jeu dense de branches', () => {
+  it('detects the oneOf variant on a dense branch set', () => {
     const branches = Array.from({ length: 80 }, (_, i) => ({
       type: 'object' as const,
       properties: {
@@ -312,7 +312,7 @@ describe('composants — tableaux et contrôles', () => {
     expectWithinBudget('oneOf 80 branches × 100', result, 80)
   })
 
-  it('aplatit une chaîne allOf / $ref profonde (miroir playground allOf-perf)', () => {
+  it('flattens a deep allOf / $ref chain (playground allOf-perf mirror)', () => {
     const depth = 8
     const fieldsPerLayer = 12
     const root = buildNestedAllOfSchema(depth, fieldsPerLayer) as JsonSchema
@@ -327,10 +327,10 @@ describe('composants — tableaux et contrôles', () => {
       }
     })
 
-    expectWithinBudget('flattenAllOfSchema profondeur 8 × 200', result, 80)
+    expectWithinBudget('flattenAllOfSchema depth 8 × 200', result, 80)
   })
 
-  it('normalise et mappe de grandes listes de suggestions', () => {
+  it('normalizes and maps large suggestion lists', () => {
     const raw = Array.from({ length: 3_000 }, (_, i) => `plain-${i}`)
 
     const result = measure(() => {
@@ -357,7 +357,7 @@ describe('composants — tableaux et contrôles', () => {
     expectWithinBudget('suggestions / autocomplete bulk', result, 60)
   })
 
-  it('formate des valeurs numériques en boucle (slider / numeric)', () => {
+  it('formats numeric values in a loop (slider / numeric)', () => {
     const result = measure(() => {
       let checksum = 0
       for (let i = 0; i < 5_000; i++) {

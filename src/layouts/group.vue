@@ -43,10 +43,10 @@ import { useUiLayout } from '../utils'
 /**
  * GroupRenderer
  *
- * Rend les éléments `type: "Group"` du uischema dans une `UCard` titrée.
+ * Renders uischema elements with `type: "Group"` inside a titled `UCard`.
  *
- * Le thème déclarait déjà les slots `group.*` en v1, mais aucun renderer ne les
- * consommait : un `Group` retombait sur « No applicable renderer found ».
+ * The theme already declared `group.*` slots in v1, but no renderer consumed them:
+ * a `Group` fell back to "No applicable renderer found".
  */
 const layoutRenderer = defineComponent({
   name: 'GroupRenderer',

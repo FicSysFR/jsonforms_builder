@@ -46,7 +46,7 @@ import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
 import { useFileUploadControl } from '../composables'
 
-/** `array` de chaînes marqué `format: "file"` → dépôt multiple. */
+/** `array` of strings marked `format: "file"` → multiple upload. */
 const isMultipleFileSchema = schemaMatches((schema) => {
   if (!hasType(schema, 'array') || Array.isArray(schema.items)) {
     return false
@@ -60,15 +60,15 @@ const isMultipleFileSchema = schemaMatches((schema) => {
 /**
  * FileUploadControlRenderer
  *
- * Rend les chaînes de `format: "data-url"` (ou `options.format: "file"`) avec un
- * `UFileUpload` : zone de dépôt, prévisualisation et suppression.
+ * Renders strings with `format: "data-url"` (or `options.format: "file"`) using
+ * `UFileUpload`: drop zone, preview, and removal.
  *
- * La valeur stockée reste une **URL de données** — le schéma décrit bien une chaîne, et le
- * formulaire reste sérialisable tel quel. Le nom d'origine du fichier, qu'un `type:
- * "string"` ne sait pas porter, est conservé dans le paramètre `;name=` de l'URL et
- * restitué à la relecture (cf. `useFileUploadControl`).
+ * The stored value remains a **data URL** — the schema describes a string, and the
+ * form stays serializable as-is. The original file name, which a `type: "string"` cannot
+ * carry, is kept in the URL's `;name=` parameter and restored on read (cf.
+ * `useFileUploadControl`).
  *
- * Un schéma `array` d'éléments `string` active le dépôt multiple.
+ * An `array` schema of `string` elements enables multiple upload.
  */
 const controlRenderer = defineComponent({
   name: 'FileUploadControlRenderer',
@@ -101,8 +101,8 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Rang 20 : passe devant le renderer de tableau (2) pour la variante multiple, et devant
-   * `input` (1) pour la variante simple.
+   * Rank 20: beats the array renderer (2) for the multiple variant, and `input` (1) for
+   * the simple variant.
    */
   tester: rankWith(
     20,

@@ -1,5 +1,5 @@
 /**
- * REGRESSION P2 — golden des exemples playground critiques.
+ * REGRESSION P2 — golden coverage of critical playground examples.
  */
 import { describe, expect, it } from 'vitest'
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
@@ -40,37 +40,37 @@ const expectNoGaps = (name: string, schema: JsonSchema, uischema: UISchemaElemen
   expect(gaps, `${name}: ${formatCoverageGaps(gaps)}`).toEqual([])
 }
 
-describe('REGRESSION — golden exemples playground', () => {
-  it('REGRESSION: allOf n’a aucun trou', () => {
+describe('REGRESSION — playground example goldens', () => {
+  it('REGRESSION: allOf has no gaps', () => {
     expectNoGaps('allOf', allOfSchema as JsonSchema, allOfUi as UISchemaElement)
   })
 
-  it('REGRESSION: allOf-perf n’a aucun trou', () => {
+  it('REGRESSION: allOf-perf has no gaps', () => {
     expectNoGaps('allOf-perf', allOfPerfSchema as JsonSchema, allOfPerfUi as UISchemaElement)
   })
 
-  it('REGRESSION: object (root + nested) n’a aucun trou', () => {
+  it('REGRESSION: object (root + nested) has no gaps', () => {
     expectNoGaps('rootObject', objectSchema as JsonSchema, objectRootUi as UISchemaElement)
     expectNoGaps('object', objectSchema as JsonSchema, objectUi as UISchemaElement)
   })
 
-  it('REGRESSION: oneOf n’a aucun trou / $ref nu', () => {
+  it('REGRESSION: oneOf has no gaps / bare $ref', () => {
     expectNoGaps('oneOf', oneOfSchema as JsonSchema, oneOfUi as UISchemaElement)
   })
 
-  it('REGRESSION: anyOf n’a aucun trou', () => {
+  it('REGRESSION: anyOf has no gaps', () => {
     expectNoGaps('anyOf', anyOfSchema as JsonSchema, anyOfUi as UISchemaElement)
   })
 
-  it('REGRESSION: oneOfArray (items combinator) n’a aucun trou', () => {
+  it('REGRESSION: oneOfArray (combinator items) has no gaps', () => {
     expectNoGaps('oneOfArray', oneOfArraySchema as JsonSchema, oneOfArrayUi as UISchemaElement)
   })
 
-  it('REGRESSION: arrays n’a aucun trou', () => {
+  it('REGRESSION: arrays has no gaps', () => {
     expectNoGaps('arrays', arraysSchema as JsonSchema, arraysUi as UISchemaElement)
   })
 
-  it('REGRESSION: additional-properties n’a aucun trou', () => {
+  it('REGRESSION: additional-properties has no gaps', () => {
     expectNoGaps(
       'additional-properties',
       additionalSchema as JsonSchema,
@@ -78,11 +78,11 @@ describe('REGRESSION — golden exemples playground', () => {
     )
   })
 
-  it('REGRESSION: mixed-object n’a aucun trou (unions)', () => {
+  it('REGRESSION: mixed-object has no gaps (unions)', () => {
     expectNoGaps('mixed-object', mixedSchema as JsonSchema, mixedUi as UISchemaElement)
   })
 
-  it('REGRESSION: shipping_address est AllOfControl', () => {
+  it('REGRESSION: shipping_address is AllOfControl', () => {
     expect(
       resolveWinner(
         { type: 'Control', scope: '#/properties/shipping_address' },
@@ -92,9 +92,9 @@ describe('REGRESSION — golden exemples playground', () => {
     ).toEqual({ name: 'AllOfControl', rank: 4 })
   })
 
-  it('REGRESSION: mixed (json-editor) n’est pas ObjectControl', () => {
+  it('REGRESSION: mixed (json-editor) is not ObjectControl', () => {
     /**
-     * Symptôme : union complète sans properties → carte vide via ObjectControl rang 2.
+     * Symptom: full union without properties → empty card via ObjectControl rank 2.
      */
     const winner = resolveWinner(
       { type: 'Control', scope: '#/properties/mixed' },
@@ -106,7 +106,7 @@ describe('REGRESSION — golden exemples playground', () => {
     expect(winner?.name).toBe('InputControl')
   })
 
-  it('REGRESSION: nullableObject avec properties reste ObjectControl', () => {
+  it('REGRESSION: nullableObject with properties stays ObjectControl', () => {
     expect(
       resolveWinner(
         { type: 'Control', scope: '#/properties/nullableObject' },
@@ -116,7 +116,7 @@ describe('REGRESSION — golden exemples playground', () => {
     ).toEqual({ name: 'ObjectControl', rank: 2 })
   })
 
-  it('REGRESSION: addressOrUsers est ArrayControl (items oneOf)', () => {
+  it('REGRESSION: addressOrUsers is ArrayControl (oneOf items)', () => {
     expect(
       resolveWinner(
         { type: 'Control', scope: '#/properties/addressOrUsers' },

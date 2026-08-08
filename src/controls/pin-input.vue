@@ -42,15 +42,15 @@ import { usePinInputControl } from '../composables'
 /**
  * PinInputControlRenderer
  *
- * Rend les chaînes marquées `options.format: "pin"` avec un `UPinInput` : codes de
- * vérification, PIN, jetons courts.
+ * Renders strings marked `options.format: "pin"` with `UPinInput`: verification codes,
+ * PIN, short tokens.
  *
- * Le nombre de cases est déduit du schéma (`maxLength`, `minLength`, ou le quantificateur
- * du `pattern`) : `{ "type": "string", "pattern": "^\\d{6}$" }` affiche six cases sans
- * qu'on ait à le répéter dans le uischema. `options.length` reste prioritaire.
+ * Cell count is inferred from the schema (`maxLength`, `minLength`, or the `pattern`
+ * quantifier): `{ "type": "string", "pattern": "^\\d{6}$" }` shows six cells without
+ * repeating it in the uischema. `options.length` takes priority.
  *
- * Aucune valeur n'est propagée en `string[]` : le composable recolle les cases, le modèle
- * reste la chaîne décrite par le schéma.
+ * No value is propagated as `string[]`: the composable joins the cells; the model stays
+ * the string described by the schema.
  */
 const controlRenderer = defineComponent({
   name: 'PinInputControlRenderer',

@@ -15,8 +15,8 @@
 
     p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") Aucun élément.
 
-    //- Maître à gauche, détail à droite dès `md` ; empilés en dessous, une liste étroite
-    //- côte à côte avec un formulaire étant inutilisable sur mobile.
+    //- Master on the left, detail on the right from `md` upward; stacked below, since a
+    //- narrow list beside a form is unusable on mobile.
     .grid.grid-cols-1.gap-3(v-else class="md:grid-cols-[14rem_1fr]")
       u-card(:ui="{ body: 'p-1' }")
         ul(role="listbox" class="space-y-0.5")
@@ -84,13 +84,13 @@ import { useArrayControl } from '../composables'
 /**
  * ListWithDetailRenderer
  *
- * Rend les éléments `type: "ListWithDetail"` : la liste des entrées à gauche, le
- * formulaire de l'entrée sélectionnée à droite.
+ * Renders `type: "ListWithDetail"` elements: the entry list on the left, the selected
+ * entry's form on the right.
  *
- * C'est la disposition à privilégier quand chaque entrée porte beaucoup de champs :
- * le renderer de tableau, qui déplie tout, deviendrait interminable.
+ * Prefer this layout when each entry has many fields: the array renderer, which expands
+ * everything, would become endless.
  *
- * `options.elementLabelProp` choisit la propriété affichée dans la liste.
+ * `options.elementLabelProp` chooses the property shown in the list.
  */
 const layoutRenderer = defineComponent({
   name: 'ListWithDetailRenderer',
@@ -110,8 +110,8 @@ const layoutRenderer = defineComponent({
 
     const selectedIndex = ref<number | null>(control.items.value.length ? 0 : null)
 
-    // La sélection doit rester dans les bornes : supprimer la dernière entrée laisserait
-    // sinon un index pointant au-delà du tableau, et le détail se viderait sans raison.
+    // Selection must stay within bounds: removing the last entry would otherwise leave
+    // an index pointing past the array, and the detail pane would empty for no reason.
     watch(control.items, (items) => {
       if (!items.length) {
         selectedIndex.value = null

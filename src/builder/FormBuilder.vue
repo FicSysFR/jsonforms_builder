@@ -28,7 +28,7 @@
         @click="redo"
       )
 
-    //- ── Édition ────────────────────────────────────────────────────────────────
+    //- ── Edit ────────────────────────────────────────────────────────────────
     .grid.grid-cols-1.gap-3(v-show="view === 'edit'" class="lg:grid-cols-[16rem_1fr_20rem]")
       u-card(:ui="{ body: 'p-3' }")
         .space-y-4
@@ -99,7 +99,7 @@
           @update:required="setRequired"
         )
 
-    //- ── Aperçu ─────────────────────────────────────────────────────────────────
+    //- ── Preview ─────────────────────────────────────────────────────────────────
     u-card(v-show="view === 'preview'")
       json-forms(
         :key="previewKey"
@@ -151,14 +151,13 @@ import { getElementAt, type ElementPath } from './tree'
 /**
  * FormBuilder
  *
- * Éditeur visuel produisant le couple `{ schema, uischema }` consommé par `<JsonForms>`.
+ * Visual editor producing the `{ schema, uischema }` pair consumed by `<JsonForms>`.
  *
- * Trois panneaux : palette, arbre du formulaire, inspecteur — plus un onglet Aperçu qui
- * monte le vrai `<JsonForms>` avec les renderers v2, et un onglet JSON en lecture seule.
+ * Three panels: palette, form tree, inspector — plus a Preview tab that mounts the
+ * real `<JsonForms>` with v2 renderers, and a read-only JSON tab.
  *
- * L'édition brute du JSON est délibérément absente : les applications hôtes ont déjà
- * leur éditeur de code (Monaco, etc.), et l'embarquer ici alourdirait la
- * librairie pour tout le monde.
+ * Raw JSON editing is deliberately absent: host applications already have their own
+ * code editor (Monaco, etc.), and embedding one here would bloat the library for everyone.
  *
  * @example
  * <form-builder v-model="definition" />
@@ -176,12 +175,12 @@ export default defineComponent({
     UTabs,
   },
   props: {
-    /** Définition éditée. Compatible `v-model`. */
+    /** Definition being edited. Supports `v-model`. */
     modelValue: {
       type: Object as PropType<Partial<FormDefinition> | undefined>,
       default: undefined,
     },
-    /** Renderers utilisés par l'aperçu. Par défaut, le jeu complet de la librairie. */
+    /** Renderers used by the preview. Defaults to the library's full set. */
     renderers: {
       type: Array as PropType<JsonFormsRendererRegistryEntry[]>,
       default: () => allRenderers,
@@ -201,7 +200,7 @@ export default defineComponent({
     const previewData = ref<Record<string, unknown>>({})
     const isRootDropActive = ref(false)
 
-    /** Remonter la définition à chaque modification rend le composant utilisable en `v-model`. */
+    /** Emitting the definition on every change makes the component usable with `v-model`. */
     watch(builder.definition, (value) => emit('update:modelValue', value), { deep: true })
 
     const rootElements = computed<UISchemaElement[]>(
@@ -209,9 +208,8 @@ export default defineComponent({
     )
 
     /**
-     * Force le remontage de l'aperçu quand la structure change : `<JsonForms>` met en
-     * cache ses renderers par chemin, et une simple mutation du uischema laisserait des
-     * champs supprimés à l'écran.
+     * Forces the preview to remount when the structure changes: `<JsonForms>` caches
+     * its renderers by path, and a simple uischema mutation would leave removed fields on screen.
      */
     const previewKey = computed(
       () =>
@@ -276,12 +274,12 @@ export default defineComponent({
       applyDrop({ payload, parentPath: [], index: rootElements.value.length })
     }
 
-    /** Chemin en attente de confirmation ; `null` quand aucune modale n'est ouverte. */
+    /** Path awaiting confirmation; `null` when no modal is open. */
     const pendingRemovePath = ref<ElementPath | null>(null)
 
     /**
-     * Supprimer un conteneur emporte ses descendants — et donc leurs propriétés de
-     * schéma. Le dire explicitement, l'arbre replié ne montrant pas ce qu'on perd.
+     * Removing a container takes its descendants — and therefore their schema properties.
+     * State this explicitly, since the collapsed tree does not show what will be lost.
      */
     const removeDescription = computed(() => {
       if (!pendingRemovePath.value) {
@@ -312,7 +310,7 @@ export default defineComponent({
         return
       }
 
-      // Un tick avant de démonter : la modale se ferme au même instant.
+      // One tick before unmounting: the modal closes at the same instant.
       await nextTick()
       builder.remove(path)
     }

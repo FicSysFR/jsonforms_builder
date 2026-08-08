@@ -1,6 +1,6 @@
 /**
- * Parcours de couverture (même logique que `playground/examples/coverage.ts`),
- * sur le miroir de testers — sans build dist.
+ * Coverage walk (same logic as `playground/examples/coverage.ts`),
+ * against the tester mirror — without a dist build.
  */
 import {
   Generate,
@@ -17,7 +17,7 @@ import { resolveWinner } from './testers-mirror'
 export type CoverageGap = {
   type: string
   scope?: string
-  reason: 'aucun renderer' | 'rendu vide' | '$ref non résolu'
+  reason: 'no renderer' | 'empty render' | 'unresolved $ref'
 }
 
 type WalkUi = UISchemaElement & {
@@ -40,7 +40,7 @@ const walk = (
   const chosen = resolveWinner(uischema, schema, rootSchema)
 
   if (!chosen) {
-    gaps.push({ type: uischema.type, scope: uischema.scope, reason: 'aucun renderer' })
+    gaps.push({ type: uischema.type, scope: uischema.scope, reason: 'no renderer' })
     return
   }
 
@@ -65,7 +65,7 @@ const walk = (
   if (resolved.oneOf || resolved.anyOf) {
     const branches = resolveCombinatorBranches(resolved, rootSchema)
     if (branches.some((b) => b.$ref)) {
-      gaps.push({ type: 'Control', scope: uischema.scope, reason: '$ref non résolu' })
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'unresolved $ref' })
       return
     }
 
@@ -87,7 +87,7 @@ const walk = (
   if (chosen.name === 'AllOfControl' || resolved.allOf) {
     const flattened = flattenAllOfSchema(resolved, rootSchema)
     if (!Object.keys(flattened.properties ?? {}).length) {
-      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'rendu vide' })
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'empty render' })
       return
     }
 
@@ -99,7 +99,7 @@ const walk = (
     ) as WalkUi
 
     if (!hasRenderableControl(generated)) {
-      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'rendu vide' })
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'empty render' })
       return
     }
 
@@ -107,7 +107,7 @@ const walk = (
     return
   }
 
-  // Tableau (y compris items combinator) : le renderer array gère le détail.
+  // Array (including combinator items): the array renderer handles the detail.
   if (chosen.name === 'ArrayControl' || hasType(resolved, 'array')) {
     return
   }
@@ -120,7 +120,7 @@ const walk = (
 
   if (!hasRenderableControl(generated)) {
     if (chosen.name === 'ObjectControl') {
-      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'rendu vide' })
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'empty render' })
     }
     return
   }

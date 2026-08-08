@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * groupOfNames (core.schema / RFC 4519) — groupe LDAP classique.
- * MUST : cn, member (au moins un DN).
+ * groupOfNames (core.schema / RFC 4519) — classic LDAP group.
+ * MUST: cn, member (at least one DN).
  */
 export const schema = {
   type: 'object',

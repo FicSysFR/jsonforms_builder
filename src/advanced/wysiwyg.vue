@@ -42,11 +42,11 @@ import { ControlWrapper } from '../common'
 import { determineClearValue, useUiControl } from '../utils'
 
 /**
- * Barre d'outils par défaut.
+ * Default toolbar.
  *
- * Chaque sous-tableau forme un groupe, `UEditorToolbar` insérant les séparateurs.
- * Les `kind` sont câblés nativement par Nuxt UI sur les commandes Tiptap — c'est ce
- * qui remplace les ~250 lignes de `q-btn-dropdown` et de commandes manuelles de la v1.
+ * Each sub-array forms a group; `UEditorToolbar` inserts separators between them.
+ * The `kind` values are wired natively by Nuxt UI to Tiptap commands — replacing the
+ * ~250 lines of `q-btn-dropdown` and manual commands from v1.
  */
 const DEFAULT_TOOLBAR = [
   [
@@ -113,14 +113,14 @@ const DEFAULT_TOOLBAR = [
 /**
  * WysiwygControlRenderer
  *
- * Éditeur de texte riche pour les contrôles marqués `options.wysiwyg: true`,
- * bâti sur `UEditor` (Tiptap 3, fourni par Nuxt UI).
+ * Rich text editor for controls marked `options.wysiwyg: true`, built on `UEditor`
+ * (Tiptap 3, provided by Nuxt UI).
  *
- * Le format de stockage suit le type du schéma : `string` → HTML, `object` → document
- * Tiptap JSON. La v1 ne savait produire que du JSON.
+ * Storage format follows the schema type: `string` → HTML, `object` → Tiptap JSON document.
+ * v1 could only produce JSON.
  *
- * `options.toolbar` remplace la barre par défaut par un tableau de groupes au format
- * `EditorToolbarItem` de Nuxt UI.
+ * `options.toolbar` replaces the default toolbar with an array of groups in Nuxt UI's
+ * `EditorToolbarItem` format.
  */
 const controlRenderer: Component = defineComponent({
   name: 'WysiwygControlRenderer',

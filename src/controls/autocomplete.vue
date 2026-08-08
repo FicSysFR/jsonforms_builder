@@ -46,12 +46,11 @@ import { useAutocompleteControl } from '../composables'
 /**
  * AutocompleteControlRenderer
  *
- * Rend les chaînes portant une configuration `options.api` avec un `UInputMenu`
- * alimenté à distance.
+ * Renders strings with an `options.api` configuration using a `UInputMenu` fed remotely.
  *
- * `ignore-filter` est indispensable : le filtrage est fait par la source (ou côté
- * client dans `onSearch`), et laisser `UInputMenu` refiltrer par-dessus masquerait
- * des résultats pourtant renvoyés par l'API.
+ * `ignore-filter` is essential: filtering is done by the source (or client-side in
+ * `onSearch`), and letting `UInputMenu` re-filter on top would hide results returned
+ * by the API.
  */
 const controlRenderer = defineComponent({
   name: 'AutocompleteControlRenderer',

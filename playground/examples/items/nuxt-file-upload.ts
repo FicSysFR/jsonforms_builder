@@ -1,9 +1,9 @@
 import { registerExamples } from '../register'
 
 /**
- * `avatar` est prérempli : c'est le seul moyen d'exercer le chemin retour du renderer —
- * reconstruire un `File` affichable (nom compris) depuis la seule URL de données stockée,
- * comme au rechargement d'un brouillon.
+ * `avatar` is pre-filled: that is the only way to exercise the renderer's return path —
+ * rebuild a displayable `File` (name included) from the stored data URL alone,
+ * as when reloading a draft.
  */
 export const data = {
   avatar:

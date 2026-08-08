@@ -1,33 +1,32 @@
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 
 /**
- * Adresse d'un élément dans l'arbre du uischema : la suite des index à suivre dans
- * les `elements` successifs. `[]` désigne la racine, `[0, 2]` le 3ᵉ enfant du 1ᵉʳ.
+ * Address of an element in the uischema tree: the sequence of indexes to follow in
+ * successive `elements`. `[]` denotes the root, `[0, 2]` the 3rd child of the 1st.
  */
 export type ElementPath = number[]
 
 /**
- * Fragment de schéma manipulé par le builder.
+ * Schema fragment manipulated by the builder.
  *
- * Volontairement plus permissif que le type `JsonSchema` de JSONForms, qui est une union
- * draft-4 / draft-7 : on ne peut ni recomposer ni patcher un membre de cette union sans
- * que TypeScript rejette les champs divergents. La validation réelle reste celle d'AJV.
+ * Deliberately more permissive than JSONForms' `JsonSchema` type, which is a draft-4 /
+ * draft-7 union: you cannot recompose or patch a member of that union without TypeScript
+ * rejecting divergent fields. Actual validation remains AJV's job.
  */
 export type SchemaFragment = Record<string, unknown>
 
 /**
- * Clone profond d'un document JSON.
+ * Deep clone of a JSON document.
  *
- * Pas de `structuredClone` ici : la définition vit dans un `ref` Vue, et l'algorithme
- * de clonage structuré refuse les proxys réactifs (`DataCloneError`). Un aller-retour
- * JSON est de toute façon exact pour un JSON Schema ou un uischema, qui sont des
- * documents JSON par définition.
+ * No `structuredClone` here: the definition lives in a Vue `ref`, and the structured
+ * cloning algorithm rejects reactive proxies (`DataCloneError`). A JSON round-trip is
+ * exact anyway for a JSON Schema or uischema, which are JSON documents by definition.
  */
 export const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 
 type WithElements = UISchemaElement & { elements?: UISchemaElement[] }
 
-/** Un élément peut-il accueillir des enfants ? */
+/** Can an element hold children? */
 export const isContainer = (element: UISchemaElement | undefined): boolean => {
   return Array.isArray((element as WithElements)?.elements)
 }
@@ -45,19 +44,19 @@ export const isSamePath = (a: ElementPath, b: ElementPath): boolean =>
   a.length === b.length && a.every((value, index) => value === b[index])
 
 /**
- * `a` est-il un ancêtre de `b` (ou le même élément) ?
+ * Is `a` an ancestor of `b` (or the same element)?
  *
- * Sert à interdire de déposer un conteneur à l'intérieur de lui-même, ce qui
- * détacherait le sous-arbre de la racine.
+ * Used to prevent dropping a container inside itself, which would detach the subtree
+ * from the root.
  */
 export const isAncestorPath = (a: ElementPath, b: ElementPath): boolean =>
   a.length <= b.length && a.every((value, index) => value === b[index])
 
 /**
- * Insère `element` comme enfant de `parentPath`, à la position `index`.
+ * Inserts `element` as a child of `parentPath` at position `index`.
  *
- * Renvoie un nouvel arbre : le uischema d'entrée n'est jamais muté, ce qui garde
- * l'historique undo/redo exploitable et évite les surprises de réactivité.
+ * Returns a new tree: the input uischema is never mutated, which keeps undo/redo
+ * history usable and avoids reactivity surprises.
  */
 export const insertElementAt = (
   root: UISchemaElement,
@@ -109,11 +108,11 @@ export const updateElementAt = (
 }
 
 /**
- * Réécrit un chemin pour qu'il reste valide après la suppression de `removed`.
+ * Rewrites a path so it stays valid after removing `removed`.
  *
- * Retirer un élément décale tous ses frères suivants d'un cran. Un chemin qui traverse
- * l'un d'eux doit donc être décrémenté à cette profondeur — sans quoi il désigne, après
- * coup, un tout autre nœud de l'arbre.
+ * Removing an element shifts all following siblings down by one. A path that crosses
+ * one of them must therefore be decremented at that depth — otherwise it would point
+ * to an entirely different tree node afterward.
  */
 export const adjustPathAfterRemoval = (path: ElementPath, removed: ElementPath): ElementPath => {
   if (!removed.length || path.length < removed.length) {
@@ -134,11 +133,11 @@ export const adjustPathAfterRemoval = (path: ElementPath, removed: ElementPath):
 }
 
 /**
- * Déplace l'élément de `from` vers la position `index` sous `toParent`.
+ * Moves the element at `from` to position `index` under `toParent`.
  *
- * Deux décalages se cumulent, et les oublier produit un déplacement d'un cran à côté :
- *  - l'**index** cible, quand on redescend un élément parmi ses propres frères ;
- *  - le **chemin** du parent cible, quand le retrait a lieu plus haut dans la même branche.
+ * Two shifts accumulate, and forgetting either produces an off-by-one move:
+ *  - the target **index**, when moving an element among its own siblings;
+ *  - the **path** of the target parent, when removal happens higher in the same branch.
  */
 export const moveElement = (
   root: UISchemaElement,
@@ -169,7 +168,7 @@ export const moveElement = (
   return insertElementAt(without, adjustedParent, target, cloneJson(element))
 }
 
-/** Décale un élément d'un cran parmi ses frères. */
+/** Shifts an element one step among its siblings. */
 export const shiftElement = (
   root: UISchemaElement,
   path: ElementPath,
@@ -189,12 +188,12 @@ export const shiftElement = (
     return root
   }
 
-  // `moveElement` raisonne en position d'insertion : descendre d'un cran veut dire
-  // s'insérer après le frère suivant, d'où le +1 sur les deltas positifs.
+  // `moveElement` reasons in insertion position: moving down one step means
+  // inserting after the next sibling, hence the +1 on positive deltas.
   return moveElement(root, path, parentPath, delta > 0 ? target + 1 : target)
 }
 
-/** Nom de propriété référencé par un `Control`, extrait de son `scope`. */
+/** Property name referenced by a `Control`, extracted from its `scope`. */
 export const propertyFromScope = (scope: string | undefined): string | undefined => {
   const match = /^#\/properties\/([^/]+)$/.exec(scope ?? '')
 
@@ -202,10 +201,10 @@ export const propertyFromScope = (scope: string | undefined): string | undefined
 }
 
 /**
- * Dérive un nom de propriété valide et unique depuis un libellé humain.
+ * Derives a valid, unique property name from a human-readable label.
  *
- * Sans accent ni espace, parce qu'il finit dans un pointeur JSON (`#/properties/…`)
- * et dans les clés de la donnée envoyée à l'API.
+ * Without accents or spaces, because it ends up in a JSON pointer (`#/properties/…`)
+ * and in the keys of the data sent to the API.
  */
 export const slugifyPropertyName = (label: string, existing: string[] = []): string => {
   const base =
@@ -221,8 +220,8 @@ export const slugifyPropertyName = (label: string, existing: string[] = []): str
       )
       .join('') || 'champ'
 
-  // Un nom ne peut pas commencer par un chiffre : on préfixe plutôt que de tronquer,
-  // pour ne pas produire deux propriétés identiques à partir de « 1 » et « 2 ».
+  // A name cannot start with a digit: prefix rather than truncate,
+  // so "1" and "2" do not produce identical property names.
   const safe = /^[0-9]/.test(base) ? `champ${base}` : base
 
   if (!existing.includes(safe)) {
@@ -237,7 +236,7 @@ export const slugifyPropertyName = (label: string, existing: string[] = []): str
   return `${safe}${suffix}`
 }
 
-/** Ajoute une propriété au schéma sans muter l'original. */
+/** Adds a property to the schema without mutating the original. */
 export const addSchemaProperty = (
   schema: JsonSchema,
   name: string,
@@ -246,10 +245,10 @@ export const addSchemaProperty = (
 ): JsonSchema => {
   const next = cloneJson(schema)
 
-  // `JsonSchema` de JSONForms est une union draft-4 / draft-7 dont certains champs
-  // divergent (`exclusiveMaximum` vaut un booléen en draft-4, un nombre en draft-7).
-  // On ne peut donc pas réassigner un membre de l'union tel quel : le builder manipule
-  // des fragments libres, la conformité étant garantie par AJV à la validation.
+  // JSONForms' `JsonSchema` is a draft-4 / draft-7 union whose fields diverge in places
+  // (`exclusiveMaximum` is a boolean in draft-4, a number in draft-7). You therefore
+  // cannot reassign a union member as-is: the builder manipulates free fragments, with
+  // conformance guaranteed by AJV at validation time.
   next.properties = {
     ...(next.properties ?? {}),
     [name]: property,

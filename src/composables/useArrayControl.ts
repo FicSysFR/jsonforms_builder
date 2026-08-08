@@ -21,11 +21,11 @@ type UseArrayControlOptions = {
 }
 
 /**
- * Libellé d'un élément de tableau.
+ * Label for an array item.
  *
- * `options.elementLabelProp` désigne une propriété de l'objet à utiliser comme titre
- * (« Dupont » plutôt que « Élément 3 »). À défaut on retombe sur le rang, en base 1
- * parce que c'est ce que lit un humain.
+ * `options.elementLabelProp` names an object property to use as the title
+ * ("Dupont" rather than "Élément 3"). Otherwise we fall back to the rank, 1-based
+ * because that is what humans read.
  */
 export const resolveArrayItemLabel = (item: unknown, index: number, labelProp?: string): string => {
   if (labelProp && item && typeof item === 'object') {
@@ -42,11 +42,10 @@ export const resolveArrayItemLabel = (item: unknown, index: number, labelProp?: 
 const PRIMITIVE_TYPES = ['string', 'number', 'integer', 'boolean']
 
 /**
- * Le schéma d'élément décrit-il une valeur simple ?
+ * Does the item schema describe a primitive value?
  *
- * Détermine la mise en page : une ligne compacte pour les valeurs simples, une carte
- * dépliée pour les objets. Rendre une carte titrée par chaîne de caractères rend un
- * tableau de cinq entrées illisible.
+ * Determines layout: a compact row for primitives, an expanded card for objects. Rendering
+ * a card titled by string makes a five-entry array unreadable.
  */
 export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean => {
   if (!schema || schema.properties) {
@@ -58,19 +57,19 @@ export const isPrimitiveItemSchema = (schema: JsonSchema | undefined): boolean =
   return typeof type === 'string' && PRIMITIVE_TYPES.includes(type)
 }
 
-/** Le schéma d'élément est-il un combinateur (`oneOf` / `anyOf` / `allOf`) ? */
+/** Is the item schema a combinator (`oneOf` / `anyOf` / `allOf`)? */
 export const isCombinatorSchema = (schema: JsonSchema | undefined): boolean =>
   Array.isArray(schema?.oneOf) || Array.isArray(schema?.anyOf) || Array.isArray(schema?.allOf)
 
 /**
- * Suit un `items: { $ref: … }` jusqu'au schéma visé.
+ * Follows an `items: { $ref: … }` to the target schema.
  *
- * Un schéma récursif ne peut pas s'écrire autrement qu'en `$ref` — c'est le renvoi qui
- * casse la boucle. Le combinateur n'est donc pas *dans* `items`, il est au bout du renvoi,
- * et ne pas le suivre revient à ne jamais reconnaître un arbre.
+ * A recursive schema can only be written with `$ref` — the reference breaks the loop. The
+ * combinator is therefore not *inside* `items`; it sits at the end of the reference, and
+ * failing to follow it means never recognizing a tree.
  *
- * `isObjectArray` de JSONForms fait exactement cette déréférence pour son propre test ;
- * on la reproduit ici plutôt que de la contourner.
+ * JSONForms' `isObjectArray` performs exactly this dereference for its own test; we
+ * reproduce it here rather than working around it.
  */
 export const resolveItemsSchema = (
   items: JsonSchema | undefined,
@@ -83,15 +82,15 @@ export const resolveItemsSchema = (
   }
 
   try {
-    // Un `$ref` cassé (définition absente, renvoi hors document) fait lever `resolveSchema` :
-    // le tableau retombe alors sur `items` non résolu, et le tester répond simplement « non ».
+    // A broken `$ref` (missing definition, out-of-document pointer) makes `resolveSchema` throw:
+    // the array falls back to unresolved `items`, and the tester simply returns "no".
     return resolveSchema(rootSchema, ref, rootSchema) ?? items
   } catch {
     return items
   }
 }
 
-/** Schéma d'élément unique (hors tuple). */
+/** Single item schema (non-tuple). */
 const singleItemsSchema = (schema: JsonSchema): JsonSchema | undefined => {
   if (Array.isArray(schema.items)) {
     return undefined
@@ -101,11 +100,11 @@ const singleItemsSchema = (schema: JsonSchema): JsonSchema | undefined => {
 }
 
 /**
- * Tester des tableaux dont les éléments sont un combinateur.
+ * Tester for arrays whose items are a combinator.
  *
- * `isObjectArrayControl` et `isPrimitiveArrayControl` de JSONForms exigent tous deux un
- * `items.type` explicite ; un `items: { oneOf: [...] }` n'en a pas, et échappait donc
- * aux deux — le tableau n'avait alors aucun renderer.
+ * JSONForms' `isObjectArrayControl` and `isPrimitiveArrayControl` both require an explicit
+ * `items.type`; `items: { oneOf: [...] }` has none, so it matched neither — the array had
+ * no renderer.
  */
 export const isCombinatorItemsArray = (
   uischema: UISchemaElement,
@@ -122,12 +121,12 @@ export const isCombinatorItemsArray = (
     return isCombinatorSchema(resolveItemsSchema(items, rootSchema))
   })(uischema, schema, context)
 
-/** Un tableau est plein quand il atteint le `maxItems` du schéma (s'il en a un). */
+/** An array is full when it reaches the schema's `maxItems` (if any). */
 export const isArrayAtCapacity = (length: number, maxItems: number | undefined): boolean => {
   return typeof maxItems === 'number' && length >= maxItems
 }
 
-/** Retirer un élément est interdit sous le `minItems` du schéma. */
+/** Removing an item is forbidden below the schema's `minItems`. */
 export const isArrayAtMinimum = (length: number, minItems: number | undefined): boolean => {
   return typeof minItems === 'number' && length <= minItems
 }
@@ -155,23 +154,23 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       !isArrayAtMinimum(items.value.length, arraySchema.value?.minItems),
   )
 
-  /** Les éléments sont-ils des valeurs simples (chaîne, nombre, booléen) ? */
+  /** Are items primitive values (string, number, boolean)? */
   const isPrimitiveItems = computed(() => isPrimitiveItemSchema(control.control.value.schema))
 
-  /** Les flèches de réordonnancement suivent la convention JSONForms `showSortButtons`. */
+  /** Reorder arrows follow the JSONForms `showSortButtons` convention. */
   const showSortButtons = computed(() => !!control.appliedOptions.value?.showSortButtons)
 
   /**
-   * Gabarit d'un élément : `options.detail` s'il est fourni, sinon un uischema
-   * généré à partir du schéma de l'élément.
+   * Template for an item: `options.detail` when provided, otherwise a uischema generated
+   * from the item schema.
    *
-   * Pour une valeur simple, on masque libellé et description : ils sont identiques
-   * d'une ligne à l'autre et ne feraient que répéter ce que porte déjà le tableau.
+   * For a primitive value, label and description are hidden: they are identical from row
+   * to row and would only repeat what the array already conveys.
    */
   const childUiSchema = computed<UISchemaElement>(() => {
-    // Pour une valeur simple, on écrit le `Control` à la main plutôt que de passer par
-    // `Generate.uiSchema` : celui-ci enveloppe toujours le contrôle dans un layout, si
-    // bien que les options posées sur le résultat n'atteignent jamais le contrôle.
+    // For a primitive value, we hand-write the `Control` rather than going through
+    // `Generate.uiSchema`: it always wraps the control in a layout, so options set on the
+    // result never reach the control.
     if (isPrimitiveItems.value) {
       return {
         type: 'Control',
@@ -181,8 +180,8 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       } as unknown as UISchemaElement
     }
 
-    // Un élément combinateur se confie tel quel au renderer de `oneOf`/`anyOf`/`allOf` :
-    // lui générer une disposition ici perdrait le sélecteur de variante (ou la fusion).
+    // A combinator item is handed as-is to the `oneOf`/`anyOf`/`allOf` renderer: generating
+    // a layout here would lose the variant selector (or merge UI).
     if (isCombinatorSchema(control.control.value.schema)) {
       return { type: 'Control', scope: '#' } as unknown as UISchemaElement
     }
@@ -197,7 +196,7 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
           control.control.value.schema,
           'VerticalLayout',
           undefined,
-          // Sans le schéma racine, le générateur ne sait pas suivre les `$ref`.
+          // Without the root schema, the generator cannot follow `$ref`s.
           control.control.value.rootSchema,
         ),
       control.control.value.uischema,
@@ -214,8 +213,8 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
       control.appliedOptions.value?.elementLabelProp as string | undefined,
     )
 
-  // Les dispatchers de JSONForms renvoient un *thunk* : `addItem(path, value)` ne fait
-  // rien tant qu'on n'appelle pas la fonction qu'il retourne.
+  // JSONForms dispatchers return a *thunk*: `addItem(path, value)` does nothing until you
+  // call the function it returns.
   const addItem = () => {
     const value = createDefaultValue(control.control.value.schema, control.control.value.rootSchema)
 

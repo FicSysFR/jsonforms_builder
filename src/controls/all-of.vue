@@ -3,11 +3,11 @@
     h4(v-if="computedLabel" :class="styles.group.label" v-text="computedLabel")
 
     //-
-      Le schéma passé au dispatcher est l'original (avec `allOf`), pas le plat de
-      fusion. `Resolve` retrouve les propriétés via le repli sur les branches ; surtout,
-      la référence reste stable d'un tick à l'autre — un schéma synthétique recréé à
-      chaque invalidation faisait reboucler le `watch(() => props.schema)` de
-      `@jsonforms/vue` (`Maximum recursive updates exceeded`).
+      The schema passed to the dispatcher is the original (with `allOf`), not the
+      flattened merge. `Resolve` finds properties via branch fallback; more importantly,
+      the reference stays stable from tick to tick — a synthetic schema recreated on
+      every invalidation retriggered `@jsonforms/vue`'s `watch(() => props.schema)`
+      (`Maximum recursive updates exceeded`).
     dispatch-renderer(
       v-if="detailUiSchema"
       :schema="control.schema"
@@ -40,15 +40,15 @@ import { useAllOfControl } from '../composables'
 /**
  * AllOfControlRenderer
  *
- * Rend les schémas `allOf`. Contrairement à `oneOf`/`anyOf`, il n'y a rien à choisir :
- * **toutes** les branches s'appliquent simultanément. On en déduit une disposition
- * unique (fusion plate, y compris `allOf` imbriqués), puis on redispatche contre le
- * schéma d'origine pour que la résolution JSON Forms reste correcte.
+ * Renders `allOf` schemas. Unlike `oneOf`/`anyOf`, there is nothing to choose:
+ * **all** branches apply simultaneously. A single layout is derived (flat merge,
+ * including nested `allOf`), then redispatched against the original schema so JSON
+ * Forms resolution stays correct.
  *
- * On utilise `useJsonFormsControl` et non `useJsonFormsAllOfControl` : ce dernier
- * recompile chaque branche via AJV à chaque évaluation du computed, et AJV *mute*
- * le schéma. Or le schéma vit dans l'état réactif de JSON Forms — chaque mutation
- * relançait le rendu (`Maximum recursive updates exceeded`).
+ * Uses `useJsonFormsControl` rather than `useJsonFormsAllOfControl`: the latter
+ * recompiles each branch via AJV on every computed evaluation, and AJV *mutates*
+ * the schema. The schema lives in JSON Forms' reactive state — each mutation
+ * retriggered rendering (`Maximum recursive updates exceeded`).
  */
 const controlRenderer = defineComponent({
   name: 'AllOfControlRenderer',
@@ -67,7 +67,7 @@ export default controlRenderer
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  /** Rang 4 : au-dessus du renderer d'objet, qui capte aussi ces schémas mais sans savoir les fusionner. */
+  /** Rank 4: above the object renderer, which also matches these schemas but cannot merge them. */
   tester: rankWith(4, isAllOfControl),
 }
 </script>

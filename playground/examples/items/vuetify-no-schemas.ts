@@ -1,6 +1,6 @@
-// Exemple repris du démo officiel des renderers Vuetify de JSONForms
-// (eclipsesource/jsonforms-vuetify-renderers, licence MIT), converti au format
-// de notre playground. Absent du corpus `packages/examples` du dépôt principal.
+// Example taken from the official JSONForms Vuetify renderers demo
+// (eclipsesource/jsonforms-vuetify-renderers, MIT license), converted to our
+// playground format. Absent from the main repo `packages/examples` corpus.
 import { registerExamples } from '../register'
 
 export const schema = undefined

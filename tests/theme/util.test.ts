@@ -8,11 +8,11 @@ describe('classes', () => {
     expect(result).toBe('btn btn--primary')
   })
 
-  it('ignore null et undefined comme interpolations', () => {
+  it('ignores null and undefined as interpolations', () => {
     expect(classes`a ${null} b ${undefined} c`).toBe('a  b  c')
   })
 
-  it('stringify les valeurs truthy non-string', () => {
+  it('stringifies truthy non-string values', () => {
     expect(classes`n-${2} ok-${true}`).toBe('n-2 ok-true')
   })
 })
@@ -34,8 +34,8 @@ describe('mergeStyles', () => {
 
     const merged = mergeStyles(base, override)
 
-    // Deux classes Tailwind qui se rencontrent doivent coexister : un merge classique
-    // perdrait `mb-4`, ce qui casserait l'espacement hérité du thème de base.
+    // Two Tailwind classes that meet must coexist: a classic merge would
+    // drop `mb-4`, breaking spacing inherited from the base theme.
     expect(merged.control?.root).toBe('mb-4 bg-elevated')
     expect(merged.control?.input).toBe('w-full')
   })
@@ -60,7 +60,7 @@ describe('mergeStyles', () => {
     expect((override.control as Record<string, unknown>).root).toBeUndefined()
   })
 
-  it('remplace une valeur non-objet par l’override', () => {
+  it('replaces a non-object value with the override', () => {
     const merged = mergeStyles(
       { control: { root: 'mb-4' } },
       { control: { root: { nested: 'x' } as unknown as string } },
@@ -69,7 +69,7 @@ describe('mergeStyles', () => {
     expect(merged.control?.root).toEqual({ nested: 'x' })
   })
 
-  it('conserve la base quand l’override est undefined en profondeur', () => {
+  it('keeps the base when the override is undefined at depth', () => {
     const merged = mergeStyles(
       { control: { root: 'keep', input: 'a' } },
       { control: { root: undefined as unknown as string } },

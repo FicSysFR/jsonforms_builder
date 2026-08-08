@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * organizationalUnit (core.schema / RFC 4519) — unité organisationnelle.
- * MUST : ou. Souvent utilisé pour structurer l’arbre (ou=people, ou=groups…).
+ * organizationalUnit (core.schema / RFC 4519) — organizational unit.
+ * MUST: ou. Often used to structure the tree (ou=people, ou=groups…).
  */
 export const schema = {
   type: 'object',

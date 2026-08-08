@@ -1,7 +1,7 @@
 <template lang="pug">
-  //- Ne pas faire `:label="undefined"` après `v-bind="controlWrapper"` : mergeProps
-  //- ignore `undefined`, le titre du schéma restait sur le `UFormField` et annulait
-  //- `reserveLabelSpace`. On omet volontairement `label` du bind.
+  //- Do not use `:label="undefined"` after `v-bind="controlWrapper"`: mergeProps
+  //- ignores `undefined`, so the schema title stayed on `UFormField` and cancelled
+  //- `reserveLabelSpace`. We intentionally omit `label` from the bind.
   control-wrapper(
     :id="controlWrapper.id"
     :description="controlWrapper.description"
@@ -53,13 +53,13 @@ import { useBooleanControl } from '../composables'
 /**
  * BooleanControlRenderer
  *
- * Rend les propriétés `type: "boolean"`.
+ * Renders `type: "boolean"` properties.
  *
- * Le libellé est porté par la case elle-même (et non par le `UFormField`), pour obtenir
- * la disposition « case + texte sur une ligne ». `reserveLabelSpace` aligne la case et
- * sa description sur les champs voisins (ligne de libellé fantôme + hauteur d'input).
+ * The label is on the checkbox itself (not on `UFormField`) for a « checkbox + text
+ * on one line » layout. `reserveLabelSpace` aligns the checkbox and its description
+ * with neighboring fields (phantom label row + input height).
  *
- * Option `toggle: true` du uischema pour basculer sur un `USwitch`.
+ * Uischema option `toggle: true` switches to a `USwitch`.
  */
 const controlRenderer = defineComponent({
   name: 'BooleanControlRenderer',

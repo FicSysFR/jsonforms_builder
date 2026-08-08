@@ -14,9 +14,9 @@
 
     p.text-xs.text-muted(v-if="control.description" v-text="control.description")
 
-    //- Les clés présentes dans la donnée mais absentes du schéma restent visibles, en
-    //- lecture seule : les masquer donnerait l'illusion que le formulaire montre tout,
-    //- alors qu'un enregistrement peut très bien porter des champs hors schéma.
+    //- Keys present in the data but absent from the schema remain visible, read-only:
+    //- hiding them would suggest the form shows everything, when a record may carry
+    //- fields outside the schema.
     .space-y-1(v-if="extraProperties.length")
       p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Propriétés hors schéma
       dl.grid.grid-cols-1.gap-1(class="sm:grid-cols-2")
@@ -46,15 +46,15 @@ import { isRenderableObjectSchema, useObjectControl } from '../composables'
 /**
  * ObjectControlRenderer
  *
- * Rend un `Control` qui résout vers un schéma `type: "object"` : il déploie les
- * propriétés déclarées, chacune redispatchée vers son propre renderer.
+ * Renders a `Control` that resolves to a `type: "object"` schema: it expands declared
+ * properties, each redispatched to its own renderer.
  *
- * Sans lui, tout objet — y compris la racine visée par `{ "scope": "#/" }` — affichait
+ * Without it, every object — including the root targeted by `{ "scope": "#/" }` — showed
  * « No applicable renderer found ».
  *
- * Limite assumée : les clés libres (`additionalProperties` / `patternProperties`) ne
- * sont pas *éditables*. Celles déjà présentes dans la donnée sont affichées en lecture
- * seule ; en ajouter demanderait une interface de saisie de clés, à part entière.
+ * Assumed limitation: free-form keys (`additionalProperties` / `patternProperties`) are
+ * not *editable*. Those already present in the data are shown read-only; adding new ones
+ * would require a key-entry interface of its own.
  */
 const controlRenderer = defineComponent({
   name: 'ObjectControlRenderer',
@@ -66,9 +66,9 @@ const controlRenderer = defineComponent({
   },
   setup(props: RendererProps<ControlElement>) {
     /*
-     * Le garde-fou contre la récursion infinie vit dans `useObjectControl` : faute de
-     * `properties` exploitables, la disposition générée ne décrit que l'objet lui-même,
-     * et la redispatcher ramènerait ici sans fin. Cf. `hasRenderableControl`.
+     * The guard against infinite recursion lives in `useObjectControl`: without
+     * usable `properties`, the generated layout describes only the object itself,
+     * and redispatching would loop back here forever. Cf. `hasRenderableControl`.
      */
     return useObjectControl({ jsonFormsControl: useJsonFormsControl(props) })
   },
@@ -79,12 +79,12 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Rang 2, sous le `oneOf` (3) et le WYSIWYG (3) : un objet porteur d'un `oneOf` ou
-   * marqué `options.wysiwyg` doit rester à son renderer spécialisé.
+   * Rank 2, below `oneOf` (3) and WYSIWYG (3): an object carrying a `oneOf` or marked
+   * `options.wysiwyg` must stay with its specialized renderer.
    *
-   * `isRenderableObjectSchema` écarte les types *union* sans `properties`, que ce rang 2
-   * ferait sinon gagner contre les renderers scalaires (rang 1) — pour n'afficher qu'une
-   * carte vide.
+   * `isRenderableObjectSchema` excludes union types without `properties`, which this
+   * rank 2 would otherwise win over scalar renderers (rank 1) — showing only an empty
+   * card.
    */
   tester: rankWith(2, and(isObjectControl, schemaMatches(isRenderableObjectSchema))),
 }

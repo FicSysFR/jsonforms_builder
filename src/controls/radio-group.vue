@@ -39,11 +39,11 @@ import { useRadioGroupControl } from '../composables'
 /**
  * RadioGroupControlRenderer
  *
- * Rend les enums marqués `options.format: "radio"` avec un `URadioGroup`.
+ * Renders enums marked `options.format: "radio"` with a `URadioGroup`.
  *
- * Disposition verticale par défaut (comme `URadioGroup` et le multi-enum) ;
- * `options.vertical: false` ou `options.orientation: "horizontal"` bascule en ligne.
- * `options.radioGroup.orientation` prime toujours via `v-bind` + calcul ci-dessous.
+ * Vertical by default (like `URadioGroup` and multi-enum); `options.vertical: false` or
+ * `options.orientation: "horizontal"` switches to a row layout.
+ * `options.radioGroup.orientation` always wins via `v-bind` + the computation below.
  */
 const controlRenderer = defineComponent({
   name: 'RadioGroupControlRenderer',
@@ -64,9 +64,9 @@ const controlRenderer = defineComponent({
     })
 
     /**
-     * Ordre de résolution : `radioGroup.orientation` → `orientation` → `vertical`
-     * → verticale (défaut Nuxt UI). Évite la rangée horizontale saturée dès qu'il y a
-     * plus de 3–4 options (variante `table` surtout).
+     * Resolution order: `radioGroup.orientation` → `orientation` → `vertical`
+     * → vertical (Nuxt UI default). Avoids a crowded horizontal row with more than
+     * 3–4 options (especially the `table` variant).
      */
     const orientation = computed(() => {
       const fromUi = control.uiProps('radioGroup').orientation

@@ -45,10 +45,10 @@ import { useTextareaControl } from '../composables'
 /**
  * TextareaControlRenderer
  *
- * Rend les chaînes marquées `multi: true` dans le uischema avec un `UTextarea`.
+ * Renders strings marked `multi: true` in the uischema with a `UTextarea`.
  *
- * `autoresize` remplace l'`autogrow` de Quasar : `rows` fixe la hauteur minimale et
- * `maxrows` le plafond au-delà duquel le champ défile.
+ * `autoresize` replaces Quasar's `autogrow`: `rows` sets the minimum height and
+ * `maxrows` the cap beyond which the field scrolls.
  */
 const controlRenderer = defineComponent({
   name: 'TextareaControlRenderer',

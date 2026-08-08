@@ -13,12 +13,12 @@ import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
 import { IsDynamicPropertyContext } from './inject'
 
-/** Sac d'options libre issu de `uischema.options` / `config` JSON Forms. */
+/** Loose options bag from JSON Forms `uischema.options` / `config`. */
 export type UiOptionBag = Record<string, unknown>
 
 /**
- * Valeur de remplacement quand un champ est masqué par une règle : `default`
- * du schéma s'il est défini, sinon `undefined`.
+ * Replacement value when a field is hidden by a rule: schema `default` when defined,
+ * otherwise `undefined`.
  */
 export const resolveClearOnHideValue = (schema?: JsonSchema) => {
   if (schema && Object.hasOwn(schema, 'default')) {
@@ -29,21 +29,21 @@ export const resolveClearOnHideValue = (schema?: JsonSchema) => {
 }
 
 /**
- * Vérifie si un champ est en lecture seule en tenant compte de la compatibilité
- * avec les différentes versions de JSON Schema
+ * Checks whether a field is read-only, accounting for compatibility across JSON Schema
+ * versions.
  */
 const isFieldReadonly = (
   schema: JsonSchema,
   uischema: { options?: Record<string, unknown> },
 ): boolean => {
-  // Vérification de la propriété readonly dans le uischema (toujours supportée)
+  // Check readonly in uischema (always supported)
   if (uischema?.options?.readonly === true) {
     return true
   }
 
-  // Vérification de la propriété readOnly dans le schema
-  // Cette propriété n'existe que depuis JSON Schema Draft 6
-  // En JSON Schema v4, cette propriété n'est pas disponible
+  // Check readOnly in the schema
+  // This property exists only since JSON Schema Draft 6
+  // In JSON Schema v4, this property is not available
   if (schema && 'readOnly' in schema && schema.readOnly === true) {
     return true
   }
@@ -59,8 +59,8 @@ export const useControlAppliedOptions = <
 >(
   input: I,
 ) => {
-  // `defu(override, base)` : les options du uischema priment sur la config globale.
-  // defu ne mute jamais ses entrées, ce qui remplace le couple cloneDeep + merge de la v1.
+  // `defu(override, base)`: uischema options override global config.
+  // defu never mutates its inputs, replacing the v1 cloneDeep + merge pair.
   return computed(() =>
     defu(
       {} as UiOptionBag,
@@ -104,10 +104,10 @@ export const useComputedLabel = <
 }
 
 /**
- * Extrait un sac de props destiné à un composant Nuxt UI depuis les options du uischema.
+ * Extracts a prop bag for a Nuxt UI component from uischema options.
  *
- * Remplace le `quasarProps('q-input')` de la v1. Le uischema peut ainsi piloter finement
- * n'importe quel composant sans que la librairie ait à exposer une prop dédiée :
+ * Replaces v1's `quasarProps('q-input')`. The uischema can thus drive any component in
+ * detail without the library exposing a dedicated prop:
  *
  * ```json
  * { "type": "Control", "scope": "#/properties/name",
@@ -192,10 +192,9 @@ export const useUiControl = <
   const isFocused = ref(false)
 
   /**
-   * Les règles SHOW/HIDE ne touchent que l'UI côté JSON Forms. Ici, dès qu'un
-   * contrôle devient invisible, on remet sa donnée au défaut du schéma (ou
-   * `undefined`) pour ne pas laisser de valeurs « fantômes » dans le modèle.
-   * Désactivable via `config` / `options.clearOnHide: false`.
+   * SHOW/HIDE rules affect only the UI in JSON Forms. Here, as soon as a control becomes
+   * invisible, we reset its data to the schema default (or `undefined`) so no "ghost"
+   * values remain in the model. Disable via `config` / `options.clearOnHide: false`.
    */
   watch(
     () => input.control.value.visible,
@@ -233,8 +232,8 @@ export const useUiControl = <
   })
 
   /**
-   * La description ne s'affiche que lorsqu'elle est pertinente : masquée au repos si
-   * `showUnfocusedDescription` est absent, révélée au focus.
+   * The description is shown only when relevant: hidden at rest unless
+   * `showUnfocusedDescription` is set, revealed on focus.
    */
   const showDescription = (): boolean => {
     return !isDescriptionHidden(
@@ -259,9 +258,9 @@ export const useUiControl = <
     const { description, errors, label, visible, required } = input.control.value
     const id = input.control.value.id.replace(/#\//g, '').replace(/\//g, '_')
 
-    // `hideDescription` supprime le texte d'aide pour ce champ précis. Utilisé par le
-    // renderer de tableau sur ses lignes de valeurs simples, où la description du schéma
-    // d'élément serait répétée à l'identique sous chaque ligne.
+    // `hideDescription` removes help text for this field. Used by the array renderer on
+    // primitive item rows, where the item schema description would repeat identically under
+    // every row.
     return {
       id,
       description: appliedOptions.value?.hideDescription === true ? undefined : description,
@@ -293,7 +292,7 @@ export const useUiControl = <
     return isFieldReadonly(input.control.value?.schema, input.control.value?.uischema)
   })
 
-  /** `disabled` au sens Nuxt UI : désactivé sauf si l'on est simplement en lecture seule. */
+  /** `disabled` in the Nuxt UI sense: disabled unless we are simply read-only. */
   const isDisabled = computed(() => !input.control.value.enabled && !isReadonly.value)
 
   return {

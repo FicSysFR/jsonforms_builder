@@ -24,7 +24,7 @@ export const uischema = {
       scope: '#/properties/exampleRadioEnum',
       options: {
         format: 'radio',
-        // Variante `list` : pastilles radio classiques (indicateur circulaire).
+        // `list` variant: classic radio pills (circular indicator).
         radioGroup: {
           color: 'primary',
           variant: 'list',

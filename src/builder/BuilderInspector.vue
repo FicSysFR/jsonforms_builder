@@ -7,7 +7,7 @@
         u-badge(:label="element.type" color="neutral" variant="subtle" size="sm")
         span.text-xs.text-dimmed(v-if="property" v-text="`#/properties/${property}`")
 
-      //- Titre d'un élément Label.
+      //- Title of a Label element.
       u-form-field(v-if="element.type === 'Label'" label="Texte")
         u-input(
           :model-value="element.text ?? ''"
@@ -15,7 +15,7 @@
           @update:model-value="patchElement({ text: $event })"
         )
 
-      //- Libellé d'un conteneur (Group, Category).
+      //- Label of a container (Group, Category).
       u-form-field(v-else-if="hasOwnLabel" label="Libellé")
         u-input(
           :model-value="element.label ?? ''"
@@ -23,7 +23,7 @@
           @update:model-value="patchElement({ label: $event })"
         )
 
-      //- Champs pilotés par le schéma.
+      //- Schema-driven fields.
       template(v-if="property && schemaProperty")
         u-form-field(label="Libellé")
           u-input(
@@ -58,7 +58,7 @@
           @update:model-value="patchOption('readonly', $event || undefined)"
         )
 
-        //- Bornes numériques.
+        //- Numeric bounds.
         template(v-if="isNumeric")
           .grid.grid-cols-2.gap-2
             u-form-field(label="Minimum")
@@ -74,7 +74,7 @@
                 @update:model-value="patchProperty({ maximum: $event ?? undefined })"
               )
 
-        //- Longueur maximale des chaînes.
+        //- Maximum string length.
         u-form-field(v-if="isText" label="Longueur maximale")
           u-input-number(
             :model-value="schemaProperty.maxLength"
@@ -82,7 +82,7 @@
             @update:model-value="patchProperty({ maxLength: $event ?? undefined })"
           )
 
-        //- Valeurs possibles d'un enum, une par ligne.
+        //- Possible enum values, one per line.
         u-form-field(
           v-if="schemaProperty.enum"
           label="Options"
@@ -106,14 +106,14 @@ import UInput from '@nuxt/ui/components/Input.vue'
 import UInputNumber from '@nuxt/ui/components/InputNumber.vue'
 import UTextarea from '@nuxt/ui/components/Textarea.vue'
 
-/** Types de uischema qui portent leur propre libellé, indépendamment du schéma. */
+/** UISchema types that carry their own label, independent of the schema. */
 const SELF_LABELLED = ['Group', 'Category']
 
 /**
- * Panneau d'édition de l'élément sélectionné.
+ * Panel for editing the selected element.
  *
- * Ne mute rien lui-même : il émet des intentions (`update:element`, `update:property`,
- * `update:required`), le composant racine restant seul maître de l'historique.
+ * Does not mutate anything itself: it emits intents (`update:element`, `update:property`,
+ * `update:required`); the root component alone owns the history stack.
  */
 export default defineComponent({
   name: 'BuilderInspector',
@@ -163,8 +163,8 @@ export default defineComponent({
       () => schemaProperty.value?.type === 'string' && !schemaProperty.value?.enum,
     )
 
-    /** Une valeur d'enum par ligne. Calculé ici : un `\n` littéral dans un gabarit Pug
-     *  est réinjecté tel quel dans l'attribut compilé et casse le parseur d'expression. */
+    /** One enum value per line. Computed here: a literal `\n` in a Pug template
+     *  is re-injected as-is into the compiled attribute and breaks the expression parser. */
     const enumText = computed(() => (schemaProperty.value?.enum ?? []).join('\n'))
 
     const patchElement = (patch: Record<string, unknown>) => {
@@ -175,7 +175,7 @@ export default defineComponent({
       emit('update:property', patch)
     }
 
-    /** Les options du uischema sont remplacées en bloc : un patch partiel les écraserait. */
+    /** UISchema options are replaced wholesale: a partial patch would overwrite them. */
     const patchOption = (key: string, value: unknown) => {
       const next = { ...options.value }
 

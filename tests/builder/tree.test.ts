@@ -127,9 +127,9 @@ describe('removeElementAt', () => {
 
 describe('updateElementAt', () => {
   it('patches the addressed element only', () => {
-    const next = updateElementAt(tree(), [1], { label: 'Renommé' }) as TreeNode
+    const next = updateElementAt(tree(), [1], { label: 'Renamed' }) as TreeNode
 
-    expect(next.elements![1].label).toBe('Renommé')
+    expect(next.elements![1].label).toBe('Renamed')
     expect(next.elements![1].elements).toHaveLength(2)
   })
 })
@@ -161,7 +161,7 @@ describe('moveElement', () => {
   })
 
   it('compensates the index shift when moving down among siblings', () => {
-    // a, G, d → déplacer `a` en position 2 doit le placer entre G et d, pas après d.
+    // a, G, d → moving `a` to position 2 must place it between G and d, not after d.
     const next = moveElement(tree(), [0], [], 2) as TreeNode
     const scopes = next.elements!.map((e) => e.scope ?? e.type)
 

@@ -1,22 +1,22 @@
 /**
- * Exemple de stress pour le renderer `allOf` :
- * - chaîne d’héritage profonde via `$ref` + `allOf` (style GEDCOM X)
- * - plusieurs objets racine allOf côte à côte
- * - tableau d’éléments eux-mêmes allOf
+ * Stress example for the `allOf` renderer:
+ * - deep inheritance chain via `$ref` + `allOf` (GEDCOM X style)
+ * - several root allOf objects side by side
+ * - array of items that are themselves allOf
  *
- * Ouvrir `?example=allOf-perf` dans le playground pour chronométrer le montage /
- * les interactions (édition d’un booléen, ouverture d’un item de liste).
+ * Open `?example=allOf-perf` in the playground to time mount /
+ * interactions (editing a boolean, opening a list item).
  */
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import { registerExamples } from '../register'
 
-/** Profondeur de la chaîne base → … → leaf (chaque niveau ajoute `fieldsPerLayer` props). */
+/** Depth of the base → … → leaf chain (each level adds `fieldsPerLayer` props). */
 const DEPTH = 6
-/** Propriétés string ajoutées à chaque niveau de la chaîne. */
+/** String properties added at each level of the chain. */
 const FIELDS_PER_LAYER = 8
-/** Nombre d’objets allOf distincts à la racine. */
+/** Number of distinct allOf objects at the root. */
 const ROOT_OBJECTS = 4
-/** Items préremplis dans le tableau d’entrées allOf. */
+/** Pre-filled items in the allOf entries array. */
 const ARRAY_ITEMS = 12
 
 const layerName = (level: number) => `layer_${level}`
@@ -55,7 +55,7 @@ const buildLayerDefinitions = (): Record<string, JsonSchema> => {
     }
   }
 
-  // Variante « person-like » : allOf sur la feuille + props propres (private / note).
+  // « person-like » variant: allOf on the leaf + own props (private / note).
   definitions.entity = {
     title: 'Entity',
     allOf: [

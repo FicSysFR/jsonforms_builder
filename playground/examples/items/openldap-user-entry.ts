@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * Entrée utilisateur réaliste : plusieurs objectClasses empilées via `allOf`
- * (inetOrgPerson + posixAccount + ldapPublicKey), pattern très courant sous OpenLDAP.
+ * Realistic user entry: several objectClasses stacked via `allOf`
+ * (inetOrgPerson + posixAccount + ldapPublicKey), a very common OpenLDAP pattern.
  */
 export const schema = {
   type: 'object',

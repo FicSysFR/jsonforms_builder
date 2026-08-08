@@ -4,23 +4,23 @@ import { defu } from 'defu'
 import { defaultTheme } from './defaultTheme'
 
 /**
- * Thème des renderers.
+ * Renderer theme.
  *
- * Chaque entrée est une **chaîne de classes Tailwind** appliquée sur le `class` du
- * composant Nuxt UI correspondant. C'est volontairement du `class` et non du `ui` :
- * les surcharges fines des slots internes de Nuxt UI passent par les options du
- * uischema (`options.formField.ui`, `options.input.ui`, …), lues par `uiProps()`.
+ * Each entry is a **Tailwind class string** applied to the `class` of the matching Nuxt UI
+ * component. This is deliberately `class`, not `ui`: fine overrides of Nuxt UI internal
+ * slots go through uischema options (`options.formField.ui`, `options.input.ui`, …), read
+ * by `uiProps()`.
  *
- * Trois niveaux se cumulent, du plus faible au plus fort :
- *  1. `defaultTheme` — le strict minimum, pour ne pas concurrencer le design system hôte ;
- *  2. le thème injecté par l'application (`provide('styles', …)`) ;
- *  3. `uischema.options.styles` — surcharge locale d'un élément.
+ * Three levels stack, weakest to strongest:
+ *  1. `defaultTheme` — bare minimum, so we do not compete with the host design system;
+ *  2. the theme injected by the app (`provide('styles', …)`);
+ *  3. `uischema.options.styles` — local override for one element.
  */
 export interface Theme {
   control: {
-    /** Classes portées par le `UFormField` qui enveloppe le contrôle. */
+    /** Classes on the `UFormField` wrapping the control. */
     root?: string
-    /** Classes portées par le composant de saisie lui-même (`UInput`, `USelect`, …). */
+    /** Classes on the input component itself (`UInput`, `USelect`, …). */
     input?: string
   }
   verticalLayout: {
@@ -71,9 +71,9 @@ export interface Theme {
 }
 
 /**
- * Résout le thème applicable à un élément du uischema.
+ * Resolves the theme applicable to a uischema element.
  *
- * @param element - Élément de uischema dont les `options.styles` surchargent le thème injecté.
+ * @param element - Uischema element whose `options.styles` override the injected theme.
  */
 export const useTheme = (element?: UISchemaElement): Theme => {
   const injected = inject<Partial<Theme>>('styles', defaultTheme)
@@ -86,8 +86,8 @@ export const useTheme = (element?: UISchemaElement): Theme => {
   return defu(local, injected, defaultTheme) as Theme
 }
 
-/** @deprecated Conservé pour la migration depuis la v1 — utiliser `useTheme`. */
+/** @deprecated Kept for migration from v1 — use `useTheme`. */
 export const useStyles = useTheme
 
-/** @deprecated Conservé pour la migration depuis la v1 — utiliser `Theme`. */
+/** @deprecated Kept for migration from v1 — use `Theme`. */
 export type Styles = Theme

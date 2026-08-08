@@ -28,16 +28,16 @@ export const createEmptyDefinition = (): FormDefinition => ({
   uischema: { type: 'VerticalLayout', elements: [] } as UISchemaElement,
 })
 
-/** Toutes les propriétés déclarées à la racine du schéma. */
+/** All properties declared at the root of the schema. */
 export const listPropertyNames = (schema: JsonSchema): string[] =>
   Object.keys(schema.properties ?? {})
 
 /**
- * Collecte les propriétés encore référencées par au moins un `Control` de l'arbre.
+ * Collects properties still referenced by at least one `Control` in the tree.
  *
- * Sert à repérer les propriétés orphelines après une suppression de conteneur :
- * retirer un groupe emporte ses champs, et laisser leurs propriétés dans le schéma
- * produirait une donnée que le formulaire ne sait plus afficher.
+ * Used to find orphaned properties after removing a container: removing a group takes
+ * its fields, and leaving their properties in the schema would produce data the form
+ * can no longer display.
  */
 export const collectReferencedProperties = (element: UISchemaElement | undefined): string[] => {
   if (!element) {
@@ -53,11 +53,10 @@ export const collectReferencedProperties = (element: UISchemaElement | undefined
 const HISTORY_LIMIT = 50
 
 /**
- * État du builder : la définition courante, la sélection, et un historique
- * annuler/rétablir.
+ * Builder state: the current definition, selection, and an undo/redo history.
  *
- * Toutes les mutations passent par `commit`, ce qui garantit qu'aucune opération ne
- * peut échapper à l'historique — la principale source de bugs dans ce genre d'éditeur.
+ * All mutations go through `commit`, ensuring no operation can bypass history — the
+ * main source of bugs in this kind of editor.
  */
 export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
   const empty = createEmptyDefinition()
@@ -111,7 +110,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     selectedPath.value = path
   }
 
-  /** Ajoute un champ de la palette : propriété dans le schéma + `Control` dans le uischema. */
+  /** Adds a palette field: property in the schema + `Control` in the uischema. */
   const addField = (paletteKey: string, parentPath: ElementPath, index: number) => {
     const field = findPaletteField(paletteKey)
     if (!field) return
@@ -133,7 +132,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     select([...parentPath, index])
   }
 
-  /** Ajoute un conteneur (layout, groupe, onglets, titre). */
+  /** Adds a container (layout, group, tabs, title). */
   const addContainer = (paletteKey: string, parentPath: ElementPath, index: number) => {
     const container = findPaletteContainer(paletteKey)
     if (!container) return
@@ -147,8 +146,8 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
   }
 
   /**
-   * Supprime un élément et, avec lui, les propriétés de schéma qu'il était seul à
-   * référencer — y compris celles de ses descendants.
+   * Removes an element and, with it, schema properties it alone referenced —
+   * including those of its descendants.
    */
   const remove = (path: ElementPath) => {
     const element = getElementAt(definition.value.uischema, path)
@@ -189,7 +188,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     select(null)
   }
 
-  /** Met à jour l'élément de uischema sélectionné (label, texte, options…). */
+  /** Updates the selected uischema element (label, text, options…). */
   const updateElement = (path: ElementPath, patch: Record<string, unknown>) => {
     commit({
       schema: definition.value.schema,
@@ -198,10 +197,10 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
   }
 
   /**
-   * Met à jour la propriété de schéma derrière un `Control` (titre, bornes, enum…).
+   * Updates the schema property behind a `Control` (title, bounds, enum…).
    *
-   * Une clé mise à `undefined` est retirée : c'est ainsi que l'inspecteur efface une
-   * borne ou une longueur maximale, sans laisser traîner `"maximum": null` dans le schéma.
+   * A key set to `undefined` is removed: that is how the inspector clears a bound or
+   * max length without leaving `"maximum": null` in the schema.
    */
   const updateProperty = (name: string, patch: SchemaFragment) => {
     const current = definition.value.schema.properties?.[name]

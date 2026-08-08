@@ -49,15 +49,14 @@ import { useRadioGroupControl } from '../composables'
 /**
  * SelectControlRenderer
  *
- * Rend les enums marqués `options.format: "select"` avec un `USelect`.
+ * Renders enums marked `options.format: "select"` with `USelect`.
  *
- * Variante volontairement plus sobre que le `USelectMenu` par défaut : pas de champ de
- * recherche, pas de portail de filtrage. Au-dessous d'une dizaine d'options, la barre de
- * recherche est un obstacle de plus entre le clic et le choix ; au-dessus, `USelectMenu`
- * reste le bon composant et rien n'oblige à poser cette option.
+ * Deliberately simpler than the default `USelectMenu`: no search field, no filter portal.
+ * Below a dozen options, search is one more obstacle between click and choice; above
+ * that, `USelectMenu` is the right component and nothing forces this option.
  *
- * Prend aussi les enums exprimés en `oneOf: [{ const, title }]`, dont les titres servent
- * alors de libellés.
+ * Also handles enums expressed as `oneOf: [{ const, title }]`, whose titles serve as
+ * labels.
  */
 const controlRenderer = defineComponent({
   name: 'SelectControlRenderer',
@@ -72,13 +71,13 @@ const controlRenderer = defineComponent({
     const jsonforms = useJsonForms()
 
     /*
-     * `useJsonFormsEnumControl` ne peuple `control.options` que depuis `schema.enum` : sur un
-     * enum écrit en `oneOf: [{ const, title }]` il renvoie une liste vide, et le menu s'ouvre
-     * sur rien. On rejoue donc le tester de la librairie pour choisir le bon mappeur.
+     * `useJsonFormsEnumControl` only fills `control.options` from `schema.enum`: on an
+     * enum written as `oneOf: [{ const, title }]` it returns an empty list, and the menu
+     * opens on nothing. So we replay the library tester to pick the right mapper.
      *
-     * Les deux composables enregistrent un identifiant à `onBeforeMount` : les appeler tous
-     * les deux « au cas où » en réserverait deux pour le même scope, et le `name` transmis à
-     * `UFormField` cesserait de correspondre à celui du champ.
+     * Both composables register an id at `onBeforeMount`: calling both « just in case »
+     * would reserve two for the same scope, and the `name` passed to `UFormField` would
+     * no longer match the field's.
      */
     const isOneOf = isOneOfEnumControl(props.uischema, props.schema, {
       rootSchema: jsonforms.core?.schema ?? props.schema,
@@ -91,7 +90,7 @@ const controlRenderer = defineComponent({
 
     const clearValue = determineClearValue(undefined)
 
-    // Même contrat que le groupe radio : une valeur simple choisie dans une liste fermée.
+    // Same contract as the radio group: a single value chosen from a closed list.
     return useRadioGroupControl({
       jsonFormsControl,
       clearValue,

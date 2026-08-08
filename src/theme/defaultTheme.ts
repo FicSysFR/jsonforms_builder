@@ -1,12 +1,11 @@
 import type { Theme } from './theme'
 
 /**
- * Thème par défaut — délibérément minimal.
+ * Default theme — deliberately minimal.
  *
- * La v1 déclarait des noms de classes maison (`control`, `wrapper`, `label`…) auxquels
- * aucune feuille de style n'était livrée : ils ne produisaient rien. Ici on ne pose que
- * l'espacement et la largeur, tout le reste (couleurs, rayons, focus, états d'erreur)
- * venant du thème Nuxt UI de l'application hôte.
+ * v1 declared custom class names (`control`, `wrapper`, `label`…) with no stylesheet shipped:
+ * they did nothing. Here we only set spacing and width; everything else (colors, radii,
+ * focus, error states) comes from the host app's Nuxt UI theme.
  */
 export const defaultTheme: Theme = {
   control: {

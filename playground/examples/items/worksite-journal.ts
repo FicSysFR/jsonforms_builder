@@ -1,11 +1,11 @@
 import { registerExamples } from '../register'
 
 /**
- * Journal de chantier — exemple de référence pour les renderers ajoutés en v2
- * (Group, Array, OneOf, WYSIWYG) : contenu adaptable à l'activité.
+ * Worksite journal — reference example for renderers added in v2
+ * (Group, Array, OneOf, WYSIWYG): content adaptable to the activity.
  *
- * L'idée : un tronc commun (date, météo, zone) plus une section `activity` en `oneOf`
- * dont les champs changent selon la nature du travail réalisé.
+ * The idea: a common trunk (date, weather, zone) plus an `activity` section as `oneOf`
+ * whose fields change with the nature of the work done.
  */
 export const schema = {
   type: 'object',

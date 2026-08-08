@@ -133,7 +133,7 @@ describe('isCombinatorItemsArray', () => {
     properties: { children: { type: 'array', items } },
   })
 
-  /** Un schéma récursif ne peut exprimer ses éléments qu'en `$ref` : c'est le cas nominal. */
+  /** A recursive schema can only express its items via `$ref`: that is the nominal case. */
   it('recognises a combinator reached through a $ref', () => {
     const schema = schemaWith({ $ref: '#/definitions/fileOrFolder' })
     const rootSchema: JsonSchema = {
@@ -165,7 +165,7 @@ describe('isCombinatorItemsArray', () => {
     expect(isCombinatorItemsArray(uischema, schema, { rootSchema })).toBe(false)
   })
 
-  /** Cas allOf-perf : tableau d’entités `allOf` via `$ref`. */
+  /** allOf-perf case: array of `allOf` entities via `$ref`. */
   it('recognises allOf items reached through a $ref', () => {
     const schema = schemaWith({ $ref: '#/definitions/entity' })
     const rootSchema: JsonSchema = {
@@ -218,8 +218,8 @@ describe('isCombinatorSchema', () => {
 
 describe('allOf array item pipeline', () => {
   /**
-   * Garantit le chaînage playground allOf-perf : le tester voit un combinator,
-   * et la fusion produit une disposition réellement déployable.
+   * Guarantees the playground allOf-perf chain: the tester sees a combinator,
+   * and the merge produces a layout that can actually be expanded.
    */
   it('flattens $ref allOf items into renderable controls', () => {
     const rootSchema: JsonSchema = {
@@ -339,7 +339,7 @@ describe('useArrayControl', () => {
     }
   }
 
-  it('expose items / canAdd / canRemove selon minItems et maxItems', () => {
+  it('exposes items / canAdd / canRemove based on minItems and maxItems', () => {
     const state = ref(baseState({ data: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] }))
     const { result, scope } = mountArray(state)
 
@@ -350,18 +350,18 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('bloque la suppression au minItems', () => {
+  it('blocks removal at minItems', () => {
     const state = ref(baseState({ data: [{ name: 'only' }] }))
     const { result, scope } = mountArray(state)
 
-    // minItems: 1 et length: 1 → retrait interdit
+    // minItems: 1 and length: 1 → removal forbidden
     expect(result.canRemove.value).toBe(false)
     expect(result.canAdd.value).toBe(true)
 
     scope.stop()
   })
 
-  it('traite une donnée non-tableau comme liste vide', () => {
+  it('treats non-array data as an empty list', () => {
     const state = ref(baseState({ data: null }))
     const { result, scope } = mountArray(state)
 
@@ -371,7 +371,7 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('génère un Control self-scope pour les items combinator (allOf)', () => {
+  it('generates a self-scope Control for combinator items (allOf)', () => {
     const itemSchema: JsonSchema = {
       allOf: [{ properties: { a: { type: 'string' } } }],
     }
@@ -390,7 +390,7 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('génère un Control compact pour les items primitifs', () => {
+  it('generates a compact Control for primitive items', () => {
     const itemSchema: JsonSchema = { type: 'string' }
     const state = ref(
       baseState({
@@ -412,7 +412,7 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('compose childPath et itemLabel', () => {
+  it('composes childPath and itemLabel', () => {
     const state = ref(
       baseState({
         data: [{ name: 'Ada' }, { name: 'Grace' }],
@@ -433,7 +433,7 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('délègue addItem / removeItem / moveUp / moveDown aux thunks JSON Forms', () => {
+  it('delegates addItem / removeItem / moveUp / moveDown to JSON Forms thunks', () => {
     const state = ref(baseState({ data: [{ name: 'a' }, { name: 'b' }] }))
     const { result, scope, addItem, removeItems, moveUp, moveDown } = mountArray(state)
 
@@ -458,7 +458,7 @@ describe('useArrayControl', () => {
     scope.stop()
   })
 
-  it('met à jour canAdd quand la longueur change', async () => {
+  it('updates canAdd when the length changes', async () => {
     const state = ref(baseState({ data: [{ name: 'a' }] }))
     const { result, scope } = mountArray(state)
 

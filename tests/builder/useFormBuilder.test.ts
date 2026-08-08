@@ -9,7 +9,7 @@ import {
 } from '../../src/builder/useFormBuilder'
 
 describe('createEmptyDefinition', () => {
-  it('démarre sur un objet vide et une colonne vide', () => {
+  it('starts with an empty object and an empty column', () => {
     const empty = createEmptyDefinition()
 
     expect(empty.schema).toEqual({ type: 'object', properties: {} })
@@ -18,17 +18,17 @@ describe('createEmptyDefinition', () => {
 })
 
 describe('listPropertyNames', () => {
-  it('liste les propriétés racine', () => {
+  it('lists root properties', () => {
     expect(listPropertyNames({ type: 'object', properties: { a: {}, b: {} } })).toEqual(['a', 'b'])
   })
 
-  it('tolère l’absence de properties', () => {
+  it('tolerates missing properties', () => {
     expect(listPropertyNames({ type: 'object' })).toEqual([])
   })
 })
 
 describe('collectReferencedProperties', () => {
-  it('collecte les scopes Control dans l’arbre', () => {
+  it('collects Control scopes in the tree', () => {
     const tree: UISchemaElement = {
       type: 'VerticalLayout',
       elements: [
@@ -46,7 +46,7 @@ describe('collectReferencedProperties', () => {
     expect(collectReferencedProperties(tree).sort()).toEqual(['a', 'b'])
   })
 
-  it('ignore undefined et les scopes non racine', () => {
+  it('ignores undefined and non-root scopes', () => {
     expect(collectReferencedProperties(undefined)).toEqual([])
     expect(
       collectReferencedProperties({
@@ -69,7 +69,7 @@ describe('useFormBuilder', () => {
     return { api: api!, stop: () => scope.stop() }
   }
 
-  it('ajoute un champ palette (schéma + control) et sélectionne', () => {
+  it('adds a palette field (schema + control) and selects it', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -86,7 +86,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('ignore une clé palette inconnue', () => {
+  it('ignores an unknown palette key', () => {
     const { api, stop } = mountBuilder()
     const before = api.definition.value
 
@@ -98,7 +98,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('ajoute un conteneur sans toucher au schéma', () => {
+  it('adds a container without touching the schema', () => {
     const { api, stop } = mountBuilder()
 
     api.addContainer('Group', [], 0)
@@ -112,7 +112,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('supprime un contrôle et sa propriété orpheline', () => {
+  it('removes a control and its orphan property', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -127,7 +127,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('supprime un groupe et les propriétés de ses descendants', () => {
+  it('removes a group and the properties of its descendants', () => {
     const { api, stop } = mountBuilder()
 
     api.addContainer('Group', [], 0)
@@ -140,7 +140,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('conserve une propriété encore référencée ailleurs', () => {
+  it('keeps a property still referenced elsewhere', () => {
     const schema: JsonSchema = {
       type: 'object',
       properties: {
@@ -168,7 +168,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('annule et rétablit via undo / redo', () => {
+  it('undoes and redoes via undo / redo', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -184,7 +184,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('efface le futur à chaque nouveau commit', () => {
+  it('clears the future on each new commit', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -198,7 +198,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('met à jour options uischema et propriété schéma', () => {
+  it('updates uischema options and schema property', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -217,7 +217,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('gère required via setRequired / isRequired', () => {
+  it('manages required via setRequired / isRequired', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -232,7 +232,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('déplace et décale des éléments', () => {
+  it('moves and shifts elements', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -257,7 +257,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('reset efface historique et sélection', () => {
+  it('reset clears history and selection', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
@@ -272,7 +272,7 @@ describe('useFormBuilder', () => {
     stop()
   })
 
-  it('désélectionne après suppression de l’élément sélectionné', () => {
+  it('deselects after removing the selected element', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)

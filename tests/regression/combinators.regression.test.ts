@@ -1,8 +1,8 @@
 /**
- * Tests de non-régression — incidents déjà vus en prod / playground.
+ * Non-regression tests — incidents already seen in prod / playground.
  *
- * Préfixe `REGRESSION:` : un échec ici signale le retour d’un bug connu, pas un
- * simple trou de couverture. Chaque cas cite le symptôme d’origine.
+ * `REGRESSION:` prefix: a failure here signals a known bug returning, not a
+ * simple coverage gap. Each case cites the original symptom.
  */
 import { describe, expect, it, vi } from 'vitest'
 import {
@@ -36,7 +36,7 @@ import { resolveWinner } from './testers-mirror'
 
 const bareObjectTester = rankWith(2, isObjectControl)
 
-/** Chaîne GEDCOM-like : person → subject → conclusion. */
+/** GEDCOM-like chain: person → subject → conclusion. */
 const gedcomRoot: JsonSchema = {
   type: 'object',
   definitions: {
@@ -78,10 +78,10 @@ const gedcomRoot: JsonSchema = {
 } as JsonSchema
 
 describe('REGRESSION — dispatch allOf / object / union', () => {
-  it('REGRESSION: allOf gagne sur ObjectControl (sinon props des branches perdues)', () => {
+  it('REGRESSION: allOf wins over ObjectControl (else branch props are lost)', () => {
     /**
-     * Symptôme : le renderer d’objet (rang 2) capturait les schémas `allOf` et
-     * n’affichait que les properties locales — jamais celles des branches.
+     * Symptom: the object renderer (rank 2) captured `allOf` schemas and
+     * only showed local properties — never those from the branches.
      */
     const ui = { type: 'Control', scope: '#/properties/person' } as ControlElement
     const best = resolveWinner(ui, gedcomRoot, gedcomRoot)
@@ -89,10 +89,10 @@ describe('REGRESSION — dispatch allOf / object / union', () => {
     expect(best).toEqual({ name: 'AllOfControl', rank: 4 })
   })
 
-  it('REGRESSION: union sans properties n’est pas ObjectControl (carte vide)', () => {
+  it('REGRESSION: union without properties is not ObjectControl (empty card)', () => {
     /**
-     * Symptôme json-editor : `type: […, 'object', …]` sans `properties` — le rang 2
-     * objet battait les scalaires (rang 1) et n’affichait qu’une carte vide.
+     * json-editor symptom: `type: […, 'object', …]` without `properties` — object
+     * rank 2 beat scalars (rank 1) and only rendered an empty card.
      */
     const ui = { type: 'Control', scope: '#/properties/editor' } as ControlElement
     const context = { rootSchema: gedcomRoot, config: {} }
@@ -105,16 +105,16 @@ describe('REGRESSION — dispatch allOf / object / union', () => {
     expect(best?.rank).toBe(1)
   })
 
-  it('REGRESSION: objet franc avec properties reste ObjectControl', () => {
+  it('REGRESSION: plain object with properties stays ObjectControl', () => {
     const ui = { type: 'Control', scope: '#/properties/plain' } as ControlElement
     expect(resolveWinner(ui, gedcomRoot, gedcomRoot)).toEqual({ name: 'ObjectControl', rank: 2 })
   })
 })
 
-describe('REGRESSION — flatten allOf imbriqué', () => {
-  it('REGRESSION: person → subject → conclusion conserve toutes les props', () => {
+describe('REGRESSION — nested allOf flatten', () => {
+  it('REGRESSION: person → subject → conclusion keeps all props', () => {
     /**
-     * Symptôme : fusion à un seul niveau → seuls `private` / `name` restaient.
+     * Symptom: single-level merge → only `private` / `name` remained.
      */
     const person = gedcomRoot.definitions?.person as JsonSchema
     const flattened = flattenAllOfSchema(person, gedcomRoot)
@@ -128,7 +128,7 @@ describe('REGRESSION — flatten allOf imbriqué', () => {
     ])
   })
 
-  it('REGRESSION: chaîne profonde style allOf-perf ne perd aucune couche', () => {
+  it('REGRESSION: deep allOf-perf-style chain loses no layer', () => {
     const depth = 8
     const fields = 5
     const root = buildNestedAllOfSchema(depth, fields) as JsonSchema
@@ -139,16 +139,16 @@ describe('REGRESSION — flatten allOf imbriqué', () => {
   })
 })
 
-describe('REGRESSION — anti-récursion objet / allOf', () => {
-  it('REGRESSION: Generate sur objet nu → pas de contrôle descendant (évite stack overflow)', () => {
+describe('REGRESSION — object / allOf anti-recursion', () => {
+  it('REGRESSION: Generate on bare object → no descendant control (avoids stack overflow)', () => {
     /**
-     * Symptôme : layout self-scope `#` redispaché → ObjectControl → même layout → boom.
+     * Symptom: self-scope `#` layout redispatched → ObjectControl → same layout → boom.
      */
     const ui = Generate.uiSchema({ type: 'object' }, 'VerticalLayout')
     expect(hasRenderableControl(ui)).toBe(false)
   })
 
-  it('REGRESSION: useObjectControl refuse de redispatcher un self-scope', () => {
+  it('REGRESSION: useObjectControl refuses to redispatch a self-scope', () => {
     const app = createApp({})
     app.provide('jsonforms', { core: { schema: { type: 'object' } } })
     const scope = effectScope()
@@ -184,7 +184,7 @@ describe('REGRESSION — anti-récursion objet / allOf', () => {
     scope.stop()
   })
 
-  it('REGRESSION: useAllOfControl sans props fusionnables → pas de dispatch', () => {
+  it('REGRESSION: useAllOfControl without mergeable props → no dispatch', () => {
     const app = createApp({})
     const empty: JsonSchema = { allOf: [{ type: 'object' }] }
     app.provide('jsonforms', { core: { schema: empty } })
@@ -221,7 +221,7 @@ describe('REGRESSION — anti-récursion objet / allOf', () => {
   })
 })
 
-describe('REGRESSION — identité schéma / cache UI allOf', () => {
+describe('REGRESSION — schema identity / allOf UI cache', () => {
   type ControlState = {
     schema: JsonSchema
     rootSchema: JsonSchema
@@ -256,11 +256,11 @@ describe('REGRESSION — identité schéma / cache UI allOf', () => {
     return { scope, result: result! }
   }
 
-  it('REGRESSION: le schéma du control reste l’original (pas le flattened)', () => {
+  it('REGRESSION: control schema stays the original (not the flattened one)', () => {
     /**
-     * Symptôme : un schéma synthétique recréé à chaque tick faisait reboucler
-     * `watch(() => props.schema)` → Maximum recursive updates exceeded.
-     * Le template doit dispatcher `control.schema` (identité stable).
+     * Symptom: a synthetic schema recreated every tick caused
+     * `watch(() => props.schema)` to loop → Maximum recursive updates exceeded.
+     * The template must dispatch `control.schema` (stable identity).
      */
     const schema = gedcomRoot.definitions?.person as JsonSchema
     const state = ref({
@@ -281,8 +281,8 @@ describe('REGRESSION — identité schéma / cache UI allOf', () => {
 
     const { result, scope } = mountAllOf(state)
 
-    // Proxies Vue : comparer l’identité via toRaw. Le contrat : pas de remplacement
-    // par le schéma plat (qui n’a plus d’`allOf`).
+    // Vue proxies: compare identity via toRaw. Contract: no replacement
+    // by the flat schema (which no longer has `allOf`).
     expect(toRaw(result.control.value.schema)).toBe(schema)
     expect(result.control.value.schema.allOf).toBeDefined()
     expect(flattenAllOfSchema(schema, gedcomRoot).allOf).toBeUndefined()
@@ -292,10 +292,10 @@ describe('REGRESSION — identité schéma / cache UI allOf', () => {
     scope.stop()
   })
 
-  it('REGRESSION: erreurs / data ne remountent pas la disposition allOf', async () => {
+  it('REGRESSION: errors / data do not remount the allOf layout', async () => {
     /**
-     * Symptôme : à chaque invalidation JSON Forms, `Generate.uiSchema` produisait
-     * un nouvel arbre → remount inutile (et parfois boucle) des enfants.
+     * Symptom: on each JSON Forms invalidation, `Generate.uiSchema` produced
+     * a new tree → needless remount (and sometimes a loop) of children.
      */
     const schema = gedcomRoot.definitions?.person as JsonSchema
     const state = ref({
@@ -317,11 +317,11 @@ describe('REGRESSION — identité schéma / cache UI allOf', () => {
     const { result, scope } = mountAllOf(state)
     const first = result.detailUiSchema.value
 
-    state.value = { ...state.value, errors: 'requis', data: { private: true } }
+    state.value = { ...state.value, errors: 'required', data: { private: true } }
     await nextTick()
     expect(result.detailUiSchema.value).toBe(first)
 
-    state.value = { ...state.value, errors: 'autre', data: { name: 'Ada' } }
+    state.value = { ...state.value, errors: 'other', data: { name: 'Ada' } }
     await nextTick()
     expect(result.detailUiSchema.value).toBe(first)
 
@@ -329,10 +329,10 @@ describe('REGRESSION — identité schéma / cache UI allOf', () => {
   })
 })
 
-describe('REGRESSION — oneOf $ref / allOf dans variante', () => {
-  it('REGRESSION: aucune branche $ref nue après résolution', () => {
+describe('REGRESSION — oneOf $ref / allOf in variant', () => {
+  it('REGRESSION: no bare $ref branch after resolution', () => {
     /**
-     * Symptôme : transmettre `{ $ref }` au dispatcher → resolveSchema en boucle
+     * Symptom: passing `{ $ref }` to the dispatcher → resolveSchema loop
      * (Maximum call stack size exceeded).
      */
     const root: JsonSchema = {
@@ -357,7 +357,7 @@ describe('REGRESSION — oneOf $ref / allOf dans variante', () => {
     expect(branches[0].properties?.street).toBeDefined()
   })
 
-  it('REGRESSION: variante allOf via $ref reste détectable après createVariantValue', () => {
+  it('REGRESSION: allOf variant via $ref stays detectable after createVariantValue', () => {
     const root: JsonSchema = {
       definitions: {
         track: {
@@ -378,7 +378,7 @@ describe('REGRESSION — oneOf $ref / allOf dans variante', () => {
     expect(branches).toHaveLength(1)
     expect(branches[0].$ref).toBeUndefined()
 
-    // Après résolution, la branche est encore un allOf : on flatten pour détecter.
+    // After resolution the branch is still an allOf: flatten to detect it.
     const flat = flattenAllOfSchema(branches[0], root)
     const value = createVariantValue(flat, root) as Record<string, unknown>
     value.meters = 10
@@ -387,11 +387,11 @@ describe('REGRESSION — oneOf $ref / allOf dans variante', () => {
   })
 })
 
-describe('REGRESSION — tableaux d’items combinator', () => {
-  it('REGRESSION: items $ref → allOf est reconnu (sinon aucun renderer)', () => {
+describe('REGRESSION — combinator item arrays', () => {
+  it('REGRESSION: items $ref → allOf is recognized (else no renderer)', () => {
     /**
-     * Symptôme : `isObjectArray` / `isPrimitiveArray` exigent `items.type` ;
-     * un `items: { $ref → allOf }` échappait aux deux.
+     * Symptom: `isObjectArray` / `isPrimitiveArray` require `items.type` ;
+     * an `items: { $ref → allOf }` escaped both.
      */
     const uischema = { type: 'Control', scope: '#/properties/entries' } as ControlElement
     const schema: JsonSchema = {
@@ -419,11 +419,11 @@ describe('REGRESSION — tableaux d’items combinator', () => {
   })
 })
 
-describe('REGRESSION — builder historique / orphelins', () => {
-  it('REGRESSION: undo après remove de groupe restaure schéma et uischema', () => {
+describe('REGRESSION — builder history / orphans', () => {
+  it('REGRESSION: undo after group remove restores schema and uischema', () => {
     /**
-     * Symptôme : suppression d’un groupe orphelinait (ou perdait) les propriétés
-     * sans pouvoir les récupérer proprement via undo.
+     * Symptom: removing a group orphaned (or lost) properties
+     * with no clean recovery via undo.
      */
     const scope = effectScope(true)
     let api: ReturnType<typeof useFormBuilder> | undefined
@@ -444,7 +444,7 @@ describe('REGRESSION — builder historique / orphelins', () => {
     scope.stop()
   })
 
-  it('REGRESSION: move d’un conteneur dans lui-même est un no-op (pas de commit)', () => {
+  it('REGRESSION: moving a container into itself is a no-op (no commit)', () => {
     const scope = effectScope(true)
     let api: ReturnType<typeof useFormBuilder> | undefined
     scope.run(() => {
@@ -457,7 +457,7 @@ describe('REGRESSION — builder historique / orphelins', () => {
 
     api!.move([0], [0], 0)
     expect(api!.definition.value).toBe(before)
-    // Un seul commit (addField après addContainer) — move n’en a pas ajouté.
+    // A single commit (addField after addContainer) — move did not add one.
     expect(api!.canUndo.value).toBe(true)
     api!.undo() // text
     api!.undo() // group

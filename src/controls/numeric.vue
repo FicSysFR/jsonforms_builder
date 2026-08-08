@@ -43,11 +43,11 @@ import { useNumericControl } from '../composables'
 /**
  * NumericControlRenderer
  *
- * Rend les propriétés `type: "number"` et `type: "integer"` avec un `UInputNumber`.
+ * Renders `type: "number"` and `type: "integer"` properties with a `UInputNumber`.
  *
- * `UInputNumber` émet directement un nombre (ou `null`), là où le `q-input type="number"`
- * de la v1 émettait une chaîne qu'il fallait reparser — d'où l'usage de `control.data`
- * brut plutôt que du `formattedValue` du composable.
+ * `UInputNumber` emits a number directly (or `null`), whereas v1's `q-input type="number"`
+ * emitted a string that had to be reparsed — hence using raw `control.data` rather than
+ * the composable's `formattedValue`.
  */
 const controlRenderer = defineComponent({
   name: 'NumericControlRenderer',

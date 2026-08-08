@@ -15,9 +15,9 @@
 
     p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") Aucun élément.
 
-    //- Valeurs simples : une ligne par entrée, sans carte ni titre. Le libellé et la
-    //- description de l'élément sont identiques d'une ligne à l'autre — les répéter
-    //- rendrait la liste illisible dès quelques entrées.
+    //- Primitive values: one row per entry, no card or title. Element label and
+    //- description are identical across rows — repeating them would make the list
+    //- unreadable after just a few entries.
     .space-y-1(v-else-if="isPrimitiveItems" :class="styles.arrayList.itemWrapper")
       .flex.items-start.gap-1(
         v-for="(item, index) in items"
@@ -66,7 +66,7 @@
           @click="askRemove(index)"
         )
 
-    //- Objets : une carte titrée, où le repère visuel vaut le coût vertical.
+    //- Objects: one titled card, where the visual anchor is worth the vertical cost.
     .space-y-2(v-else :class="styles.arrayList.itemWrapper")
       u-card(
         v-for="(item, index) in items"
@@ -121,8 +121,8 @@
             :cells="control.cells"
           )
 
-    //- Une seule description, sous la liste. Portée par le tableau et non par chaque
-    //- ligne : le schéma d'élément étant commun, la répéter n'apprendrait rien.
+    //- A single description below the list. Scoped to the array, not each row: the
+    //- element schema is shared, so repeating it would add nothing.
     p.text-xs.text-muted(v-if="control.description" v-text="control.description")
 
     p.text-sm.text-error(v-if="control.errors" v-text="control.errors")
@@ -158,13 +158,13 @@ import { isCombinatorItemsArray, useArrayControl } from '../composables'
 /**
  * ArrayControlRenderer
  *
- * Rend les propriétés `type: "array"` : une carte par élément, avec réordonnancement
- * et suppression, plus un bouton d'ajout respectant `minItems` / `maxItems`.
+ * Renders `type: "array"` properties: one card per element, with reordering and
+ * removal, plus an add button respecting `minItems` / `maxItems`.
  *
- * Absent de la v1 — un tableau y affichait « No applicable renderer found », ce qui
- * rendait impossible toute saisie répétée (lignes de personnel, de matériel…).
+ * Missing in v1 — an array there showed « No applicable renderer found », making
+ * repeated entry impossible (staff rows, equipment lines…).
  *
- * `options.elementLabelProp` choisit la propriété servant de titre à chaque carte.
+ * `options.elementLabelProp` chooses the property used as each card's title.
  */
 const controlRenderer = defineComponent({
   name: 'ArrayControlRenderer',
@@ -182,7 +182,7 @@ const controlRenderer = defineComponent({
       jsonFormsControl: useJsonFormsArrayControl(props),
     })
 
-    /** Index en attente de confirmation ; `null` quand aucune modale n'est ouverte. */
+    /** Index awaiting confirmation; `null` when no modal is open. */
     const pendingRemoveIndex = ref<number | null>(null)
 
     const pendingRemoveLabel = computed(() =>
@@ -205,9 +205,9 @@ const controlRenderer = defineComponent({
         return
       }
 
-      // Un tick avant de retirer la ligne : la modale se démonte au même instant, et
-      // supprimer dans la foulée rejouerait le défaut `onClickOutside` de VueUse
-      // (cf. la note du README sur `subTree`).
+      // One tick before removing the row: the modal unmounts at the same instant, and
+      // removing immediately would retrigger VueUse's default `onClickOutside`
+      // (cf. the README note on `subTree`).
       await nextTick()
       control.removeItem(index)
     }
@@ -228,20 +228,19 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Deux rangs distincts, et non un `rankWith(2, or(...))` : `enum-and-suggestion`
-   * revendique déjà les tableaux de primitives au rang 2 (multi-sélection). On ne
-   * dispute donc que les tableaux d'objets à ce rang, et on se contente du rang 1
-   * pour les primitives — ce qui reste au-dessus du défaut sans lui passer devant.
+   * Two distinct ranks, not a single `rankWith(2, or(...))`: `enum-and-suggestion`
+   * already claims primitive arrays at rank 2 (multi-select). We only compete for object
+   * arrays at that rank, and settle for rank 1 for primitives — still above default
+   * without overtaking it.
    */
   tester: (uischema, schema, context) => {
     if (isObjectArrayControl(uischema, schema, context)) {
       return 2
     }
 
-    // Tableau dont les éléments sont un combinateur (`items: { oneOf: [...] }`) : ni
-    // objet ni primitive au sens de JSONForms, donc ignoré par les deux testers
-    // ci-dessus. C'est pourtant bien une liste, chaque entrée étant ensuite confiée au
-    // renderer de combinateur.
+    // Array whose items are a combinator (`items: { oneOf: [...] }`): neither object
+    // nor primitive in JSONForms terms, so ignored by both testers above. It is still
+    // a list, each entry then handed to the combinator renderer.
     if (isCombinatorItemsArray(uischema, schema, context)) {
       return 2
     }

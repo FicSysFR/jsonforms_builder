@@ -10,14 +10,14 @@ import {
 } from './helpers'
 
 /**
- * Chemins chauds de la page playground (`App.vue`) :
- * sélection d'exemple, clonage des données, traduction i18n, validation AJV.
+ * Hot paths of the playground page (`App.vue`):
+ * example selection, data cloning, i18n translation, AJV validation.
  *
- * On ne monte pas Nuxt UI ici : le coût DOM dépend du navigateur. On mesure
- * la logique de page qui tourne à chaque changement d'exemple / de donnée.
+ * Nuxt UI is not mounted here: DOM cost depends on the browser. We measure
+ * page logic that runs on every example / data change.
  */
 
-/** Simule le traducteur i18n du playground (lookup radash + fallback). */
+/** Simulates the playground i18n translator (radash lookup + fallback). */
 const translate = (dict: Record<string, unknown>, key: string, defaultMessage?: string): string => {
   const translated = get(dict, key) as string | undefined
   if (translated !== undefined) {
@@ -26,12 +26,12 @@ const translate = (dict: Record<string, unknown>, key: string, defaultMessage?: 
   return defaultMessage ?? ''
 }
 
-describe('page playground — performances', () => {
-  it('charge et trie un catalogue d’exemples volumineux', () => {
+describe('playground page — performance', () => {
+  it('loads and sorts a large example catalog', () => {
     const catalogSize = 200
     const catalog = Array.from({ length: catalogSize }, (_, i) => ({
       name: `example-${String(i).padStart(3, '0')}`,
-      label: `Exemple ${catalogSize - i}`,
+      label: `Example ${catalogSize - i}`,
       data: { n: i },
       schema: { type: 'object' as const, properties: {} },
       uischema: { type: 'VerticalLayout' as const, elements: [] },
@@ -45,13 +45,13 @@ describe('page playground — performances', () => {
       const list = Object.keys(known).map((key) => known[key])
       list.sort((a, b) => a.label.localeCompare(b.label))
       expect(list).toHaveLength(catalogSize)
-      expect(list[0].label).toBe('Exemple 1')
+      expect(list[0].label).toBe('Example 1')
     })
 
-    expectWithinBudget('catalogue exemples (200)', result, 40)
+    expectWithinBudget('example catalog (200)', result, 40)
   })
 
-  it('bascule d’exemple : clone des données + résolution URL (hot path App.vue)', () => {
+  it('switches example: clone data + URL resolution (App.vue hot path)', () => {
     const fieldCount = 150
     const examples = Array.from({ length: 40 }, (_, i) => ({
       name: `form-${i}`,
@@ -75,15 +75,15 @@ describe('page playground — performances', () => {
       }
     })
 
-    expectWithinBudget('bascule 40 exemples × 150 champs', result, 80)
+    expectWithinBudget('switch 40 examples × 150 fields', result, 80)
   })
 
-  it('résout massivement les clés i18n sans coller les clés brutes', () => {
+  it('resolves i18n keys in bulk without sticking raw keys', () => {
     const dict = {
       form: Object.fromEntries(
         Array.from({ length: 500 }, (_, i) => [
           `field_${i}`,
-          { label: `Libellé ${i}`, description: `Description ${i}` },
+          { label: `Label ${i}`, description: `Description ${i}` },
         ]),
       ),
     }
@@ -100,14 +100,14 @@ describe('page playground — performances', () => {
         const value = translate(dict, key, undefined)
         if (value !== '') hits += 1
       }
-      // label + description présents, « missing » → ''
+      // label + description present, 'missing' → ''
       expect(hits).toBe(1000)
     })
 
     expectWithinBudget('i18n 1500 lookups', result, 50)
   })
 
-  it('compile un schéma large et valide les données (createAjv playground)', () => {
+  it('compiles a large schema and validates data (playground createAjv)', () => {
     const fieldCount = 200
     const schema = buildFlatObjectSchema(fieldCount)
     const validData = buildFlatObjectData(fieldCount)
@@ -120,10 +120,10 @@ describe('page playground — performances', () => {
       expect(validate(invalidData)).toBe(false)
     })
 
-    expectWithinBudget('AJV compile + validate 200 champs', result, 120)
+    expectWithinBudget('AJV compile + validate 200 fields', result, 120)
   })
 
-  it('sérialise le panneau Données (JSON.stringify du playground)', () => {
+  it('serializes the Data panel (playground JSON.stringify)', () => {
     const data = {
       meta: { title: 'perf', nested: { a: 1, b: [1, 2, 3] } },
       items: Array.from({ length: 400 }, (_, i) => ({
@@ -138,6 +138,6 @@ describe('page playground — performances', () => {
       expect(pretty.length).toBeGreaterThan(10_000)
     })
 
-    expectWithinBudget('JSON.stringify panneau données', result, 40)
+    expectWithinBudget('JSON.stringify data panel', result, 40)
   })
 })

@@ -35,11 +35,11 @@ import {
 import { useUiLayout } from '../utils'
 
 /**
- * Classes de colonnes, en dur et non construites dynamiquement.
+ * Column classes, hard-coded rather than built dynamically.
  *
- * Tailwind analyse les sources statiquement : une classe assemblée à l'exécution
- * (`md:grid-cols-${n}`, comme le faisait la v1 avec `col-md-${12 / n}`) n'est jamais
- * générée dans la feuille finale. D'où cette table de correspondance explicite.
+ * Tailwind scans sources statically: a class assembled at runtime
+ * (`md:grid-cols-${n}`, as v1 did with `col-md-${12 / n}`) is never generated in the
+ * final stylesheet. Hence this explicit lookup table.
  */
 const COLUMN_CLASSES: Record<number, string> = {
   1: 'grid-cols-1',
@@ -53,10 +53,10 @@ const COLUMN_CLASSES: Record<number, string> = {
 /**
  * LayoutRenderer
  *
- * Rend les `VerticalLayout` et `HorizontalLayout` avec une grille CSS Tailwind.
+ * Renders `VerticalLayout` and `HorizontalLayout` with a Tailwind CSS grid.
  *
- * En vertical, une colonne. En horizontal, autant de colonnes que d'éléments
- * (plafonné à 6), qui retombent sur une seule colonne en mobile.
+ * Vertical: one column. Horizontal: as many columns as there are elements
+ * (capped at 6), collapsing to a single column on mobile.
  */
 const layoutRenderer = defineComponent({
   name: 'LayoutRenderer',

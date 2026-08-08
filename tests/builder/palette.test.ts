@@ -8,17 +8,17 @@ import {
 } from '../../src/builder/palette'
 
 describe('PALETTE_FIELDS', () => {
-  it('a des clés uniques', () => {
+  it('has unique keys', () => {
     const keys = PALETTE_FIELDS.map((field) => field.key)
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('couvre les groupes attendus', () => {
+  it('covers the expected groups', () => {
     const groups = new Set(PALETTE_FIELDS.map((field) => field.group))
     expect(groups).toEqual(new Set(['Saisie', 'Choix', 'Date & heure', 'Structure']))
   })
 
-  it('produit un schéma valide pour chaque entrée', () => {
+  it('produces a valid schema for each entry', () => {
     for (const field of PALETTE_FIELDS) {
       const schema = field.schema()
       expect(schema).toBeTypeOf('object')
@@ -26,7 +26,7 @@ describe('PALETTE_FIELDS', () => {
     }
   })
 
-  it('ne partage pas d’objet schéma entre deux appels', () => {
+  it('does not share a schema object across two calls', () => {
     const field = findPaletteField('enum')!
     const a = field.schema()
     const b = field.schema()
@@ -37,19 +37,19 @@ describe('PALETTE_FIELDS', () => {
 })
 
 describe('PALETTE_CONTAINERS', () => {
-  it('a des clés uniques', () => {
+  it('has unique keys', () => {
     const keys = PALETTE_CONTAINERS.map((container) => container.key)
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('crée des éléments avec le type attendu', () => {
+  it('creates elements with the expected type', () => {
     for (const container of PALETTE_CONTAINERS) {
       const created = container.create()
       expect(created.type).toBe(container.key === 'Label' ? 'Label' : container.key)
     }
   })
 
-  it('prépare Categorization avec deux onglets vides', () => {
+  it('prepares Categorization with two empty tabs', () => {
     const created = findPaletteContainer('Categorization')!.create() as {
       elements: Array<{ type: string; elements: unknown[] }>
     }
@@ -61,26 +61,26 @@ describe('PALETTE_CONTAINERS', () => {
 })
 
 describe('findPaletteField / findPaletteContainer', () => {
-  it('retrouve une entrée connue', () => {
+  it('finds a known entry', () => {
     expect(findPaletteField('textarea')?.options?.()).toEqual({ multi: true })
     expect(findPaletteContainer('Group')?.label).toBe('Groupe')
   })
 
-  it('renvoie undefined pour une clé inconnue', () => {
+  it('returns undefined for an unknown key', () => {
     expect(findPaletteField('nope')).toBeUndefined()
     expect(findPaletteContainer('nope')).toBeUndefined()
   })
 })
 
 describe('createControl', () => {
-  it('pointe le scope racine de la propriété', () => {
+  it('points at the root property scope', () => {
     expect(createControl('prenom')).toEqual({
       type: 'Control',
       scope: '#/properties/prenom',
     })
   })
 
-  it('n’ajoute options que si non vides', () => {
+  it('adds options only when non-empty', () => {
     expect(createControl('x', {})).not.toHaveProperty('options')
     expect(createControl('x', { multi: true }).options).toEqual({ multi: true })
   })

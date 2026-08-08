@@ -1,6 +1,6 @@
 <template lang="pug">
   .categorization(:class="styles.categorization.root")
-    //- Variante « assistant » : une étape à la fois, avec navigation précédent / suivant.
+    //- "Wizard" variant: one step at a time, with previous / next navigation.
     template(v-if="isStepper")
       u-stepper(
         v-bind="uiProps('stepper')"
@@ -38,7 +38,7 @@
           @click="goToStep(activeIndex + 1)"
         )
 
-    //- Variante par défaut : onglets.
+    //- Default variant: tabs.
     u-tabs(
       v-else
       v-bind="uiProps('tabs')"
@@ -89,12 +89,12 @@ const DEFAULT_DEFAULT_TAB = '0'
 /**
  * CategorizationRenderer
  *
- * Rend les `Categorization` en onglets (`UTabs`) ou, avec `options.variant: "stepper"`,
- * en assistant pas-à-pas (`UStepper`) — cette seconde variante était déclarée dans le
- * thème de la v1 mais n'avait jamais été implémentée.
+ * Renders `Categorization` as tabs (`UTabs`) or, with `options.variant: "stepper"`,
+ * as a step-by-step wizard (`UStepper`) — the latter variant was declared in the v1 theme
+ * but had never been implemented.
  *
- * La catégorie active est persistée dans le hash de l'URL (`#tab=…`), ce qui rend les
- * formulaires longs partageables et résistants au rechargement.
+ * The active category is persisted in the URL hash (`#tab=…`), making long forms
+ * shareable and resilient to reload.
  */
 const layoutRenderer = defineComponent({
   name: 'categorization-renderer',
@@ -146,7 +146,7 @@ const layoutRenderer = defineComponent({
       }),
     )
 
-    /** Forme attendue par `UTabs` / `UStepper`, en conservant l'uischema de chaque onglet. */
+    /** Shape expected by `UTabs` / `UStepper`, keeping each tab's uischema. */
     const tabItems = computed(() =>
       visibleCategories.value.map((category) => ({
         value: category.queryId,
@@ -163,7 +163,7 @@ const layoutRenderer = defineComponent({
       })),
     )
 
-    /** `UStepper` raisonne en index numérique là où le hash porte un identifiant. */
+    /** `UStepper` uses a numeric index where the hash carries an identifier. */
     const activeIndex = computed(() =>
       Math.max(
         tabItems.value.findIndex((item) => item.value === activeCategory.value),

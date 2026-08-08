@@ -10,7 +10,7 @@ import {
 } from '../performance/helpers'
 
 describe('buildFlatObjectSchema / data / uischema', () => {
-  it('aligne propriétés, données et contrôles', () => {
+  it('aligns properties, data, and controls', () => {
     const count = 5
     const schema = buildFlatObjectSchema(count)
     const data = buildFlatObjectData(count)
@@ -20,10 +20,10 @@ describe('buildFlatObjectSchema / data / uischema', () => {
     expect(Object.keys(data)).toHaveLength(count)
     expect(ui.elements).toHaveLength(count)
     expect(ui.elements[2].scope).toBe('#/properties/field_2')
-    expect(data.field_2).toBe('valeur-2')
+    expect(data.field_2).toBe('value-2')
   })
 
-  it('accepte un count nul', () => {
+  it('accepts a zero count', () => {
     expect(buildFlatObjectSchema(0).properties).toEqual({})
     expect(buildFlatObjectData(0)).toEqual({})
     expect(buildFlatVerticalUiSchema(0).elements).toEqual([])
@@ -31,7 +31,7 @@ describe('buildFlatObjectSchema / data / uischema', () => {
 })
 
 describe('buildDeepUiSchema', () => {
-  it('empile des Group autour d’un VerticalLayout', () => {
+  it('nests Group wrappers around a VerticalLayout', () => {
     const ui = buildDeepUiSchema(2, 2) as {
       type: string
       elements: Array<{ type: string }>
@@ -43,7 +43,7 @@ describe('buildDeepUiSchema', () => {
 })
 
 describe('buildNestedAllOfSchema', () => {
-  it('enchaîne allOf / $ref jusqu’à la profondeur demandée', () => {
+  it('chains allOf / $ref up to the requested depth', () => {
     const depth = 4
     const fieldsPerLayer = 3
     const root = buildNestedAllOfSchema(depth, fieldsPerLayer)
@@ -59,14 +59,14 @@ describe('buildNestedAllOfSchema', () => {
     )
   })
 
-  it('produit depth définitions', () => {
+  it('produces depth definitions', () => {
     const root = buildNestedAllOfSchema(5)
     expect(Object.keys(root.definitions)).toHaveLength(5)
   })
 })
 
 describe('measure / expectWithinBudget', () => {
-  it('renvoie des stats sur les itérations chronométrées', () => {
+  it('returns stats over timed iterations', () => {
     let calls = 0
     const result = measure(
       () => {
@@ -82,12 +82,12 @@ describe('measure / expectWithinBudget', () => {
     expect(result.meanMs).toBeGreaterThanOrEqual(0)
   })
 
-  it('passe sous budget', () => {
+  it('passes under budget', () => {
     const result = measure(() => undefined, { iterations: 3, warmup: 0 })
     expect(() => expectWithinBudget('noop', result, 50)).not.toThrow()
   })
 
-  it('échoue avec un message diagnostique au-delà du budget', () => {
+  it('fails with a diagnostic message beyond budget', () => {
     const result = {
       medianMs: 100,
       p95Ms: 120,
@@ -95,6 +95,6 @@ describe('measure / expectWithinBudget', () => {
       samples: [90, 100, 110],
     }
 
-    expect(() => expectWithinBudget('trop lent', result, 10)).toThrow(/\[perf\] trop lent/)
+    expect(() => expectWithinBudget('too slow', result, 10)).toThrow(/\[perf\] too slow/)
   })
 })

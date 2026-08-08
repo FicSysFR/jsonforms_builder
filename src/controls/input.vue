@@ -40,10 +40,10 @@ import { useStringControl } from '../composables'
 /**
  * InputControlRenderer
  *
- * Rend les propriétés `type: "string"` avec un `UInput`.
+ * Renders `type: "string"` properties with a `UInput`.
  *
- * Options du uischema reconnues : `placeholder`, `focus`, `restrict` (applique le
- * `maxLength` du schéma), et `input` pour passer n'importe quelle prop à `UInput`.
+ * Recognized uischema options: `placeholder`, `focus`, `restrict` (applies the schema's
+ * `maxLength`), and `input` to pass any prop through to `UInput`.
  */
 const controlRenderer = defineComponent({
   name: 'InputControlRenderer',

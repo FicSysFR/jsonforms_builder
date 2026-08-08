@@ -34,7 +34,7 @@ export const countPatternDigits = (pattern: string): number => {
   return pattern.replace(/[^YMDHms]/g, '').length
 }
 
-// 3️⃣ normalise les valeurs saisies pour comparaison stricte avec dayjs
+// 3️⃣ normalize entered values for strict comparison with dayjs
 export const normalizeDateValue = (value: string, pattern: string): string => {
   if (!value) {
     return value
@@ -98,22 +98,22 @@ export const resolveDateInputType = (format?: string): 'date' | 'time' | 'dateti
 }
 
 export const detectDateUnitFromPosition = (pattern: string, position: number): ManipulateType => {
-  // Si position dépasse le pattern, utiliser la dernière position valide
+  // If position exceeds the pattern, use the last valid position
   const safePosition = Math.min(position, pattern.length - 1)
 
-  // Trouver le caractère de format à cette position ou proche
+  // Find the format character at or near this position
   let formatChar = pattern[safePosition]
 
-  // Si c'est un séparateur, chercher le caractère de format le plus proche
+  // If it's a separator, find the nearest format character
   if (![...'YMDHms'].includes(formatChar)) {
-    // Chercher vers la gauche d'abord
+    // Search to the left first
     for (let i = safePosition; i >= 0; i--) {
       if ([...'YMDHms'].includes(pattern[i])) {
         formatChar = pattern[i]
         break
       }
     }
-    // Si pas trouvé, chercher vers la droite
+    // If not found, search to the right
     if (![...'YMDHms'].includes(formatChar)) {
       for (let i = safePosition; i < pattern.length; i++) {
         if ([...'YMDHms'].includes(pattern[i])) {
@@ -124,7 +124,7 @@ export const detectDateUnitFromPosition = (pattern: string, position: number): M
     }
   }
 
-  // Mapper le caractère de format vers l'unité dayjs
+  // Map the format character to the dayjs unit
   switch (formatChar) {
     case 'Y':
       return 'year'
@@ -151,10 +151,10 @@ type DateKeyboardEvent = {
 }
 
 /**
- * Granularité `UInputDate` correspondant à un format JSON Schema.
+ * `UInputDate` granularity matching a JSON Schema format.
  *
- * `date` → jour seul ; `date-time` → jusqu'à la minute, ou la seconde si le motif
- * demandé en contient une.
+ * `date` → day only; `date-time` → up to the minute, or seconds if the pattern
+ * includes them.
  */
 export const resolveDateGranularity = (
   format: string | undefined,
@@ -168,11 +168,11 @@ export const resolveDateGranularity = (
 }
 
 /**
- * Type de `UCalendar` dérivé du motif dayjs du schéma / uischema.
+ * `UCalendar` type derived from the dayjs pattern in the schema / uischema.
  *
- * - `D` présent → sélection de jour (`date`)
- * - sinon `M` → mois seul (`month`, ex. `YYYY.MM`)
- * - sinon `Y` → année seule (`year`, ex. `YYYY`)
+ * - `D` present → day selection (`date`)
+ * - otherwise `M` → month only (`month`, e.g. `YYYY.MM`)
+ * - otherwise `Y` → year only (`year`, e.g. `YYYY`)
  */
 export const resolveCalendarType = (pattern: string): 'date' | 'month' | 'year' => {
   if (/D/.test(pattern)) {
@@ -190,29 +190,29 @@ export const resolveCalendarType = (pattern: string): 'date' | 'month' | 'year' 
   return 'date'
 }
 
-/** Options déclaratives de bornes / exclusions pour `UCalendar` / `UInputDate`. */
+/** Declarative bound / exclusion options for `UCalendar` / `UInputDate`. */
 export type DateConstraintOptions = {
-  /** Borne basse inclusive (`YYYY-MM-DD`, `YYYY-MM` ou `YYYY`). */
+  /** Inclusive lower bound (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`). */
   minDate?: string
-  /** Borne haute inclusive. */
+  /** Inclusive upper bound. */
   maxDate?: string
-  /** Jours exclusifs au format `YYYY-MM-DD`. */
+  /** Excluded days in `YYYY-MM-DD` format. */
   disabledDates?: string[]
   /**
-   * Jours de la semaine exclus (`Date#getDay`) : `0` = dimanche … `6` = samedi.
-   * Ex. week-end : `[0, 6]`.
+   * Excluded weekdays (`Date#getDay`): `0` = Sunday … `6` = Saturday.
+   * E.g. weekend: `[0, 6]`.
    */
   disabledWeekdays?: number[]
-  /** Mois exclus (`1`–`12`), utile avec `calendarType: "month"`. */
+  /** Excluded months (`1`–`12`), useful with `calendarType: "month"`. */
   disabledMonths?: number[]
-  /** Années exclues, utile avec `calendarType: "year"`. */
+  /** Excluded years, useful with `calendarType: "year"`. */
   disabledYears?: number[]
 }
 
 export type DateConstraints = {
   minValue?: CalendarDate
   maxValue?: CalendarDate
-  /** Exclusions déclaratives — branché sur `isDateUnavailable` (barré, plus lisible). */
+  /** Declarative exclusions — wired to `isDateUnavailable` (struck through, more readable). */
   isDateUnavailable?: (date: DateValue) => boolean
   isMonthUnavailable?: (date: DateValue) => boolean
   isYearUnavailable?: (date: DateValue) => boolean
@@ -239,11 +239,11 @@ export const toCalendarDateBound = (value: string | undefined): CalendarDate | u
 }
 
 /**
- * Construit les props de contrainte Nuxt UI / reka-ui à partir des options uischema.
+ * Builds Nuxt UI / reka-ui constraint props from uischema options.
  *
- * Les exclusions passent par `*Unavailable` (barré + atténué) plutôt que `*Disabled`
- * (simple `text-muted`) : sur un calendrier en plage, le contraste activé / exclu
- * devient lisible. Les bornes `minDate` / `maxDate` restent en `minValue` / `maxValue`.
+ * Exclusions go through `*Unavailable` (struck through + muted) rather than `*Disabled`
+ * (plain `text-muted`): on a range calendar, the enabled / excluded contrast becomes
+ * readable. Bounds `minDate` / `maxDate` remain as `minValue` / `maxValue`.
  */
 export const buildDateConstraints = (
   options: DateConstraintOptions | undefined,
@@ -285,9 +285,9 @@ export const buildDateConstraints = (
 }
 
 /**
- * Classes `ui.cellTrigger` pour distinguer clairement les jours exclus / hors bornes
- * du reste de la grille — surtout en mode plage où le surlignage `highlighted`
- * masque le simple `text-muted` du thème Nuxt UI.
+ * `ui.cellTrigger` classes to clearly distinguish excluded / out-of-bounds days from
+ * the rest of the grid — especially in range mode where `highlighted` styling
+ * hides the plain Nuxt UI theme `text-muted`.
  */
 export const CALENDAR_CONSTRAINT_CELL_UI =
   'data-disabled:opacity-25 data-disabled:line-through data-disabled:pointer-events-none data-disabled:cursor-not-allowed data-unavailable:opacity-40 data-unavailable:line-through data-unavailable:text-muted data-unavailable:pointer-events-none'
@@ -339,11 +339,11 @@ export const fromDateRangeValue = (
 }
 
 /**
- * Convertit la valeur stockée (chaîne au motif du schéma) vers l'objet attendu par
- * `UInputDate` / `UInputTime`, qui travaillent en `@internationalized/date`.
+ * Converts the stored value (string in the schema pattern) to the object expected by
+ * `UInputDate` / `UInputTime`, which work with `@internationalized/date`.
  *
- * Renvoie `undefined` si la valeur est absente ou non parsable — le champ s'affiche
- * alors vide plutôt que de lever.
+ * Returns `undefined` if the value is missing or not parseable — the field then
+ * displays empty rather than throwing.
  */
 export const toDateValue = (
   value: unknown,
@@ -375,7 +375,7 @@ export const toDateValue = (
 }
 
 /**
- * Chemin retour : l'objet du composant vers la chaîne au motif attendu par le schéma.
+ * Return path: component object back to a string in the pattern expected by the schema.
  */
 export const fromDateValue = (
   value: CalendarDate | CalendarDateTime | Time | null | undefined,
@@ -394,7 +394,7 @@ export const fromDateValue = (
         ? DEFAULT_DATETIME_FORMAT
         : DEFAULT_DATE_FORMAT
 
-  // `Time` sérialise en `HH:mm:ss[.SSS]` : on tronque aux secondes avant de reparser.
+  // `Time` serializes as `HH:mm:ss[.SSS]`: truncate to seconds before reparsing.
   const normalized = format === 'time' ? iso.slice(0, 8) : iso
   const parsed = dayjs(normalized, sourcePattern, false)
 
@@ -448,12 +448,12 @@ export const useDateControl = ({
     buildDateConstraints(control.appliedOptions.value as DateConstraintOptions | undefined),
   )
 
-  /** Valeur exposée à `UInputDate` / `UInputTime`. */
+  /** Value exposed to `UInputDate` / `UInputTime`. */
   const dateValue = computed(() =>
     toDateValue(control.control.value.data, optionPattern.value, rawFormat.value),
   )
 
-  /** Retour du composant : on repasse en chaîne au motif du schéma avant de propager. */
+  /** Component return: convert back to a schema-pattern string before propagating. */
   const onChangeDateValue = (value: CalendarDate | CalendarDateTime | Time | null | undefined) => {
     control.onChange(adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)))
   }
@@ -469,22 +469,22 @@ export const useDateControl = ({
     const normalized = normalizeValue(controlData.value)
     const date = dayjs(normalized, patternDefault.value, true)
 
-    // Une saisie partielle laissée en l'état au blur est effacée plutôt que conservée invalide.
+    // Partial input left as-is on blur is cleared rather than kept invalid.
     if (!date.isValid()) {
       control.onChange(adaptTarget(undefined))
     }
   }
 
   const onChangeDate = (value: string) => {
-    // 1️⃣ Cas clear : l'utilisateur vide le champ -> on propage bien la valeur vide
+    // 1️⃣ Clear case: user empties the field -> propagate the empty value
     if (isEmpty(value)) {
-      // adaptTarget va transformer "" en clearValue (null, undefined, peu importe ce que tu as configuré)
+      // adaptTarget turns "" into clearValue (null, undefined, whatever you configured)
       control.onChange(adaptTarget(value))
       return
     }
 
-    // 2️⃣ Tant que la saisie n'a pas rempli le pattern (mask), on ne fait RIEN
-    //    -> ça évite que "13:" ou "13:5" déclenchent une normalisation en "13:00"
+    // 2️⃣ While input has not filled the pattern (mask), do NOTHING
+    //    -> prevents "13:" or "13:5" from triggering normalization to "13:00"
     const neededDigits = countPatternDigits(optionPattern.value)
     const currentDigits = value.replace(/\D/g, '').length
 
@@ -492,7 +492,7 @@ export const useDateControl = ({
       return
     }
 
-    // 3️⃣ Là seulement on normalise / parse / format
+    // 3️⃣ Only then normalize / parse / format
     const normalized = normalizeValue(value)
     const date = dayjs(normalized, optionPattern.value, true)
 
@@ -507,25 +507,25 @@ export const useDateControl = ({
     const currentDate = dayjs(control.control.value.data, optionPattern.value, true)
 
     if (!currentDate.isValid()) {
-      // Si pas de date valide, utiliser la date actuelle
+      // If no valid date, use the current date
       const date = dayjs()
       control.onChange(date.format(optionPattern.value))
       return
     }
 
-    // Détecter quelle partie de la date modifier selon la position du curseur
+    // Detect which date part to change based on cursor position
     const dateUnit = detectDateUnitFromPosition(optionPattern.value, cursorPosition)
     const newDate = currentDate.add(increment, dateUnit)
 
     control.onChange(newDate.format(optionPattern.value))
   }
 
-  /** Neutralise le keydown pour que seul le keyup incrémente (évite le double pas en répétition). */
+  /** Suppress keydown so only keyup increments (avoids double step on repeat). */
   const keydownHandler = (ev: DateKeyboardEvent) => {
     ev.preventDefault()
   }
 
-  /** ↑ / ↓ incrémentent le segment de date sous le curseur. */
+  /** ↑ / ↓ increment the date segment under the cursor. */
   const keyupHandler = (ev: DateKeyboardEvent, pos: number) => {
     ev.preventDefault()
     changeValueAtPosition(pos, ev.target.selectionStart ?? 0)

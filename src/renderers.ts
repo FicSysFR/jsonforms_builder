@@ -6,12 +6,12 @@ import { advancedRenderers } from './advanced'
 export { advancedRenderers }
 
 /**
- * Jeu de renderers par défaut : contrôles, layouts et éléments additionnels.
+ * Default renderer set: controls, layouts, and additional elements.
  */
 export const nuxtUiRenderers = [...controlsRenderers, ...layoutsRenderers, ...additionalsRenderers]
 
 /**
- * Ajoute les renderers avancés (éditeur riche). Séparé de `nuxtUiRenderers` afin que
- * les formulaires sans texte riche n'embarquent pas Tiptap.
+ * Adds the advanced renderers (rich text editor). Separated from `nuxtUiRenderers` so that
+ * forms without rich text do not pull in Tiptap.
  */
 export const allRenderers = [...nuxtUiRenderers, ...advancedRenderers]

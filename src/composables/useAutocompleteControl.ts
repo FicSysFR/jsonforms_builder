@@ -201,7 +201,7 @@ export const useAutocompleteControl = ({
       const items = isArray(rawItems) ? rawItems : []
       optionsList.value = resolveFetchedOptions(items, apiConfig)
     } catch (error) {
-      // Une requête annulée par une frappe suivante n'est pas une erreur à signaler.
+      // A request aborted by a subsequent keystroke is not an error to report.
       if ((error as Error)?.name !== 'AbortError') {
         console.warn('[autocomplete] API error:', error)
       }
@@ -210,10 +210,10 @@ export const useAutocompleteControl = ({
   }
 
   /**
-   * Branché sur `@update:search-term` de `UInputMenu` / `USelectMenu`.
+   * Wired to `@update:search-term` on `UInputMenu` / `USelectMenu`.
    *
-   * La v1 suivait la signature `(value, update, abort)` de `q-select` ; Nuxt UI émet
-   * simplement le terme saisi, d'où le changement de contrat en v2.
+   * v1 followed the `(value, update, abort)` signature of `q-select`; Nuxt UI simply emits
+   * the typed term, hence the contract change in v2.
    */
   const onSearch = async (value: string) => {
     if (!value || value.length < minLength.value) {
@@ -224,7 +224,7 @@ export const useAutocompleteControl = ({
     const uiOptions = control.control.value.uischema.options as UiOptionBag | undefined
     const apiConfig = extractAutocompleteApiConfig(uiOptions, control.appliedOptions.value)
 
-    // Sans API déclarée, on filtre les options statiques côté client.
+    // With no declared API, filter static options on the client.
     if (!apiConfig) {
       optionsList.value = filterOptionsBySearch(getStaticOptions(control.control.value), value)
       return

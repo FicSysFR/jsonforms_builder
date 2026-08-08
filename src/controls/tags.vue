@@ -48,15 +48,15 @@ import { useTagsControl } from '../composables'
 /**
  * TagsControlRenderer
  *
- * Rend les tableaux de chaînes *libres* marqués `options.format: "tags"` avec un
- * `UInputTags` : mots-clés, destinataires, libellés.
+ * Renders free-form string arrays marked `options.format: "tags"` with `UInputTags`:
+ * keywords, recipients, labels.
  *
- * C'est le pendant du multi-enum pour une liste ouverte — là où celui-ci coche des valeurs
- * connues d'avance, ici la valeur naît de la saisie. Le renderer de tableau conviendrait
- * aussi, mais ferait une carte dépliable par mot-clé.
+ * Counterpart to multi-enum for an open list — where multi-enum checks known values,
+ * here the value comes from typing. The array renderer would work too, but would show
+ * one expandable card per keyword.
  *
- * Le schéma pilote les garde-fous : `maxItems` limite le nombre d'étiquettes,
- * `uniqueItems` interdit les doublons, `items.maxLength` la longueur de chacune.
+ * The schema drives guardrails: `maxItems` limits tag count, `uniqueItems` forbids
+ * duplicates, `items.maxLength` limits each tag's length.
  */
 const controlRenderer = defineComponent({
   name: 'TagsControlRenderer',
@@ -83,8 +83,8 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Rang 20, au-dessus du multi-enum (5) : un schéma qui porte à la fois `items.enum` et
-   * `options.format: "tags"` demande explicitement la saisie libre, pas des cases à cocher.
+   * Rank 20, above multi-enum (5): a schema with both `items.enum` and
+   * `options.format: "tags"` explicitly requests free entry, not checkboxes.
    */
   tester: rankWith(
     20,

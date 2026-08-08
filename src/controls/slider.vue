@@ -38,11 +38,10 @@ import { useSliderControl } from '../composables'
 /**
  * SliderControlRenderer
  *
- * Rend les nombres marqués `options.slider` avec un `USlider`.
+ * Renders numbers marked `options.slider` with a `USlider`.
  *
- * `USlider` n'affiche pas la valeur en permanence (contrairement au `label-always` de
- * Quasar) : on ajoute une pastille numérique à droite pour conserver ce repère,
- * en plus de l'infobulle au survol.
+ * `USlider` does not show the value permanently (unlike Quasar's `label-always`): we add
+ * a numeric badge on the right to keep that reference, in addition to the hover tooltip.
  */
 const controlRenderer = defineComponent({
   name: 'SliderControlRenderer',

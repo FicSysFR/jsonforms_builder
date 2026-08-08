@@ -6,7 +6,7 @@ const nowIso = new Date().toISOString()
 export const schema = {
   type: 'object',
   properties: {
-    // —— Formats JSON Schema de base ——
+    // —— Base JSON Schema formats ——
     date: {
       type: 'string',
       title: 'Date',
@@ -26,7 +26,7 @@ export const schema = {
       format: 'date-time',
     },
 
-    // —— Motifs / granularité ——
+    // —— Patterns / granularity ——
     yearMonth: {
       type: 'string',
       title: 'Année · mois',
@@ -59,7 +59,7 @@ export const schema = {
       description: 'pattern ISO avec millisecondes et Z littéral.',
     },
 
-    // —— États ——
+    // —— States ——
     requiredDate: {
       type: 'string',
       title: 'Date obligatoire',

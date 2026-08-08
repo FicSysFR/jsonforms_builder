@@ -1,9 +1,9 @@
 import { registerExamples } from '../register'
 
 /**
- * inetOrgPerson (RFC 2798 / inetorgperson.schema) — objectClass structurelle
- * la plus utilisée pour représenter une personne dans OpenLDAP.
- * Hérite de organizationalPerson → person (MUST : cn, sn).
+ * inetOrgPerson (RFC 2798 / inetorgperson.schema) — the structural objectClass
+ * most used to represent a person in OpenLDAP.
+ * Inherits from organizationalPerson → person (MUST: cn, sn).
  */
 export const schema = {
   type: 'object',

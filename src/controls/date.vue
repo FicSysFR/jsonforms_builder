@@ -158,25 +158,25 @@ import { CALENDAR_CONSTRAINT_CELL_UI, useDateControl } from '../composables'
 /**
  * DateControlRenderer
  *
- * Rend les formats `date`, `date-time` et `time` avec `UInputDate` / `UInputTime`.
+ * Renders `date`, `date-time`, and `time` formats with `UInputDate` / `UInputTime`.
  *
- * Ces composants sont *segmentés* : chaque partie (jour, mois, année, heure…) est une
- * zone d'édition à part entière, avec incrément aux flèches et navigation clavier
- * fournis nativement — là où la v1 réimplémentait masque, curseur et flèches à la main
- * par-dessus un `q-input`, doublé d'un `q-popup-proxy` contenant `q-date` / `q-time`.
+ * These components are *segmented*: each part (day, month, year, time…) is its own
+ * editable zone, with arrow increment and native keyboard navigation — whereas v1
+ * reimplemented mask, cursor, and arrows by hand on top of a `q-input`, paired with
+ * a `q-popup-proxy` containing `q-date` / `q-time`.
  *
- * L'icône ouvre un popover dans une `UCard` : calendrier (`date`), spinners d'heure
- * (`time`), ou les deux côte à côte (`date-time`) — comme `q-date` + `q-time` en v1.
- * Le popover s'ancre sur le bouton icône (`align: end`) pour rester sous le champ.
+ * The icon opens a popover in a `UCard`: calendar (`date`), time spinners (`time`),
+ * or both side by side (`date-time`) — like `q-date` + `q-time` in v1.
+ * The popover anchors to the icon button (`align: end`) to stay below the field.
  *
- * Ils travaillent sur des objets `@internationalized/date` et non des chaînes : la
- * conversion aller-retour vers le motif du schéma est faite par `useDateControl`
+ * They work with `@internationalized/date` objects rather than strings: round-trip
+ * conversion to the schema pattern is handled by `useDateControl`
  * (`dateValue` / `onChangeDateValue`).
  */
-// Annotation explicite : `UInputDate` / `UInputTime` exposent dans leurs props des types
-// internes de `reka-ui` que le générateur de déclarations ne sait pas nommer depuis
-// `dist/` (TS2742). Les consommateurs ne câblent jamais ces props à la main — le renderer
-// est instancié par JSONForms —, la perte d'inférence est donc sans conséquence.
+// Explicit annotation: `UInputDate` / `UInputTime` expose internal `reka-ui` prop types
+// that the declaration generator cannot name from `dist/` (TS2742). Consumers never
+// wire these props manually — the renderer is instantiated by JSONForms — so the loss
+// of inference is inconsequential.
 const controlRenderer: Component = defineComponent({
   name: 'DateControlRenderer',
   components: {
@@ -237,9 +237,9 @@ const controlRenderer: Component = defineComponent({
     })
 
     /**
-     * `UInputDate` / reka-ui n'exposent pas de granularité `month` / `year` : le segment
-     * jour (et mois) reste dans le DOM. On le masque quand le motif du schéma ne le
-     * demande pas (`YYYY.MM`, `YYYY`), y compris le séparateur adjacent selon la locale.
+     * `UInputDate` / reka-ui do not expose `month` / `year` granularity: the day
+     * segment (and month) stays in the DOM. Hide it when the schema pattern does not
+     * require it (`YYYY.MM`, `YYYY`), including the adjacent separator per locale.
      */
     const dateInputClass = computed(() => {
       if (control.calendarType.value === 'month') {
@@ -262,8 +262,8 @@ const controlRenderer: Component = defineComponent({
     })
 
     /**
-     * `null` et non `undefined` pour l'absence de valeur : `undefined` fait basculer
-     * `UCalendar` en mode non contrôlé. Pour `date-time`, on ne passe que la partie jour.
+     * `null` not `undefined` for missing value: `undefined` switches `UCalendar`
+     * to uncontrolled mode. For `date-time`, only the day part is passed.
      */
     const calendarValue = computed(() => {
       const value = control.dateValue.value
@@ -328,8 +328,8 @@ const controlRenderer: Component = defineComponent({
         return
       }
 
-      // Mois / année seuls : on fixe le jour (et le mois pour l'année) à 1 pour
-      // que le motif `YYYY.MM` / `YYYY` ne dépende pas d'un jour choisi ailleurs.
+      // Month / year only: set day (and month for year) to 1 so the `YYYY.MM` / `YYYY`
+      // pattern does not depend on a day chosen elsewhere.
       const type = control.calendarType.value
       const month = type === 'year' ? 1 : value.month
       const day = type === 'date' ? value.day : 1

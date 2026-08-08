@@ -6,8 +6,8 @@ import { hasRenderableControl } from '../../src/composables/useObjectControl'
 import { buildNestedAllOfSchema } from '../performance/helpers'
 
 /**
- * Chaîne GEDCOM-like : `person` → `subject` → `conclusion`. Une fusion à un seul
- * niveau (l'ancien renderer) ne récupérait que `private` / `gender`.
+ * GEDCOM-like chain: `person` → `subject` → `conclusion`. A single-level merge
+ * (the old renderer) only recovered `private` / `gender`.
  */
 const root: JsonSchema = {
   definitions: {
@@ -47,7 +47,7 @@ const root: JsonSchema = {
 } as JsonSchema
 
 describe('flattenAllOfSchema', () => {
-  it('fusionne récursivement person → subject → conclusion', () => {
+  it('recursively merges person → subject → conclusion', () => {
     const person = root.definitions?.person as JsonSchema
     const flattened = flattenAllOfSchema(person, root)
 
@@ -60,7 +60,7 @@ describe('flattenAllOfSchema', () => {
     ])
   })
 
-  it('suit un $ref racine avant de fusionner', () => {
+  it('follows a root $ref before merging', () => {
     const flattened = flattenAllOfSchema({ $ref: '#/definitions/gender' } as JsonSchema, root)
 
     expect(flattened.properties?.type).toBeDefined()
@@ -68,13 +68,13 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.required).toContain('type')
   })
 
-  it('ne conserve pas allOf sur le résultat', () => {
+  it('does not keep allOf on the result', () => {
     const flattened = flattenAllOfSchema(root.definitions?.person as JsonSchema, root)
 
     expect(flattened.allOf).toBeUndefined()
   })
 
-  it('tolère un cycle de références sans exploser', () => {
+  it('tolerates a reference cycle without exploding', () => {
     const cyclicRoot: JsonSchema = {
       definitions: {
         a: {
@@ -92,14 +92,14 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.properties?.fromB).toBeDefined()
   })
 
-  it('produit une disposition avec de vrais contrôles descendants', () => {
+  it('produces a layout with real descendant controls', () => {
     const flattened = flattenAllOfSchema(root.definitions?.person as JsonSchema, root)
     const ui = Generate.uiSchema(flattened, 'VerticalLayout', undefined, root)
 
     expect(hasRenderableControl(ui)).toBe(true)
   })
 
-  it('retourne un objet vide pour un schéma absent ou non-objet', () => {
+  it('returns an empty object for a missing or non-object schema', () => {
     expect(flattenAllOfSchema(undefined, root)).toEqual({
       type: 'object',
       properties: {},
@@ -112,14 +112,14 @@ describe('flattenAllOfSchema', () => {
     })
   })
 
-  it('tolère un $ref cassé sans lever', () => {
+  it('tolerates a broken $ref without throwing', () => {
     const broken = { $ref: '#/definitions/missing', properties: { kept: { type: 'string' } } }
     const flattened = flattenAllOfSchema(broken as JsonSchema, root)
 
     expect(flattened.properties?.kept).toEqual({ type: 'string' })
   })
 
-  it('fusionne un allOf littéral sans $ref', () => {
+  it('merges a literal allOf without $ref', () => {
     const schema: JsonSchema = {
       allOf: [
         { type: 'object', properties: { a: { type: 'string' } }, required: ['a'] },
@@ -133,7 +133,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.required?.sort()).toEqual(['a', 'b'])
   })
 
-  it('déduplique les required répétés entre branches', () => {
+  it('deduplicates required repeated across branches', () => {
     const schema: JsonSchema = {
       allOf: [
         { properties: { name: { type: 'string' } }, required: ['name'] },
@@ -146,7 +146,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.required).toEqual(['name', 'age'])
   })
 
-  it('laisse la dernière branche gagner en cas de conflit de propriétés', () => {
+  it('lets the last branch win on property conflicts', () => {
     const schema: JsonSchema = {
       allOf: [
         { properties: { status: { type: 'string', enum: ['draft'] } } },
@@ -159,7 +159,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.properties?.status).toEqual({ type: 'string', enum: ['published'] })
   })
 
-  it('conserve les properties locales en plus des branches allOf', () => {
+  it('keeps local properties in addition to allOf branches', () => {
     const schema: JsonSchema = {
       type: 'object',
       properties: { local: { type: 'boolean' } },
@@ -173,7 +173,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.required?.sort()).toEqual(['inherited', 'local'])
   })
 
-  it('fusionne des allOf imbriqués sans $ref', () => {
+  it('merges nested allOf without $ref', () => {
     const schema: JsonSchema = {
       allOf: [
         {
@@ -191,10 +191,10 @@ describe('flattenAllOfSchema', () => {
     expect(Object.keys(flattened.properties ?? {}).sort()).toEqual(['deep', 'mid', 'top'])
   })
 
-  it('s’arrête sur un cycle allOf littéral (même objet)', () => {
+  it('stops on a literal allOf cycle (same object)', () => {
     const branch: JsonSchema = { properties: { loop: { type: 'string' } } }
     const schema: JsonSchema = { allOf: [branch] }
-    // Cycle volontaire : la branche se référence elle-même via allOf.
+    // Intentional cycle: the branch references itself via allOf.
     ;(branch as JsonSchema & { allOf: JsonSchema[] }).allOf = [schema]
 
     expect(() => flattenAllOfSchema(schema, schema)).not.toThrow()
@@ -202,7 +202,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.properties?.loop).toBeDefined()
   })
 
-  it('récupère toutes les props d’une chaîne profonde style allOf-perf', () => {
+  it('recovers all props from a deep allOf-perf-style chain', () => {
     const depth = 6
     const fieldsPerLayer = 4
     const nested = buildNestedAllOfSchema(depth, fieldsPerLayer) as JsonSchema
@@ -217,7 +217,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.allOf).toBeUndefined()
   })
 
-  it('ne mute pas le schéma d’origine', () => {
+  it('does not mutate the original schema', () => {
     const schema: JsonSchema = {
       type: 'object',
       properties: { a: { type: 'string' } },
@@ -231,7 +231,7 @@ describe('flattenAllOfSchema', () => {
     expect(schema).toEqual(before)
   })
 
-  it('traite un schéma sans allOf comme un objet plat', () => {
+  it('treats a schema without allOf as a flat object', () => {
     const schema: JsonSchema = {
       type: 'object',
       properties: { alone: { type: 'string' } },
@@ -244,7 +244,7 @@ describe('flattenAllOfSchema', () => {
     expect(flattened.required).toEqual(['alone'])
   })
 
-  it('accepte allOf vide', () => {
+  it('accepts an empty allOf', () => {
     const schema: JsonSchema = {
       type: 'object',
       properties: { only: { type: 'string' } },
@@ -314,7 +314,7 @@ describe('useAllOfControl', () => {
     ...overrides,
   })
 
-  it('génère une disposition à partir du schéma allOf fusionné', () => {
+  it('generates a layout from the merged allOf schema', () => {
     const state = ref(baseState())
     const { result, scope } = mountAllOf(state)
 
@@ -324,7 +324,7 @@ describe('useAllOfControl', () => {
     scope.stop()
   })
 
-  it('respecte options.detail sans générer', () => {
+  it('respects options.detail without generating', () => {
     const detail: UISchemaElement = {
       type: 'HorizontalLayout',
       elements: [{ type: 'Control', scope: '#/properties/private' }],
@@ -340,14 +340,14 @@ describe('useAllOfControl', () => {
     )
     const { result, scope } = mountAllOf(state)
 
-    // Proxies Vue : on vérifie la structure (et que ce n’est pas le VerticalLayout généré).
+    // Vue proxies: assert structure (and that it is not the generated VerticalLayout).
     expect(result.detailUiSchema.value).toEqual(detail)
     expect(result.detailUiSchema.value?.type).toBe('HorizontalLayout')
 
     scope.stop()
   })
 
-  it('renvoie undefined si aucune propriété n’est fusionnable', () => {
+  it('returns undefined if no property is mergeable', () => {
     const empty: JsonSchema = { allOf: [{ type: 'object' }, { type: 'object' }] }
     const state = ref(baseState({ schema: empty, rootSchema: empty }))
     const { result, scope } = mountAllOf(state)
@@ -357,7 +357,7 @@ describe('useAllOfControl', () => {
     scope.stop()
   })
 
-  it('renvoie undefined si Generate ne produit que des contrôles self-scope', () => {
+  it('returns undefined if Generate only produces self-scope controls', () => {
     const bare: JsonSchema = { type: 'object' }
     const state = ref(baseState({ schema: bare, rootSchema: bare }))
     const { result, scope } = mountAllOf(state)
@@ -367,7 +367,7 @@ describe('useAllOfControl', () => {
     scope.stop()
   })
 
-  it('mémorise la disposition tant que schema / rootSchema gardent la même identité', async () => {
+  it('memoizes the layout while schema / rootSchema keep the same identity', async () => {
     const schema = root.definitions?.person as JsonSchema
     const state = ref(baseState({ schema, rootSchema: root, errors: '' }))
     const { result, scope } = mountAllOf(state)
@@ -375,8 +375,8 @@ describe('useAllOfControl', () => {
     const first = result.detailUiSchema.value
     expect(first).toBeDefined()
 
-    // Invalidation typique JSON Forms (erreurs) : mêmes refs schéma → même uiSchema.
-    state.value = { ...state.value, errors: 'obligatoire', data: { private: true } }
+    // Typical JSON Forms invalidation (errors): same schema refs → same uiSchema.
+    state.value = { ...state.value, errors: 'required', data: { private: true } }
     await nextTick()
 
     expect(result.detailUiSchema.value).toBe(first)
@@ -384,7 +384,7 @@ describe('useAllOfControl', () => {
     scope.stop()
   })
 
-  it('régénère la disposition quand l’identité du schéma change', async () => {
+  it('regenerates the layout when schema identity changes', async () => {
     const state = ref(baseState())
     const { result, scope } = mountAllOf(state)
 
@@ -403,7 +403,7 @@ describe('useAllOfControl', () => {
     scope.stop()
   })
 
-  it('passe de detail explicite à la génération quand options.detail disparaît', async () => {
+  it('switches from explicit detail to generation when options.detail disappears', async () => {
     const detail: UISchemaElement = {
       type: 'Group',
       elements: [{ type: 'Control', scope: '#/properties/id' }],

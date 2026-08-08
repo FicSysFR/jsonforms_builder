@@ -56,10 +56,10 @@ import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } fro
 /**
  * CombinatorControlRenderer
  *
- * Rend les schémas `oneOf` et `anyOf` : un sélecteur de variante, puis le
- * sous-formulaire de la branche retenue.
+ * Renders `oneOf` and `anyOf` schemas: a variant selector, then the sub-form for
+ * the selected branch.
  *
- * Absent de la v1, alors que le thème déclarait déjà un slot `oneOf`.
+ * Missing in v1, although the theme already declared a `oneOf` slot.
  */
 const controlRenderer = defineComponent({
   name: 'CombinatorControlRenderer',
@@ -74,7 +74,7 @@ const controlRenderer = defineComponent({
   setup(props: RendererProps<ControlElement>) {
     const control = useUiControl(useJsonFormsOneOfControl(props))
 
-    /** Branches du combinateur, `$ref` suivis. Cf. `resolveCombinatorBranches`. */
+    /** Combinator branches, `$ref` resolved. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>
       resolveCombinatorBranches(control.control.value.schema, control.control.value.rootSchema),
     )
@@ -83,8 +83,8 @@ const controlRenderer = defineComponent({
       const schema = control.control.value.schema
       const raw: JsonSchema[] = schema.oneOf ?? schema.anyOf ?? []
 
-      // Le libellé peut vivre sur le renvoi (`{ $ref, title }`) comme sur la cible :
-      // on regarde les deux plutôt que de perdre le titre en résolvant.
+      // The label may live on the reference (`{ $ref, title }`) or the target:
+      // check both rather than losing the title when resolving.
       return variants.value.map((variant, index) => ({
         label: raw[index]?.title ?? variant.title ?? `Option ${index + 1}`,
         value: index,
@@ -95,10 +95,9 @@ const controlRenderer = defineComponent({
       Math.max(detectOneOfVariant(control.control.value.data, variants.value), 0),
     )
 
-    // Une donnée chargée après coup (édition d'un enregistrement existant) doit
-    // repositionner le sélecteur — mais uniquement si elle désigne franchement une
-    // branche. Sinon on garde le choix de l'utilisateur : une saisie encore incomplète
-    // ne correspond à rien et ferait sauter le formulaire sur la première variante.
+    // Data loaded after the fact (editing an existing record) must reposition the
+    // selector — but only if it clearly designates a branch. Otherwise keep the user's
+    // choice: incomplete input matches nothing and would jump the form to the first variant.
     watch(
       () => control.control.value.data,
       (data) => {
@@ -126,13 +125,13 @@ const controlRenderer = defineComponent({
     )
 
     /**
-     * Changer de variante réinitialise la donnée : les branches sont exclusives.
+     * Changing variant resets the data: branches are mutually exclusive.
      *
-     * Le remplacement du sous-arbre est différé d'un tick. Sans cela, le clic qui
-     * sélectionne l'option démonte le sous-formulaire *pendant* que le menu du `USelect`
-     * se referme — et le `onClickOutside` de VueUse, encore branché, déréférence alors
-     * une instance devenue nulle (`Cannot read properties of null (reading 'subTree')`,
-     * `@vueuse/core` 14.4.0, `hasMultipleRoots` teste `vm` mais pas `vm.$`).
+     * Sub-tree replacement is deferred one tick. Without that, the click selecting the
+     * option unmounts the sub-form *while* the `USelect` menu closes — and VueUse's
+     * still-attached `onClickOutside` dereferences a null instance
+     * (`Cannot read properties of null (reading 'subTree')`, `@vueuse/core` 14.4.0,
+     * `hasMultipleRoots` tests `vm` but not `vm.$`).
      */
     const onVariantChange = async (index: number) => {
       if (index === selectedIndex.value) {

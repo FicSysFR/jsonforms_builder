@@ -48,11 +48,11 @@ import { useEnumSuggestionControl } from '../composables'
 /**
  * EnumAndSuggestionControlRenderer
  *
- * Rend les enums, et les chaînes portant une liste `options.suggestion`, avec un
- * `USelectMenu` (recherche intégrée).
+ * Renders enums and strings with an `options.suggestion` list using a `USelectMenu`
+ * (built-in search).
  *
- * En v1 le slot `#no-option` était déclaré *à côté* du `q-select` et non dedans :
- * il ne s'affichait donc jamais. Ici `#empty` est bien imbriqué.
+ * In v1 the `#no-option` slot was declared *next to* the `q-select` rather than inside
+ * it, so it never appeared. Here `#empty` is properly nested.
  */
 const controlRenderer = defineComponent({
   name: 'EnumAndSuggestionControlRenderer',
@@ -73,8 +73,8 @@ const controlRenderer = defineComponent({
     })
 
     /**
-     * Les enums fournissent `control.options` ({ label, value }) ; les suggestions
-     * arrivent en chaînes brutes qu'il faut normaliser à la même forme.
+     * Enums provide `control.options` ({ label, value }); suggestions arrive as raw
+     * strings that must be normalized to the same shape.
      */
     const selectItems = computed(() => {
       const options = control.control.value.options

@@ -1,13 +1,13 @@
 <template lang="pug">
-  //- La description est passée en permanence, sans dépendre du focus.
+  //- Description is always passed, not tied to focus.
   //-
-  //- `UFormField` monte sa ligne du bas en `v-if` : la révéler au focus la fait surgir
-  //- dans le flux et pousse d'une ligne tout ce qui suit — c'est le clignotement observé
-  //- en parcourant un formulaire. La rendre en permanence réserve la place une fois pour
-  //- toutes, et rend au passage l'aide lisible sans avoir à cliquer dans le champ.
+  //- `UFormField` mounts its bottom row with `v-if`: revealing it on focus makes it
+  //- appear in the flow and pushes everything below down one line — the flicker seen
+  //- when tabbing through a form. Rendering it permanently reserves space once, and
+  //- makes help readable without clicking into the field.
   //-
-  //- Cela prend le pas sur le défaut de JSONForms (`showUnfocusedDescription: false`),
-  //- délibérément : ce défaut est précisément ce qui provoquait le décalage.
+  //- This overrides the JSONForms default (`showUnfocusedDescription: false`) on purpose:
+  //- that default is exactly what caused the layout shift.
   u-form-field(
     v-if="visible"
     v-bind="uiProps ? uiProps('formField') : {}"
@@ -20,13 +20,13 @@
     :class="styles.control.root"
     :ui="fieldUi"
   )
-    //- Libellé fantôme (hauteur de ligne uniquement). Le vrai libellé reste sur la case :
-    //- `aria-hidden` évite la double annonce aux lecteurs d'écran.
+    //- Phantom label (line height only). The real label stays on the checkbox:
+    //- `aria-hidden` avoids double announcement to screen readers.
     template(v-if="reserveLabelSpace" #label)
       span(aria-hidden="true") &nbsp;
 
-    //- Envelopper uniquement le contrôle : `flex` sur le conteneur `UFormField`
-    //- (qui contient aussi `help`) alignait la description à droite de la case.
+    //- Wrap only the control: `flex` on the `UFormField` container (which also holds
+    //- `help`) aligned the description to the right of the checkbox.
     div(v-if="reserveLabelSpace" class="min-h-8 flex items-center w-full")
       slot(name="default")
     template(v-else)
@@ -41,12 +41,12 @@ import type { Theme } from '../theme'
 /**
  * ControlWrapper
  *
- * Enveloppe commune à tous les contrôles, bâtie sur `UFormField`.
+ * Common wrapper for all controls, built on `UFormField`.
  *
- * En v1 chaque contrôle portait lui-même son label, son hint et son message d'erreur
- * *en plus* du wrapper — d'où une duplication systématique. Ici `UFormField` est seul
- * responsable du libellé, de l'astérisque de champ requis, du texte d'aide et de
- * l'erreur ; le contrôle ne rend plus que sa saisie dans le slot par défaut.
+ * In v1 each control carried its own label, hint, and error message *in addition* to
+ * the wrapper — hence systematic duplication. Here `UFormField` alone is responsible for
+ * label, required asterisk, help text, and error; the control renders only its input in
+ * the default slot.
  *
  * @example
  * <control-wrapper v-bind="controlWrapper" :styles="styles">
@@ -59,41 +59,41 @@ export default defineComponent({
     UFormField,
   },
   props: {
-    /** Identifiant unique du champ, aussi utilisé comme `name` pour le rattachement `UForm`. */
+    /** Unique field id, also used as `name` for `UForm` binding. */
     id: {
       required: true,
       type: String,
     },
 
-    /** Texte d'aide affiché sous le champ. */
+    /** Help text shown below the field. */
     description: {
       required: false as const,
       type: String,
       default: undefined,
     },
 
-    /** Message d'erreur de validation. */
+    /** Validation error message. */
     errors: {
       required: false as const,
       type: String,
       default: undefined,
     },
 
-    /** Libellé du champ. */
+    /** Field label. */
     label: {
       required: false as const,
       type: String,
       default: undefined,
     },
 
-    /** Affiche ou masque l'ensemble du champ. */
+    /** Shows or hides the entire field. */
     visible: {
       required: false as const,
       type: Boolean,
       default: true,
     },
 
-    /** Champ obligatoire au sens du JSON Schema. */
+    /** Required field per JSON Schema. */
     required: {
       required: false as const,
       type: Boolean,
@@ -101,8 +101,8 @@ export default defineComponent({
     },
 
     /**
-     * Affiche la description. Piloté par `showDescription()` du contrôle, qui masque
-     * l'aide au repos sauf si `showUnfocusedDescription` est activé.
+     * Shows the description. Driven by the control's `showDescription()`, which hides
+     * help at rest unless `showUnfocusedDescription` is enabled.
      */
     showDescription: {
       required: false as const,
@@ -111,10 +111,10 @@ export default defineComponent({
     },
 
     /**
-     * Réserve une ligne de libellé vide lorsque le contrôle porte son libellé lui-même.
+     * Reserves an empty label line when the control carries its own label.
      *
-     * Aligne les cases à cocher sur les champs voisins d'une disposition horizontale,
-     * au lieu de les laisser flotter à hauteur de leurs libellés.
+     * Aligns checkboxes with neighboring fields in a horizontal layout, instead of
+     * letting them float at their label height.
      */
     reserveLabelSpace: {
       required: false as const,
@@ -122,20 +122,20 @@ export default defineComponent({
       default: false,
     },
 
-    /** Masque l'astérisque des champs requis (option `hideRequiredAsterisk`). */
+    /** Hides the required-field asterisk (`hideRequiredAsterisk` option). */
     hideRequiredAsterisk: {
       required: false as const,
       type: Boolean,
       default: false,
     },
 
-    /** Thème résolu pour cet élément. */
+    /** Resolved theme for this element. */
     styles: {
       required: true,
       type: Object as PropType<Theme>,
     },
 
-    /** Accès aux props libres du uischema (`options.formField`). */
+    /** Access to free uischema props (`options.formField`). */
     uiProps: {
       required: false as const,
       type: Function as PropType<(path: string) => Record<string, unknown>>,
@@ -144,11 +144,11 @@ export default defineComponent({
   },
   computed: {
     /**
-     * `UFormField` rend lui-même l'astérisque : on ne passe donc PAS par `computeLabel`
-     * de JSONForms, qui l'aurait concaténé au libellé et produit un doublon.
+     * `UFormField` renders the asterisk itself: do NOT use JSONForms' `computeLabel`,
+     * which would concatenate it to the label and duplicate it.
      *
-     * Avec `reserveLabelSpace`, le libellé visible est sur la case : l'astérisque sur la
-     * ligne fantôme flotterait tout seul — on le coupe ici.
+     * With `reserveLabelSpace`, the visible label is on the checkbox: an asterisk on the
+     * phantom row would float alone — we suppress it here.
      */
     showAsterisk(): boolean {
       if (this.reserveLabelSpace) {
@@ -159,12 +159,12 @@ export default defineComponent({
     },
 
     /**
-     * Libellé passé à `UFormField`.
+     * Label passed to `UFormField`.
      *
-     * Si `reserveLabelSpace` : un espace insécable force la ligne de libellé (même hauteur
-     * que les voisins). Un `label` vide / `undefined` ne suffit pas — `UFormField` ne
-     * monte son wrapper de libellé que si `label` est truthy, et `:label="undefined"` ne
-     * remplace pas un `v-bind` amont (mergeProps ignore `undefined`).
+     * With `reserveLabelSpace`: a non-breaking space forces the label row (same height as
+     * neighbors). An empty / `undefined` `label` is not enough — `UFormField` only mounts
+     * its label wrapper when `label` is truthy, and `:label="undefined"` does not override
+     * an upstream `v-bind` (mergeProps ignores `undefined`).
      */
     fieldLabel(): string | undefined {
       if (this.reserveLabelSpace) {
@@ -175,12 +175,12 @@ export default defineComponent({
     },
 
     /**
-     * Laisse passer les surcharges `ui` du uischema.
+     * Passes through uischema `ui` overrides.
      *
-     * La hauteur / centrage pour `reserveLabelSpace` est sur l'enveloppe du slot
-     * (voir le gabarit), pas sur `container` : celui-ci inclut aussi `help`.
+     * Height / centering for `reserveLabelSpace` is on the slot wrapper (see template),
+     * not on `container`: that also includes `help`.
      *
-     * @see help — la description est rendue en permanence, cf. le commentaire du gabarit.
+     * @see help — description is always rendered; cf. template comment.
      */
     fieldUi(): Record<string, string> {
       return this.uiProps?.('formField')?.ui ?? {}

@@ -29,11 +29,11 @@ import UButton from '@nuxt/ui/components/Button.vue'
 /**
  * ConfirmDialog
  *
- * Petite modale de confirmation, montée **une fois par conteneur** plutôt qu'une par
- * ligne : une liste de trente entrées n'a pas besoin de trente modales dans le DOM.
- * L'appelant retient donc l'élément visé (index ou chemin) le temps de la confirmation.
+ * Small confirmation modal, mounted **once per container** rather than once per row:
+ * a list of thirty entries does not need thirty modals in the DOM. The caller holds the
+ * targeted item (index or path) for the duration of confirmation.
  *
- * Purement présentationnelle : elle n'agit pas, elle émet `confirm`.
+ * Presentation only: it does not act; it emits `confirm`.
  */
 const confirmDialog: Component = defineComponent({
   name: 'ConfirmDialog',
@@ -67,7 +67,7 @@ const confirmDialog: Component = defineComponent({
       type: String,
       default: 'Annuler',
     },
-    /** Colore l'action de confirmation en rouge. */
+    /** Colors the confirm action red. */
     danger: {
       required: false as const,
       type: Boolean,

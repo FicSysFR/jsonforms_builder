@@ -22,7 +22,7 @@ const mockDataTransfer = () => {
 }
 
 describe('writeDragPayload / readDragPayload', () => {
-  it('round-trip un champ palette', () => {
+  it('round-trips a palette field', () => {
     const { dataTransfer } = mockDataTransfer()
     const payload: DragPayload = { kind: 'field', key: 'text' }
     const event = { dataTransfer } as unknown as DragEvent
@@ -34,7 +34,7 @@ describe('writeDragPayload / readDragPayload', () => {
     expect(readDragPayload(event)).toEqual(payload)
   })
 
-  it('marque un déplacement comme move', () => {
+  it('marks a relocation as move', () => {
     const { dataTransfer } = mockDataTransfer()
     const payload: DragPayload = { kind: 'move', path: [1, 0] }
 
@@ -43,7 +43,7 @@ describe('writeDragPayload / readDragPayload', () => {
     expect(dataTransfer.effectAllowed).toBe('move')
   })
 
-  it('round-trip un conteneur', () => {
+  it('round-trips a container', () => {
     const { dataTransfer } = mockDataTransfer()
     const payload: DragPayload = { kind: 'container', key: 'Group' }
     const event = { dataTransfer } as unknown as DragEvent
@@ -52,7 +52,7 @@ describe('writeDragPayload / readDragPayload', () => {
     expect(readDragPayload(event)).toEqual(payload)
   })
 
-  it('ignore un dépôt hors builder', () => {
+  it('ignores a drop outside the builder', () => {
     const event = {
       dataTransfer: {
         getData: () => '',
@@ -62,7 +62,7 @@ describe('writeDragPayload / readDragPayload', () => {
     expect(readDragPayload(event)).toBeNull()
   })
 
-  it('ignore un JSON invalide', () => {
+  it('ignores invalid JSON', () => {
     const event = {
       dataTransfer: {
         getData: () => '{not-json',
@@ -72,7 +72,7 @@ describe('writeDragPayload / readDragPayload', () => {
     expect(readDragPayload(event)).toBeNull()
   })
 
-  it('tolère l’absence de dataTransfer', () => {
+  it('tolerates a missing dataTransfer', () => {
     const event = {} as DragEvent
 
     expect(() => writeDragPayload(event, { kind: 'field', key: 'text' })).not.toThrow()
@@ -81,7 +81,7 @@ describe('writeDragPayload / readDragPayload', () => {
 })
 
 describe('DRAG_MIME', () => {
-  it('utilise un type MIME privé', () => {
+  it('uses a private MIME type', () => {
     expect(DRAG_MIME).toBe('application/x-jsonforms-builder')
   })
 })

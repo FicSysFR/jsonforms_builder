@@ -7,8 +7,8 @@ import {
 } from '../../src/composables/useOneOfControl'
 
 /**
- * Schéma à `$ref` : c'est la forme qui faisait boucler `resolveSchema` côté navigateur
- * quand le renderer transmettait la branche non résolue au dispatcher.
+ * Schema with `$ref`: this is the shape that made `resolveSchema` loop in the browser
+ * when the renderer passed the unresolved branch to the dispatcher.
  */
 const refRoot: JsonSchema = {
   definitions: {
@@ -32,26 +32,26 @@ const refRoot: JsonSchema = {
 } as JsonSchema
 
 describe('resolveCombinatorBranches', () => {
-  it('suit les $ref pour rendre chaque branche exploitable', () => {
+  it('follows $refs so each branch is usable', () => {
     const branches = resolveCombinatorBranches(
       refRoot.properties?.addressOrUser as JsonSchema,
       refRoot,
     )
 
     expect(branches).toHaveLength(2)
-    // La garantie qui compte : plus aucun `$ref` nu ne peut atteindre le dispatcher.
+    // The guarantee that matters: no bare `$ref` can reach the dispatcher anymore.
     expect(branches.some((b: JsonSchema) => b.$ref !== undefined)).toBe(false)
     expect(branches[0].properties?.street).toBeDefined()
     expect(branches[1].properties?.name).toBeDefined()
   })
 
-  it('laisse les branches déjà littérales intactes', () => {
+  it('leaves already-literal branches untouched', () => {
     const branches = resolveCombinatorBranches({ oneOf: variants } as JsonSchema, refRoot)
 
     expect(branches).toEqual(variants)
   })
 
-  it('conserve une branche irrésolvable plutôt que de l’écarter', () => {
+  it('keeps an unresolvable branch rather than dropping it', () => {
     const branches = resolveCombinatorBranches(
       { anyOf: [{ $ref: '#/definitions/inconnu' }] } as JsonSchema,
       refRoot,
@@ -60,7 +60,7 @@ describe('resolveCombinatorBranches', () => {
     expect(branches).toHaveLength(1)
   })
 
-  it('renvoie une liste vide hors combinateur', () => {
+  it('returns an empty list outside a combinator', () => {
     expect(resolveCombinatorBranches({ type: 'string' } as JsonSchema, refRoot)).toEqual([])
     expect(resolveCombinatorBranches(undefined, refRoot)).toEqual([])
   })
@@ -127,7 +127,7 @@ describe('createVariantValue', () => {
     expect(createVariantValue({ type: 'string' }, { type: 'object' })).not.toBeInstanceOf(Object)
   })
 
-  it('remplit plusieurs const sur la même branche', () => {
+  it('fills several consts on the same branch', () => {
     const variant: JsonSchema = {
       type: 'object',
       required: ['kind', 'mode'],
@@ -145,13 +145,13 @@ describe('createVariantValue', () => {
     expect(detectOneOfVariant(value, [variant])).toBe(0)
   })
 
-  it('ne plante pas sur une branche sans properties', () => {
+  it('does not throw on a branch without properties', () => {
     expect(() => createVariantValue({ type: 'object', required: ['x'] }, { type: 'object' })).not.toThrow()
   })
 })
 
 describe('detectOneOfVariant edge cases', () => {
-  it('prend la première branche qui matche quand plusieurs pourraient', () => {
+  it('takes the first matching branch when several could', () => {
     const ambiguous: JsonSchema[] = [
       {
         required: ['shared'],
@@ -166,7 +166,7 @@ describe('detectOneOfVariant edge cases', () => {
     expect(detectOneOfVariant({ shared: 'x', a: '1', b: '2' }, ambiguous)).toBe(0)
   })
 
-  it('accepte une required sans const tant que la clé est présente', () => {
+  it('accepts a required without const as long as the key is present', () => {
     const variantsLocal: JsonSchema[] = [
       {
         required: ['name'],
@@ -181,17 +181,17 @@ describe('detectOneOfVariant edge cases', () => {
     expect(detectOneOfVariant({ name: null }, variantsLocal)).toBe(0)
   })
 
-  it('refuse une liste de variantes vide', () => {
+  it('rejects an empty variant list', () => {
     expect(detectOneOfVariant({ kind: 'track' }, [])).toBe(-1)
   })
 
-  it('refuse un tableau comme donnée', () => {
+  it('rejects an array as data', () => {
     expect(detectOneOfVariant(['track'], variants)).toBe(-1)
   })
 })
 
 describe('resolveCombinatorBranches edge cases', () => {
-  it('préfère oneOf à anyOf si les deux sont présents', () => {
+  it('prefers oneOf over anyOf when both are present', () => {
     const schema: JsonSchema = {
       oneOf: [{ type: 'string' }],
       anyOf: [{ type: 'number' }],
@@ -200,7 +200,7 @@ describe('resolveCombinatorBranches edge cases', () => {
     expect(resolveCombinatorBranches(schema, refRoot)).toEqual([{ type: 'string' }])
   })
 
-  it('résout un mélange de $ref et de littéraux', () => {
+  it('resolves a mix of $refs and literals', () => {
     const schema: JsonSchema = {
       oneOf: [{ $ref: '#/definitions/address' }, { type: 'string', title: 'Libre' }],
     }
@@ -211,7 +211,7 @@ describe('resolveCombinatorBranches edge cases', () => {
     expect(branches[1]).toEqual({ type: 'string', title: 'Libre' })
   })
 
-  it('conserve l’ordre des branches', () => {
+  it('preserves branch order', () => {
     const schema: JsonSchema = {
       anyOf: [
         { $ref: '#/definitions/user' },

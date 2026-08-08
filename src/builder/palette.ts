@@ -1,29 +1,28 @@
 import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/core'
 
 /**
- * Un type de champ proposé dans la palette.
+ * A field type offered in the palette.
  *
- * Chaque entrée sait produire *les deux moitiés* d'un champ : le fragment de JSON Schema
- * (le contrat de donnée) et les options de uischema (le rendu). C'est la seule chose que
- * le builder ait besoin de savoir pour créer un champ — ajouter un type se fait ici,
- * sans toucher aux composants.
+ * Each entry knows how to produce *both halves* of a field: the JSON Schema fragment
+ * (the data contract) and the uischema options (the rendering). That is all the
+ * builder needs to create a field — adding a type is done here, without touching components.
  */
 export interface PaletteField {
-  /** Clé stable, utilisée dans le presse-papier de glisser-déposer. */
+  /** Stable key, used in the drag-and-drop clipboard. */
   key: string
   label: string
   icon: string
-  /** Regroupement affiché dans la palette. */
+  /** Grouping displayed in the palette. */
   group: 'Saisie' | 'Choix' | 'Date & heure' | 'Structure'
-  /** Fragment de schéma décrivant la propriété. */
+  /** Schema fragment describing the property. */
   schema: () => JsonSchema
-  /** Options de uischema à poser sur le `Control` (facultatif). */
+  /** Uischema options to set on the `Control` (optional). */
   options?: () => Record<string, unknown>
 }
 
 /**
- * Conteneurs : éléments de uischema qui accueillent d'autres éléments et n'ont
- * aucune contrepartie dans le JSON Schema.
+ * Containers: uischema elements that hold other elements and have
+ * no counterpart in the JSON Schema.
  */
 export interface PaletteContainer {
   key: string
@@ -245,7 +244,7 @@ export const findPaletteField = (key: string): PaletteField | undefined =>
 export const findPaletteContainer = (key: string): PaletteContainer | undefined =>
   PALETTE_CONTAINERS.find((container) => container.key === key)
 
-/** Un `Control` minimal pointant sur une propriété racine. */
+/** A minimal `Control` pointing at a root property. */
 export const createControl = (
   property: string,
   options?: Record<string, unknown>,

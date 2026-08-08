@@ -49,12 +49,12 @@ import { useRatingControl } from '../composables'
 /**
  * RatingControlRenderer
  *
- * Rend les nombres marqués `options.format: "rating"` avec un `UInputRating`.
+ * Renders numbers marked `options.format: "rating"` with `UInputRating`.
  *
- * Le `maximum` du schéma fixe le nombre d'icônes et `multipleOf` leur subdivision :
- * `{ "maximum": 5, "multipleOf": 0.5 }` donne cinq étoiles au demi-pas, sans option
- * supplémentaire. La note chiffrée reste affichée à côté — une rangée d'étoiles seule
- * s'estime mal au-delà de trois ou quatre icônes (`options.hideValue: true` la retire).
+ * Schema `maximum` sets icon count and `multipleOf` their step: `{ "maximum": 5,
+ * "multipleOf": 0.5 }` gives five half-step stars without extra options. The numeric
+ * score stays shown beside — a row of stars alone is hard to read beyond three or four
+ * icons (`options.hideValue: true` removes it).
  */
 const controlRenderer = defineComponent({
   name: 'RatingControlRenderer',

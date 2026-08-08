@@ -1,15 +1,15 @@
 import { createDefaultValue, resolveSchema, type JsonSchema } from '@jsonforms/core'
 
 /**
- * Branches d'un `oneOf` / `anyOf`, **`$ref` suivis**.
+ * Branches of a `oneOf` / `anyOf`, with **`$ref`s resolved**.
  *
- * Une branche écrite `{ $ref: '#/definitions/address' }` ne décrit rien par elle-même.
- * La transmettre telle quelle au dispatcher lui ferait résoudre un scope contre un
- * schéma qui n'est qu'un renvoi, et `resolveSchema` part alors en boucle
- * (`Maximum call stack size exceeded`). La résolution appartient donc au renderer.
+ * A branch written as `{ $ref: '#/definitions/address' }` describes nothing by itself.
+ * Passing it as-is to the dispatcher would resolve a scope against a schema that is only a
+ * reference, and `resolveSchema` then loops (`Maximum call stack size exceeded`). Resolution
+ * therefore belongs to the renderer.
  *
- * Une branche irrésolvable est conservée en l'état plutôt qu'écartée : mieux vaut une
- * variante pauvre qu'un sélecteur amputé d'une option que le schéma déclare.
+ * An unresolvable branch is kept as-is rather than dropped: a poor variant beats a selector
+ * missing an option the schema declares.
  */
 export const resolveCombinatorBranches = (
   schema: JsonSchema | undefined,
@@ -31,15 +31,14 @@ export const resolveCombinatorBranches = (
 }
 
 /**
- * Devine quelle branche d'un `oneOf` décrit la donnée actuelle.
+ * Guesses which branch of a `oneOf` describes the current data.
  *
- * Heuristique volontairement simple : on retient la première branche dont toutes les
- * propriétés `required` sont présentes, et dont les éventuelles valeurs `const`
- * correspondent. Suffisant pour les discriminants usuels
- * (`{ required: ['kind'], properties: { kind: { const: 'track' } } }`), et sans coût
- * de validation AJV à chaque frappe.
+ * Deliberately simple heuristic: keep the first branch whose `required` properties are all
+ * present and whose `const` values match when present. Enough for common discriminators
+ * (`{ required: ['kind'], properties: { kind: { const: 'track' } } }`), without AJV
+ * validation cost on every keystroke.
  *
- * @returns L'index de la branche, ou `-1` si aucune ne correspond franchement.
+ * @returns The branch index, or `-1` if none clearly matches.
  */
 export const detectOneOfVariant = (data: unknown, variants: JsonSchema[]): number => {
   if (!data || typeof data !== 'object') {
@@ -68,11 +67,11 @@ export const detectOneOfVariant = (data: unknown, variants: JsonSchema[]): numbe
 }
 
 /**
- * Valeur initiale d'une branche, **discriminants inclus**.
+ * Initial value for a branch, **discriminators included**.
  *
- * `createDefaultValue` de JSONForms ignore les `const` : sans ce complément, basculer de
- * variante produirait un objet que `detectOneOfVariant` ne saurait plus rattacher à
- * aucune branche, et le sélecteur retomberait aussitôt sur la première.
+ * JSONForms' `createDefaultValue` ignores `const` values: without this supplement, switching
+ * variants would produce an object that `detectOneOfVariant` could no longer attach to any
+ * branch, and the selector would immediately fall back to the first.
  */
 export const createVariantValue = (variant: JsonSchema, rootSchema: JsonSchema): unknown => {
   const value = createDefaultValue(variant, rootSchema) ?? {}

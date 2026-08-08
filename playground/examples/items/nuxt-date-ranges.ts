@@ -1,15 +1,15 @@
 import { registerExamples } from '../register'
 
 /**
- * Plages de dates + jours / mois / années désactivés.
+ * Date ranges + disabled days / months / years.
  *
- * Options supportées sur les contrôles date / calendar :
- * - `minDate` / `maxDate` — bornes inclusives
- * - `disabledDates` — jours précis (`YYYY-MM-DD`)
- * - `disabledWeekdays` — `0`=dimanche … `6`=samedi
- * - `disabledMonths` — `1`–`12` (picker mois)
- * - `disabledYears` — années (picker année)
- * - `range: true` — objet `{ start, end }` + calendrier intervalle
+ * Options supported on date / calendar controls:
+ * - `minDate` / `maxDate` — inclusive bounds
+ * - `disabledDates` — specific days (`YYYY-MM-DD`)
+ * - `disabledWeekdays` — `0`=Sunday … `6`=Saturday
+ * - `disabledMonths` — `1`–`12` (month picker)
+ * - `disabledYears` — years (year picker)
+ * - `range: true` — `{ start, end }` object + range calendar
  */
 export const data = {
   stay: {

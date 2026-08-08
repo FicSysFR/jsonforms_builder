@@ -117,8 +117,8 @@ const renderers = Object.freeze(allRenderers)
 const additionalErrors: ErrorObject[] = []
 const ajv = createAjv()
 
-/** Filters the sidebar list by example label or technical name. */
-const exampleQuery = ref('')
+/** Filters the sidebar list by example label or technical name; carried by `?q=`. */
+const exampleQuery = ref(new URLSearchParams(window.location.search).get('q') ?? '')
 const filteredExamples = computed(() => {
   const q = exampleQuery.value.trim().toLowerCase()
   if (!q) {
@@ -127,6 +127,18 @@ const filteredExamples = computed(() => {
   return examples.filter(
     (item) => item.label.toLowerCase().includes(q) || item.name.toLowerCase().includes(q),
   )
+})
+
+watch(exampleQuery, (query) => {
+  const params = new URLSearchParams(window.location.search)
+  const trimmed = query.trim()
+  if (trimmed) {
+    params.set('q', trimmed)
+  } else {
+    params.delete('q')
+  }
+  const search = params.toString()
+  window.history.replaceState({}, '', search ? `?${search}` : window.location.pathname)
 })
 
 const localeItems = [

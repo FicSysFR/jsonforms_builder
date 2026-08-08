@@ -275,7 +275,7 @@ describe('useUiControl readonly / disabled', () => {
     return { result: result!, scope }
   }
 
-  it('détecte readonly via uischema.options ou schema.readOnly', () => {
+  it('detects readonly via uischema.options or schema.readOnly', () => {
     const viaOptions = mountFlags({ uischemaOptions: { readonly: true } })
     expect(viaOptions.result.isReadonly.value).toBe(true)
     viaOptions.scope.stop()
@@ -285,13 +285,13 @@ describe('useUiControl readonly / disabled', () => {
     viaSchema.scope.stop()
   })
 
-  it('détecte readonly via config.readonly', () => {
+  it('detects readonly via config.readonly', () => {
     const { result, scope } = mountFlags({ config: { readonly: true } })
     expect(result.isReadonly.value).toBe(true)
     scope.stop()
   })
 
-  it('isDisabled seulement si désactivé et non readonly', () => {
+  it('isDisabled only when disabled and not readonly', () => {
     const disabled = mountFlags({ enabled: false })
     expect(disabled.result.isDisabled.value).toBe(true)
     disabled.scope.stop()
@@ -305,7 +305,7 @@ describe('useUiControl readonly / disabled', () => {
     readonlyDisabled.scope.stop()
   })
 
-  it('filtre les erreurs avant touch si enableFilterErrorsBeforeTouch', async () => {
+  it('filters errors before touch when enableFilterErrorsBeforeTouch', async () => {
     const app = createApp({})
     app.provide('jsonforms', { core: { schema: { type: 'object' } } })
     const scope = effectScope()

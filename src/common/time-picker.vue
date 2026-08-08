@@ -58,8 +58,8 @@ const emptyUiProps: UiPropsFn = () => ({})
 /**
  * TimePicker
  *
- * Spinners heure / minute / seconde (`UInputNumber` vertical) — équivalent pratique de
- * `q-time` pour les popovers date / heure Nuxt UI.
+ * Hour / minute / second spinners (vertical `UInputNumber`) — practical equivalent of
+ * `q-time` for Nuxt UI date / time popovers.
  */
 const timePicker: Component = defineComponent({
   name: 'TimePicker',

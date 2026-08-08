@@ -1,11 +1,11 @@
 import { registerExamples } from '../register'
 
 /**
- * Vitrine des renderers ajoutés en v2 par-dessus le socle historique.
+ * Showcase of renderers added in v2 on top of the historical base.
  *
- * Un seul formulaire plutôt qu'une page par composant : c'est là que les écarts de
- * hauteur, d'alignement et de largeur entre contrôles voisins se voient — un composant
- * isolé sur sa page paraît toujours correct.
+ * One form rather than a page per component: that is where height, alignment, and
+ * width gaps between neighbouring controls show up — an isolated component on its
+ * own page always looks correct.
  */
 export const data = {
   displayName: 'Camille Dupont',

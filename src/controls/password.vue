@@ -55,11 +55,11 @@ import { usePasswordControl } from '../composables'
 /**
  * PasswordControlRenderer
  *
- * Rend les chaînes de `format: "password"` avec un `UInput` masqué et un bouton
- * de bascule en slot `#trailing`.
+ * Renders `format: "password"` strings with a masked `UInput` and a toggle button in
+ * the `#trailing` slot.
  *
- * Le bouton est `tabindex="-1"` : on ne veut pas qu'il s'intercale dans la navigation
- * clavier entre le champ mot de passe et le suivant.
+ * The button is `tabindex="-1"`: it should not interrupt keyboard navigation between
+ * the password field and the next one.
  */
 const controlRenderer = defineComponent({
   name: 'PasswordControlRenderer',

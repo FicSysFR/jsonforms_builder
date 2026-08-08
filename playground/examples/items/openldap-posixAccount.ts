@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * posixAccount + shadowAccount (nis.schema / RFC 2307) — comptes Unix/Linux
- * dans OpenLDAP. Souvent combiné avec inetOrgPerson sur la même entrée.
+ * posixAccount + shadowAccount (nis.schema / RFC 2307) — Unix/Linux accounts
+ * in OpenLDAP. Often combined with inetOrgPerson on the same entry.
  */
 export const schema = {
   type: 'object',

@@ -14,19 +14,19 @@ describe('createAjv', () => {
     expect(ajv.validate(schema, 12345)).toBe(false)
   })
 
-  it('accepte toujours une chaîne password, même vide', () => {
+  it('always accepts a password string, even empty', () => {
     const ajv = createAjv()
     expect(ajv.validate({ type: 'string', format: 'password' }, '')).toBe(true)
   })
 
-  it('conserve les formats JSON Schema standards', () => {
+  it('keeps standard JSON Schema formats', () => {
     const ajv = createAjv()
 
     expect(ajv.validate({ type: 'string', format: 'email' }, 'a@b.co')).toBe(true)
-    expect(ajv.validate({ type: 'string', format: 'email' }, 'pas-un-email')).toBe(false)
+    expect(ajv.validate({ type: 'string', format: 'email' }, 'not-an-email')).toBe(false)
   })
 
-  it('transmet les options AJV', () => {
+  it('forwards AJV options', () => {
     const ajv = createAjv({ allErrors: true })
     ajv.validate({ type: 'object', required: ['a', 'b'], properties: {} }, {})
 

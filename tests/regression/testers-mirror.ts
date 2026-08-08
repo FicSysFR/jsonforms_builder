@@ -1,6 +1,6 @@
 /**
- * Miroir des testers du package — sans importer les SFC Vue (`@nuxt/ui`).
- * Doit rester aligné avec `src/controls/*` et `src/layouts/*`.
+ * Mirror of the package testers — without importing Vue SFCs (`@nuxt/ui`).
+ * Must stay aligned with `src/controls/*` and `src/layouts/*`.
  */
 import {
   and,

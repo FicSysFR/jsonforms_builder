@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * sudoRole (sudo.schema / sudo-ldap) — rôle sudo stocké dans OpenLDAP.
- * Très courant pour centraliser les droits d’élévation.
+ * sudoRole (sudo.schema / sudo-ldap) — sudo role stored in OpenLDAP.
+ * Very common for centralising elevation rights.
  */
 export const schema = {
   type: 'object',

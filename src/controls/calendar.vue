@@ -64,11 +64,11 @@ import {
 /**
  * CalendarControlRenderer
  *
- * Rend les dates marquées `options.format: "calendar"` avec un `UCalendar` déplié.
+ * Renders dates marked with `options.format: "calendar"` using an expanded `UCalendar`.
  *
- * `options.range: true` sur un objet `{ start, end }` active la sélection d'intervalle.
- * Les exclusions (`disabledDates`, weekdays, mois, années) passent par `is*Unavailable`
- * (barré + atténué) pour rester lisibles sous le surlignage de plage.
+ * `options.range: true` on an `{ start, end }` object enables range selection.
+ * Exclusions (`disabledDates`, weekdays, months, years) go through `is*Unavailable`
+ * (struck through + muted) to stay readable under range highlighting.
  */
 const controlRenderer: Component = defineComponent({
   name: 'CalendarControlRenderer',

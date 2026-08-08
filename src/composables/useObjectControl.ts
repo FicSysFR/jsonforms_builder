@@ -10,17 +10,16 @@ type UseObjectControlOptions = {
 }
 
 /**
- * Ce schéma se prête-t-il au rendu « objet » ?
+ * Is this schema suitable for "object" rendering?
  *
- * `isObjectControl` d'amont répond oui dès que `object` figure dans le `type` — y compris
- * dans une **union** (`type: ['object', 'string', 'number', …]`). Or sur une union sans
- * `properties`, il n'y a aucune propriété à déployer : ce renderer, mieux classé (rang 2)
- * que les renderers scalaires (rang 1), gagnait le dispatch pour n'afficher qu'une carte
- * vide.
+ * Upstream `isObjectControl` returns true whenever `object` appears in `type` — including
+ * in a **union** (`type: ['object', 'string', 'number', …]`). Yet on a union without
+ * `properties`, there are no properties to expand: this renderer, ranked higher (rank 2)
+ * than scalar renderers (rank 1), won dispatch only to show an empty card.
  *
- * On lui fait donc décliner ce cas précis, et la valeur retombe sur un renderer qui sait
- * au moins l'éditer. Un `type: "object"` franc garde la main, même sans `properties` :
- * c'est bien un objet, et le renderer y affiche les clés hors schéma.
+ * We therefore decline that specific case, and the value falls back to a renderer that can
+ * at least edit it. A plain `type: "object"` keeps control, even without `properties`:
+ * it is still an object, and the renderer displays keys outside the schema.
  */
 export const isRenderableObjectSchema = (schema: JsonSchema | undefined): boolean => {
   if (schema?.properties || schema?.patternProperties) {
@@ -32,22 +31,21 @@ export const isRenderableObjectSchema = (schema: JsonSchema | undefined): boolea
   return !Array.isArray(type) || type.every((entry) => entry === 'object')
 }
 
-/** Un scope qui désigne l'élément courant plutôt qu'une propriété en dessous. */
+/** A scope that refers to the current element rather than a property below it. */
 const isSelfScope = (scope: unknown): boolean =>
   typeof scope !== 'string' || scope === '#' || scope === '#/'
 
 /**
- * La disposition générée contient-elle au moins un contrôle à rendre ?
+ * Does the generated layout contain at least one control to render?
  *
- * Faute de `properties` exploitables, `Generate.uiSchema` ne peut décrire que l'objet
- * lui-même : il produit soit un `Control` de scope `#`, soit — c'est le cas qu'on
- * manquait — un layout ne contenant qu'un tel contrôle. Redispatché, ce contrôle revient
- * au renderer d'objet, qui régénère la même disposition : `Maximum call stack size
- * exceeded`.
+ * Without usable `properties`, `Generate.uiSchema` can only describe the object itself:
+ * it produces either a `#`-scoped `Control`, or — the case we missed — a layout containing
+ * only such a control. Redispatched, that control returns to the object renderer, which
+ * regenerates the same layout: `Maximum call stack size exceeded`.
  *
- * On raisonne donc sur la *présence d'un contrôle descendant* et non sur la forme de la
- * racine générée : c'est la seule formulation qui couvre les deux cas, et celles à venir
- * (un layout imbriqué dans un autre).
+ * We therefore reason about *the presence of a descendant control* rather than the shape of
+ * the generated root: that is the only formulation that covers both cases, and future
+ * ones (a layout nested inside another).
  */
 export const hasRenderableControl = (element: unknown): boolean => {
   if (!element || typeof element !== 'object') {
@@ -63,7 +61,7 @@ export const hasRenderableControl = (element: unknown): boolean => {
   return Array.isArray(node.elements) && node.elements.some(hasRenderableControl)
 }
 
-/** Clés présentes dans la donnée mais absentes des `properties` du schéma. */
+/** Keys present in the data but absent from the schema's `properties`. */
 export const collectExtraProperties = (
   data: unknown,
   properties: JsonSchema['properties'],
@@ -85,7 +83,7 @@ export const collectExtraProperties = (
 export const useObjectControl = ({ jsonFormsControl }: UseObjectControlOptions) => {
   const control = useUiControl(jsonFormsControl)
 
-  /** `options.detail` prime, sinon on génère la disposition depuis le schéma. */
+  /** `options.detail` takes precedence; otherwise we generate the layout from the schema. */
   const detailUiSchema = computed<UISchemaElement | undefined>(() => {
     const detail = control.control.value.uischema.options?.detail as UISchemaElement | undefined
 

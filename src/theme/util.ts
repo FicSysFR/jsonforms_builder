@@ -2,8 +2,8 @@ import { isObject } from 'radash'
 import type { Theme } from './theme'
 
 /**
- * Assemble un littéral de gabarit en une chaîne de classes, en ignorant les
- * interpolations falsy (pratique pour les classes conditionnelles).
+ * Assembles a template literal into a class string, ignoring
+ * falsy interpolations (handy for conditional classes).
  *
  * @example classes`btn ${isPrimary && 'btn--primary'}` // → 'btn btn--primary'
  */
@@ -17,11 +17,11 @@ export const classes = (strings: TemplateStringsArray, ...variables: unknown[]) 
 }
 
 /**
- * Fusion récursive de deux fragments de thème, **sans muter les entrées**.
+ * Recursive merge of two theme fragments, **without mutating the inputs**.
  *
- * Deux chaînes qui se rencontrent sont **concaténées** plutôt que remplacées : c'est
- * ce qu'on veut pour des classes Tailwind (`'p-2'` + `'bg-red-500'`), là où un merge
- * classique perdrait la première.
+ * When two strings meet they are **concatenated** rather than replaced: that is
+ * what we want for Tailwind classes (`'p-2'` + `'bg-red-500'`), whereas a classic
+ * merge would drop the first.
  */
 const mergeDeep = (a: unknown, b: unknown): unknown => {
   if (typeof a === 'string' && typeof b === 'string') {

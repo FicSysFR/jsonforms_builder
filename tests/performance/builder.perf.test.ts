@@ -20,8 +20,8 @@ import { findPaletteField, PALETTE_FIELDS } from '../../src/builder/palette'
 import { expectWithinBudget, measure } from './helpers'
 
 /**
- * Performances du FormBuilder : mutations d'arbre, historique undo, palette.
- * Correspond au mode `builder` de la page playground.
+ * FormBuilder performance: tree mutations, undo history, palette.
+ * Matches the playground page `builder` mode.
  */
 
 const buildLargeBuilderTree = (count: number): UISchemaElement => {
@@ -34,15 +34,15 @@ const buildLargeBuilderTree = (count: number): UISchemaElement => {
     root = insertElementAt(root, [], i, {
       type: 'Control',
       scope: `#/properties/field_${i}`,
-      label: `Champ ${i}`,
+      label: `Field ${i}`,
     } as UISchemaElement)
   }
 
   return root
 }
 
-describe('page builder — performances composants', () => {
-  it('insère massivement des contrôles dans l’arbre uischema', () => {
+describe('builder page — component performance', () => {
+  it('bulk-inserts controls into the uischema tree', () => {
     const result = measure(() => {
       const root = buildLargeBuilderTree(200)
       expect((root as { elements: unknown[] }).elements).toHaveLength(200)
@@ -54,7 +54,7 @@ describe('page builder — performances composants', () => {
     expectWithinBudget('insertElementAt × 200', result, 120)
   })
 
-  it('déplace et décale des nœuds dans un arbre large', () => {
+  it('moves and shifts nodes in a large tree', () => {
     const base = buildLargeBuilderTree(120)
 
     const result = measure(() => {
@@ -68,10 +68,10 @@ describe('page builder — performances composants', () => {
       expect((tree as { elements: unknown[] }).elements.length).toBe(120)
     })
 
-    expectWithinBudget('shift + move sur 120 nœuds', result, 150)
+    expectWithinBudget('shift + move on 120 nodes', result, 150)
   })
 
-  it('clone profondément schéma + uischema (commit historique)', () => {
+  it('deep-clones schema + uischema (history commit)', () => {
     const properties: Record<string, { type: string }> = {}
     const elements: UISchemaElement[] = []
     for (let i = 0; i < 250; i++) {
@@ -92,10 +92,10 @@ describe('page builder — performances composants', () => {
       expect(Object.keys(snapshots[29].schema.properties ?? {})).toHaveLength(250)
     })
 
-    expectWithinBudget('cloneJson historique × 30', result, 100)
+    expectWithinBudget('cloneJson history × 30', result, 100)
   })
 
-  it('enchaîne ajouts palette via useFormBuilder (undo inclus)', () => {
+  it('chains palette adds via useFormBuilder (including undo)', () => {
     const textField = findPaletteField('text')
     expect(textField).toBeTruthy()
 
@@ -119,10 +119,10 @@ describe('page builder — performances composants', () => {
       { iterations: 3, warmup: 1 },
     )
 
-    expectWithinBudget('useFormBuilder 80 ajouts + 20 undo', result, 250)
+    expectWithinBudget('useFormBuilder 80 adds + 20 undo', result, 250)
   })
 
-  it('collecte les propriétés référencées sur un grand formulaire', () => {
+  it('collects referenced properties on a large form', () => {
     const elements = Array.from({ length: 300 }, (_, i) => ({
       type: 'Control' as const,
       scope: `#/properties/field_${i}`,
@@ -138,7 +138,7 @@ describe('page builder — performances composants', () => {
     expectWithinBudget('collectReferencedProperties × 300', result, 30)
   })
 
-  it('enrichit le schéma propriété par propriété', () => {
+  it('enriches the schema property by property', () => {
     const result = measure(() => {
       let schema: JsonSchema = { type: 'object', properties: {} }
       for (const field of PALETTE_FIELDS) {
@@ -152,7 +152,7 @@ describe('page builder — performances composants', () => {
     expectWithinBudget('addSchemaProperty palette × 10', result, 40)
   })
 
-  it('supprime la moitié des nœuds d’un arbre dense', () => {
+  it('removes half the nodes of a dense tree', () => {
     const base = buildLargeBuilderTree(100)
 
     const result = measure(() => {

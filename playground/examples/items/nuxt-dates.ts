@@ -1,8 +1,8 @@
 import { registerExamples } from '../register'
 
 /**
- * Exemple dédié aux popovers date / heure (icône → UCard).
- * Complète l’exemple « Dates » (motifs) et « Nuxt UI — Calendar » (calendrier déplié).
+ * Example dedicated to date / time popovers (icon → UCard).
+ * Complements the « Dates » example (patterns) and « Nuxt UI — Calendar » (expanded calendar).
  */
 export const data = {
   meetingDay: '2026-08-08',

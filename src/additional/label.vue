@@ -24,12 +24,12 @@ import { useUiLabel } from '../utils'
 /**
  * LabelRenderer
  *
- * Rend les éléments `type: "Label"` du uischema : un titre de section, suivi d'un
- * filet de séparation.
+ * Renders uischema elements with `type: "Label"`: a section title followed by a
+ * separator line.
  *
- * La v1 détournait un `q-toolbar` pour cet usage — beaucoup de structure pour du texte.
- * Ici c'est un simple titre, dont le niveau est réglable via `options.level` (h1…h6)
- * afin de rester correct pour les lecteurs d'écran quand plusieurs sections s'imbriquent.
+ * v1 repurposed a `q-toolbar` for this — a lot of structure for plain text. Here it is
+ * a simple heading, with level adjustable via `options.level` (h1…h6) to stay correct
+ * for screen readers when multiple sections nest.
  */
 const labelRenderer = defineComponent({
   name: 'LabelRenderer',

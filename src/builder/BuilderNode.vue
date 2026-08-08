@@ -1,6 +1,6 @@
 <template lang="pug">
   .builder-node
-    //- Zone de dépôt avant l'élément.
+    //- Drop zone before the element.
     .h-2.rounded.transition-colors(
       :class="dropTarget === 'before' ? 'bg-primary/60' : 'bg-transparent'"
       @dragover.prevent="dropTarget = 'before'"
@@ -47,7 +47,7 @@
             @click.stop="$emit('remove', path)"
           )
 
-      //- Enfants. La zone en pointillés permet d'alimenter un conteneur encore vide.
+      //- Children. The dashed zone lets you fill an empty container.
       .space-y-1.border-t.border-default.p-2.pl-6(v-if="children")
         builder-node(
           v-for="(child, childIndex) in children"
@@ -71,7 +71,7 @@
           @drop.prevent="onDropInside"
         ) Déposer ici
 
-    //- Zone de dépôt après le dernier frère : sans elle, impossible d'ajouter en fin de liste.
+    //- Drop zone after the last sibling: without it, you cannot append to the list.
     .h-2.rounded.transition-colors(
       v-if="isLast"
       :class="dropTarget === 'after' ? 'bg-primary/60' : 'bg-transparent'"
@@ -101,10 +101,10 @@ const NODE_ICONS: Record<string, string> = {
 }
 
 /**
- * Nœud de l'arbre d'édition du builder.
+ * Node in the form builder edit tree.
  *
- * Récursif — d'où le `name: 'BuilderNode'` explicite, sans lequel le composant ne
- * pourrait pas se référencer dans son propre gabarit.
+ * Recursive — hence the explicit `name: 'BuilderNode'`, without which the component
+ * cannot reference itself in its own template.
  */
 export default defineComponent({
   name: 'BuilderNode',
@@ -134,7 +134,7 @@ export default defineComponent({
       type: Array as PropType<ElementPath | null>,
       default: null,
     },
-    /** Schéma courant, uniquement pour afficher le titre lisible d'un `Control`. */
+    /** Current schema, only used to display the readable title of a `Control`. */
     schema: {
       type: Object as PropType<JsonSchema | undefined>,
       default: undefined,
@@ -142,7 +142,7 @@ export default defineComponent({
   },
   emits: ['select', 'remove', 'shift', 'drop-item'],
   setup(props, { emit }) {
-    /** Quelle zone de dépôt est survolée, pour n'en éclairer qu'une à la fois. */
+    /** Which drop zone is hovered, so only one is highlighted at a time. */
     const dropTarget = ref<'before' | 'after' | 'inside' | null>(null)
 
     const children = computed<UISchemaElement[] | undefined>(
@@ -159,8 +159,8 @@ export default defineComponent({
       const element = props.element as ControlElement & { label?: string; text?: string }
       const property = propertyFromScope(element.scope)
 
-      // Pour un `Control`, le libellé lisible vit dans le schéma (`title`) et non dans
-      // le uischema : sans cette résolution, l'arbre n'afficherait que des noms techniques.
+      // For a `Control`, the readable label lives in the schema (`title`) rather than
+      // in the uischema: without this resolution, the tree would show only technical names.
       const title = property
         ? (props.schema?.properties?.[property] as JsonSchema | undefined)?.title
         : undefined
@@ -185,12 +185,12 @@ export default defineComponent({
       emit('drop-item', { payload, parentPath, index })
     }
 
-    /** Dépôt entre deux frères : le parent visé est celui de ce nœud. */
+    /** Drop between siblings: the targeted parent is this node's parent. */
     const onDropSibling = (event: DragEvent, index: number) => {
       dispatchDrop(event, props.path.slice(0, -1), index)
     }
 
-    /** Dépôt à l'intérieur de ce conteneur, en dernière position. */
+    /** Drop inside this container, at the last position. */
     const onDropInside = (event: DragEvent) => {
       dispatchDrop(event, props.path, children.value?.length ?? 0)
     }

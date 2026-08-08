@@ -13,7 +13,7 @@ describe('isRenderableObjectSchema', () => {
     expect(isRenderableObjectSchema({ type: 'object', properties: { a: {} } })).toBe(true)
   })
 
-  /** Sans `properties`, le renderer affiche encore les clés hors schéma : il garde la main. */
+  /** Without `properties`, the renderer still shows out-of-schema keys: it keeps control. */
   it('accepts an object schema without properties', () => {
     expect(isRenderableObjectSchema({ type: 'object' })).toBe(true)
     expect(isRenderableObjectSchema({ type: 'object', additionalProperties: true })).toBe(true)
@@ -32,8 +32,8 @@ describe('isRenderableObjectSchema', () => {
   })
 
   /**
-   * Le cas `json-editor` : rien à déployer, mais le rang 2 du renderer d'objet battait les
-   * renderers scalaires (rang 1) et ne produisait qu'une carte vide.
+   * The `json-editor` case: nothing to expand, but object renderer rank 2 beat
+   * scalar renderers (rank 1) and only produced an empty card.
    */
   it('declines a union without properties, leaving it to a scalar renderer', () => {
     expect(
@@ -57,12 +57,12 @@ describe('isRenderableObjectSchema', () => {
   })
 
   it('accepts properties even when type is a non-object scalar', () => {
-    // Garde-fou : la présence de properties prime sur le type déclaré.
+    // Guard: presence of properties takes precedence over the declared type.
     expect(isRenderableObjectSchema({ type: 'string', properties: { a: {} } })).toBe(true)
   })
 
   it('declines an object|null union without properties', () => {
-    // `type.every(entry => entry === 'object')` est faux : null n'est pas object.
+    // `type.every(entry => entry === 'object')` is false: null is not object.
     expect(isRenderableObjectSchema({ type: ['object', 'null'] })).toBe(false)
   })
 
@@ -81,7 +81,7 @@ describe('hasRenderableControl', () => {
     expect(hasRenderableControl({ type: 'Control', scope: '#/properties/name' })).toBe(true)
   })
 
-  /** Cas dégénéré direct : `Generate.uiSchema` retombe sur l'objet lui-même. */
+  /** Direct degenerate case: `Generate.uiSchema` falls back onto the object itself. */
   it('rejects a control pointing back at the element itself', () => {
     expect(hasRenderableControl({ type: 'Control', scope: '#' })).toBe(false)
     expect(hasRenderableControl({ type: 'Control', scope: '#/' })).toBe(false)
@@ -98,8 +98,8 @@ describe('hasRenderableControl', () => {
   })
 
   /**
-   * Le cas manqué : le layout n'est qu'une enveloppe autour d'un contrôle qui revient sur
-   * l'élément courant, ce qui reboucle sur le renderer d'objet.
+   * The missed case: the layout is only a wrapper around a control that points
+   * back at the current element, which loops on the object renderer.
    */
   it('rejects a layout whose only control points at the element itself', () => {
     expect(
@@ -284,7 +284,7 @@ describe('useObjectControl', () => {
     }
   }
 
-  it('génère une disposition pour les properties déclarées', () => {
+  it('generates a layout for declared properties', () => {
     const state = ref(baseState())
     const { result, scope } = mountObject(state)
 
@@ -293,7 +293,7 @@ describe('useObjectControl', () => {
     scope.stop()
   })
 
-  it('expose les clés hors schéma via extraProperties', () => {
+  it('exposes out-of-schema keys via extraProperties', () => {
     const state = ref(baseState())
     const { result, scope } = mountObject(state)
 
@@ -302,7 +302,7 @@ describe('useObjectControl', () => {
     scope.stop()
   })
 
-  it('respecte options.detail', () => {
+  it('respects options.detail', () => {
     const detail: UISchemaElement = {
       type: 'VerticalLayout',
       elements: [{ type: 'Control', scope: '#/properties/name' }],
@@ -324,7 +324,7 @@ describe('useObjectControl', () => {
     scope.stop()
   })
 
-  it('renvoie undefined pour un objet sans properties (évite la récursion)', () => {
+  it('returns undefined for an object without properties (avoids recursion)', () => {
     const bare: JsonSchema = { type: 'object' }
     const state = ref(baseState({ schema: bare, rootSchema: bare, data: { x: 1 } }))
     const { result, scope } = mountObject(state)
@@ -335,7 +335,7 @@ describe('useObjectControl', () => {
     scope.stop()
   })
 
-  it('met à jour extraProperties quand les données changent', async () => {
+  it('updates extraProperties when data changes', async () => {
     const state = ref(baseState({ data: { name: 'Ada' } }))
     const { result, scope } = mountObject(state)
 
@@ -349,7 +349,7 @@ describe('useObjectControl', () => {
     scope.stop()
   })
 
-  it('régénère detailUiSchema quand le schéma change', async () => {
+  it('regenerates detailUiSchema when the schema changes', async () => {
     const state = ref(baseState())
     const { result, scope } = mountObject(state)
 

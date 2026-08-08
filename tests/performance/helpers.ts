@@ -1,28 +1,27 @@
 /**
- * Utilitaires de mesure pour la suite de performances.
+ * Measurement utilities for the performance suite.
  *
- * Les budgets sont volontairement larges : l'objectif est de détecter une
- * régression nette (ordre de grandeur), pas de chronométrer au millisecond près
- * sur des runners CI hétérogènes.
+ * Budgets are intentionally loose: the goal is to catch a clear regression
+ * (order of magnitude), not to time to the millisecond on heterogeneous CI runners.
  */
 
 import type { UISchemaElement } from '@jsonforms/core'
 
 export type MeasureResult = {
-  /** Durée médiane (ms) sur les itérations chronométrées. */
+  /** Median duration (ms) over timed iterations. */
   medianMs: number
-  /** Percentile 95 (ms). */
+  /** 95th percentile (ms). */
   p95Ms: number
-  /** Moyenne (ms). */
+  /** Mean (ms). */
   meanMs: number
-  /** Échantillon brut (ms), hors warm-up. */
+  /** Raw samples (ms), excluding warm-up. */
   samples: number[]
 }
 
 export type MeasureOptions = {
-  /** Itérations chronométrées (défaut 7). */
+  /** Timed iterations (default 7). */
   iterations?: number
-  /** Passes à jeter avant la mesure (défaut 1). */
+  /** Passes to discard before measuring (default 1). */
   warmup?: number
 }
 
@@ -32,7 +31,7 @@ const percentile = (sorted: number[], ratio: number): number => {
   return sorted[Math.max(0, index)]
 }
 
-/** Exécute `fn` plusieurs fois et renvoie médiane / p95 / moyenne. */
+/** Runs `fn` several times and returns median / p95 / mean. */
 export const measure = (fn: () => void, options: MeasureOptions = {}): MeasureResult => {
   const iterations = options.iterations ?? 7
   const warmup = options.warmup ?? 1
@@ -60,9 +59,9 @@ export const measure = (fn: () => void, options: MeasureOptions = {}): MeasureRe
 }
 
 /**
- * Échoue si la médiane dépasse le budget.
+ * Fails if the median exceeds the budget.
  *
- * Message enrichi pour faciliter le diagnostic en CI.
+ * Enriched message to ease CI diagnosis.
  */
 export const expectWithinBudget = (
   label: string,
@@ -71,18 +70,18 @@ export const expectWithinBudget = (
 ): void => {
   if (result.medianMs > budgetMs) {
     throw new Error(
-      `[perf] ${label}: médiane ${result.medianMs.toFixed(2)} ms > budget ${budgetMs} ms` +
+      `[perf] ${label}: median ${result.medianMs.toFixed(2)} ms > budget ${budgetMs} ms` +
         ` (p95=${result.p95Ms.toFixed(2)} ms, mean=${result.meanMs.toFixed(2)} ms,` +
         ` samples=[${result.samples.map((s) => s.toFixed(1)).join(', ')}])`,
     )
   }
 }
 
-/** Construit un schéma objet plat avec `count` propriétés string. */
+/** Builds a flat object schema with `count` string properties. */
 export const buildFlatObjectSchema = (count: number) => {
   const properties: Record<string, { type: string; title: string }> = {}
   for (let i = 0; i < count; i++) {
-    properties[`field_${i}`] = { type: 'string', title: `Champ ${i}` }
+    properties[`field_${i}`] = { type: 'string', title: `Field ${i}` }
   }
 
   return {
@@ -91,7 +90,7 @@ export const buildFlatObjectSchema = (count: number) => {
   }
 }
 
-/** Uischema VerticalLayout aligné sur `buildFlatObjectSchema`. */
+/** VerticalLayout uischema aligned with `buildFlatObjectSchema`. */
 export const buildFlatVerticalUiSchema = (count: number) => ({
   type: 'VerticalLayout' as const,
   elements: Array.from({ length: count }, (_, i) => ({
@@ -100,16 +99,16 @@ export const buildFlatVerticalUiSchema = (count: number) => ({
   })),
 })
 
-/** Données correspondant à un schéma plat. */
+/** Data matching a flat schema. */
 export const buildFlatObjectData = (count: number): Record<string, string> => {
   const data: Record<string, string> = {}
   for (let i = 0; i < count; i++) {
-    data[`field_${i}`] = `valeur-${i}`
+    data[`field_${i}`] = `value-${i}`
   }
   return data
 }
 
-/** Arbre uischema profondément imbriqué (Group dans Group). */
+/** Deeply nested uischema tree (Group inside Group). */
 export const buildDeepUiSchema = (depth: number, breadth = 3) => {
   const leaf = (index: number) => ({
     type: 'Control' as const,
@@ -124,7 +123,7 @@ export const buildDeepUiSchema = (depth: number, breadth = 3) => {
   for (let level = 0; level < depth; level++) {
     node = {
       type: 'Group',
-      label: `Groupe ${level}`,
+      label: `Group ${level}`,
       elements: [
         node,
         ...Array.from({ length: breadth - 1 }, (_, i) => leaf(1000 * (level + 1) + i)),
@@ -136,11 +135,11 @@ export const buildDeepUiSchema = (depth: number, breadth = 3) => {
 }
 
 /**
- * Schéma racine avec une chaîne `allOf` / `$ref` de profondeur `depth`.
- * Chaque niveau ajoute `fieldsPerLayer` propriétés string.
+ * Root schema with an `allOf` / `$ref` chain of depth `depth`.
+ * Each level adds `fieldsPerLayer` string properties.
  *
- * Miroir du stress playground `allOf-perf` : sert à chronométrer
- * `flattenAllOfSchema` sans monter Vue.
+ * Mirrors the playground `allOf-perf` stress case: used to time
+ * `flattenAllOfSchema` without mounting Vue.
  */
 export const buildNestedAllOfSchema = (depth: number, fieldsPerLayer = 10) => {
   const definitions: Record<
@@ -160,12 +159,12 @@ export const buildNestedAllOfSchema = (depth: number, fieldsPerLayer = 10) => {
     }
 
     if (level === 0) {
-      definitions[`layer_${level}`] = { type: 'object', title: `Couche ${level}`, properties }
+      definitions[`layer_${level}`] = { type: 'object', title: `Layer ${level}`, properties }
       continue
     }
 
     definitions[`layer_${level}`] = {
-      title: `Couche ${level}`,
+      title: `Layer ${level}`,
       allOf: [
         { $ref: `#/definitions/layer_${level - 1}` },
         { type: 'object', properties },

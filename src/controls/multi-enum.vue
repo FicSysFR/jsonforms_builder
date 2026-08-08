@@ -36,22 +36,22 @@ import UCheckboxGroup from '@nuxt/ui/components/CheckboxGroup.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
 
-/** `items: { oneOf: [{ const: 'foo' }, …] }` — la forme enum « riche », avec titres. */
+/** `items: { oneOf: [{ const: 'foo' }, …] }` — the "rich" enum form, with titles. */
 const hasOneOfItems = (schema: JsonSchema): boolean =>
   Array.isArray(schema.oneOf) && schema.oneOf.every((entry) => entry.const !== undefined)
 
-/** `items: { type: 'string', enum: [...] }` — la forme enum simple. */
+/** `items: { type: 'string', enum: [...] }` — the simple enum form. */
 const hasEnumItems = (schema: JsonSchema): boolean =>
   schema.type === 'string' && Array.isArray(schema.enum)
 
 /**
  * MultiEnumControlRenderer
  *
- * Rend un tableau de valeurs à choisir dans une liste fermée — `uniqueItems` avec des
- * `items.oneOf` ou `items.enum` — sous forme de cases à cocher.
+ * Renders an array of values chosen from a closed list — `uniqueItems` with
+ * `items.oneOf` or `items.enum` — as checkboxes.
  *
- * Sans lui, ces schémas tombaient sur le renderer de tableau et proposaient d'ajouter
- * des lignes de texte libre, ce qui contredit la contrainte du schéma.
+ * Without it, these schemas fell back to the array renderer and offered free-text rows,
+ * contradicting the schema constraint.
  */
 const controlRenderer = defineComponent({
   name: 'MultiEnumControlRenderer',
@@ -71,9 +71,9 @@ const controlRenderer = defineComponent({
     )
 
     /**
-     * `useJsonFormsMultiEnumControl` expose `addItem`/`removeItem` plutôt qu'un
-     * `handleChange` global : on traduit donc la nouvelle sélection en ajouts et
-     * retraits, ce qui préserve l'ordre existant des valeurs déjà cochées.
+     * `useJsonFormsMultiEnumControl` exposes `addItem`/`removeItem` rather than a global
+     * `handleChange`: we therefore translate the new selection into additions and removals,
+     * preserving the existing order of already checked values.
      */
     const onSelectionChange = (next: unknown[]) => {
       const path = control.control.value.path
@@ -101,9 +101,8 @@ export default controlRenderer
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   /**
-   * Rang 5, au-dessus du renderer de tableau (2) et de `enum-and-suggestion` (2) :
-   * un tableau à valeurs contraintes doit se rendre en cases à cocher, pas en liste
-   * de saisies libres.
+   * Rank 5, above the array renderer (2) and `enum-and-suggestion` (2): an array with
+   * constrained values must render as checkboxes, not as free-text entries.
    */
   tester: rankWith(
     5,

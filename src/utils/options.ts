@@ -4,9 +4,9 @@ export interface Options {
   focus?: boolean
   step?: number
   /**
-   * Quand un contrôle passe de visible à masqué (règle SHOW/HIDE), remet sa
-   * valeur au `default` du schéma s'il existe, sinon `undefined`.
-   * Activé par défaut ; passer `false` pour conserver la donnée hors UI.
+   * When a control goes from visible to hidden (SHOW/HIDE rule), resets its value to the
+   * schema `default` if present, otherwise `undefined`. Enabled by default; pass `false`
+   * to keep data while off-screen.
    */
   clearOnHide?: boolean
 }
