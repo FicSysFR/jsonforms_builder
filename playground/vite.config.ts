@@ -67,6 +67,17 @@ export default defineConfig({
           primary: 'brand',
           neutral: 'slate',
         },
+        // Form-density editor: Nuxt UI defaults to article prose (`*:my-5`, `sm:px-8`).
+        editor: {
+          slots: {
+            base: (defaults: string) =>
+              String(defaults ?? '')
+                .replaceAll('*:my-5', '*:my-1')
+                .replaceAll('sm:px-8', '')
+                .replace(/\s+/g, ' ')
+                .trim(),
+          },
+        },
       },
     }),
     vue(),

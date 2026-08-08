@@ -70,7 +70,7 @@ export const schema = {
       ],
     },
     observations: {
-      type: 'string',
+      type: 'object',
       description: 'Compte rendu détaillé de la journée',
     },
   },
@@ -122,7 +122,19 @@ const data = {
     metersLaid: 240,
     ballastTonnage: 18.5,
   },
-  observations: '<p>Pose nominale. <strong>Aucun incident</strong> à signaler.</p>',
+  observations: {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Pose nominale. ' },
+          { type: 'text', marks: [{ type: 'bold' }], text: 'Aucun incident' },
+          { type: 'text', text: ' à signaler.' },
+        ],
+      },
+    ],
+  },
 }
 
 registerExamples([

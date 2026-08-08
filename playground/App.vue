@@ -80,8 +80,28 @@ u-app
             v-if="filteredExamples.length === 0"
           ) No examples
 
-      .min-w-0.flex-1.space-y-4
-        u-card
+      .min-w-0.flex-1.space-y-3
+        .flex.flex-wrap.items-center.gap-2
+          u-tabs(
+            v-model="inspectTab"
+            :items="inspectTabs"
+            value-key="value"
+            size="sm"
+            class="min-w-0 flex-1"
+            :ui="{ list: 'w-full sm:w-auto' }"
+          )
+          u-button(
+            v-if="inspectTab !== 'form'"
+            :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+            :label="copied ? 'Copied' : 'Copy'"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="copyInspectJson"
+          )
+
+        //- Keep the form mounted (`v-show`) so switching tabs does not reset field state.
+        u-card(v-show="inspectTab === 'form'" :ui="{ body: 'p-6 sm:p-8' }")
           json-forms(
             :key="example.name"
             :data="data"
@@ -96,15 +116,17 @@ u-app
             @change="onChange"
           )
 
-        u-card(:ui="{ body: 'p-0' }")
-          template(#header)
-            span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Data
-          pre.overflow-x-auto.p-4.text-xs(v-text="JSON.stringify(data, null, 2)")
+        u-card(v-if="inspectTab !== 'form'" :ui="{ body: 'p-0' }")
+          //- `max-h-[calc(…)]` must be an attribute: Pug treats `/` as text otherwise.
+          pre.overflow-auto.p-6.text-xs.leading-relaxed(
+            class="max-h-[calc(100dvh-12rem)]"
+            v-text="inspectJson"
+          )
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, toRaw, watch } from 'vue'
-import { useDark, useToggle } from '@vueuse/core'
+import { useClipboard, useDark, useToggle } from '@vueuse/core'
 import { JsonForms, type JsonFormsChangeEvent } from '@jsonforms/vue'
 import type { JsonFormsI18nState } from '@jsonforms/core'
 import type { ErrorObject } from 'ajv'
@@ -214,6 +236,34 @@ const onChange = (event: JsonFormsChangeEvent) => {
   data.value = event.data
 }
 
+/** Top-level view for the selected example: form preview or JSON sources. */
+type InspectTab = 'form' | 'data' | 'schema' | 'uischema'
+const inspectTab = ref<InspectTab>('form')
+const inspectTabs = [
+  { label: 'Form', value: 'form' as const },
+  { label: 'Data', value: 'data' as const },
+  { label: 'Schema', value: 'schema' as const },
+  { label: 'UI Schema', value: 'uischema' as const },
+]
+
+const inspectJson = computed(() => {
+  const tab = inspectTab.value
+  if (tab === 'form') {
+    return ''
+  }
+  const value =
+    tab === 'data' ? data.value : tab === 'schema' ? example.value.schema : example.value.uischema
+  return JSON.stringify(value ?? null, null, 2)
+})
+
+const { copy, copied } = useClipboard({ copiedDuring: 1500 })
+const copyInspectJson = () => {
+  if (inspectTab.value === 'form' || !inspectJson.value) {
+    return
+  }
+  void copy(inspectJson.value)
+}
+
 /**
  * The form is mounted with `:key="example.name"`: switching examples unmounts everything.
  *
@@ -224,5 +274,6 @@ const onChange = (event: JsonFormsChangeEvent) => {
 const selectExample = async (name: string) => {
   await nextTick()
   selected.value = name
+  inspectTab.value = 'form'
 }
 </script>

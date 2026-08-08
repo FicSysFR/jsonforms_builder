@@ -52,7 +52,7 @@ export const PALETTE_FIELDS: PaletteField[] = [
     label: 'Texte riche',
     icon: 'i-lucide-pilcrow',
     group: 'Saisie',
-    schema: () => ({ type: 'string' }),
+    schema: () => ({ type: 'object' }),
     options: () => ({ wysiwyg: true }),
   },
   {

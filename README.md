@@ -8,9 +8,9 @@
 
 ![JSONForms Builder banner](static/banner.jpg)
 
-Renderers [JSONForms](https://jsonforms.io/) pour Vue 3, bâtis sur **Nuxt UI 4** et **Tailwind CSS 4** — plus un **builder visuel** pour composer `{ schema, uischema }` sans écrire de JSON.
+[JSONForms](https://jsonforms.io/) renderers for Vue 3, built on **Nuxt UI 4** and **Tailwind CSS 4** — plus a **visual builder** to compose `{ schema, uischema }` without writing JSON by hand.
 
-> **v2 — changement de socle.** La v1 reposait sur Quasar. La v2 rend en composants `U*` de Nuxt UI et hérite donc automatiquement du thème de l'application hôte. La branche `v1-quasar` conserve l'ancienne implémentation ; `@tacxou/jsonforms_builder@1.x` reste installable.
+> **v2 — stack change.** v1 was based on Quasar. v2 renders with Nuxt UI `U*` components and therefore inherits the host app theme automatically. The `v1-quasar` branch keeps the old implementation; `@tacxou/jsonforms_builder@1.x` remains installable.
 
 ## Installation
 
@@ -18,9 +18,9 @@ Renderers [JSONForms](https://jsonforms.io/) pour Vue 3, bâtis sur **Nuxt UI 4*
 yarn add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 ```
 
-`@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue` et `vue` sont des **peerDependencies** : la librairie n'embarque aucun composant Nuxt UI, elle les importe depuis l'installation de l'application.
+`@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue`, and `vue` are **peerDependencies**: the library does not ship any Nuxt UI components; it imports them from the host app installation.
 
-## Utilisation
+## Usage
 
 ```vue
 <template lang="pug">
@@ -42,10 +42,10 @@ const renderers = Object.freeze(nuxtUiRenderers)
 </script>
 ```
 
-- `nuxtUiRenderers` — contrôles, layouts et éléments additionnels.
-- `allRenderers` — idem, plus l'éditeur de texte riche (`UEditor`).
+- `nuxtUiRenderers` — controls, layouts, and additional elements.
+- `allRenderers` — the same, plus the rich-text editor (`UEditor`).
 
-### Builder visuel
+### Visual builder
 
 ```vue
 <template lang="pug">
@@ -59,47 +59,47 @@ const definition = ref<Partial<FormDefinition>>({})
 </script>
 ```
 
-Palette, arbre réordonnable par glisser-déposer, inspecteur de propriétés, aperçu live et export JSON. L'édition brute du JSON est laissée à l'application hôte (Monaco, CodeMirror…).
+Palette, drag-and-drop reorderable tree, property inspector, live preview, and JSON export. Raw JSON editing is left to the host app (Monaco, CodeMirror…).
 
 ## Renderers
 
-| Schéma / option | Composant Nuxt UI |
+| Schema / option | Nuxt UI component |
 |---|---|
 | `string` | `UInput` |
 | `string` + `options.multi` | `UTextarea` |
-| `string` + `format: password` | `UInput` + bascule de visibilité |
-| `string` + `options.wysiwyg` | `UEditor` + `UEditorToolbar` |
+| `string` + `format: password` | `UInput` + visibility toggle |
+| `object` + `options.wysiwyg` | `UEditor` + `UEditorToolbar` (ProseMirror JSON) |
 | `string` + `options.format: pin` | `UPinInput` |
-| `string` + `format: color` | `UColorPicker` en popover + saisie |
+| `string` + `format: color` | `UColorPicker` in a popover + text input |
 | `string` + `format: data-url` | `UFileUpload` |
 | `number` / `integer` | `UInputNumber` |
 | `number` + `options.slider` | `USlider` |
 | `number` + `options.format: rating` | `UInputRating` |
 | `boolean` | `UCheckbox` (`USwitch` via `options.toggle`) |
 | `enum` | `USelectMenu` |
-| `enum` + `options.format: select` | `USelect` (sans recherche) |
+| `enum` + `options.format: select` | `USelect` (no search) |
 | `enum` + `options.format: radio` | `URadioGroup` |
-| `string` + `options.api` | `UInputMenu` (recherche distante) |
+| `string` + `options.api` | `UInputMenu` (remote search) |
 | `format: date` / `date-time` / `time` | `UInputDate` / `UInputTime` |
-| `format: date` + `options.format: calendar` | `UCalendar` déplié |
-| `array` de `string` + `options.format: tags` | `UInputTags` |
-| `array` | cartes répétables (ajout, réordonnancement, suppression) |
-| `oneOf` | sélecteur de variante + sous-formulaire |
-| `Group` | `UCard` titrée |
+| `format: date` + `options.format: calendar` | expanded `UCalendar` |
+| `array` of `string` + `options.format: tags` | `UInputTags` |
+| `array` | repeatable cards (add, reorder, remove) |
+| `oneOf` | variant selector + sub-form |
+| `Group` | titled `UCard` |
 | `Categorization` | `UTabs` (`UStepper` via `options.variant: "stepper"`) |
-| `Label` | titre + `USeparator` |
+| `Label` | heading + `USeparator` |
 
-### Personnalisation
+### Customization
 
-Deux niveaux, du plus large au plus ciblé :
+Two levels, from broadest to most specific:
 
 ```ts
-// 1. Thème global, injecté une fois pour toute l'arborescence.
+// 1. Global theme, injected once for the whole tree.
 provide('styles', { control: { input: 'font-mono' } })
 ```
 
 ```json
-// 2. Par élément, via les options du uischema — `<slot>` est le composant visé.
+// 2. Per element, via uischema options — `<slot>` is the target component.
 {
   "type": "Control",
   "scope": "#/properties/name",
@@ -107,14 +107,14 @@ provide('styles', { control: { input: 'font-mono' } })
 }
 ```
 
-## Intégration
+## Integration
 
-### Déclarer la librairie à Tailwind (obligatoire)
+### Declare the library to Tailwind (required)
 
-Tailwind 4 génère ses utilitaires en scannant les sources du projet, et **ignore tout ce
-qui se trouve hors de sa racine** — donc `node_modules`. Sans la ligne ci-dessous, les
-classes employées par les renderers apparaissent bien dans le DOM mais ne correspondent à
-aucune règle CSS : bordures et fonds de sélection disparaissent, l'espacement se décale.
+Tailwind 4 generates utilities by scanning project sources and **ignores everything
+outside its root** — including `node_modules`. Without the line below, classes used by
+the renderers appear in the DOM but map to no CSS rule: selection borders and backgrounds
+disappear, and spacing shifts.
 
 ```css
 @import "tailwindcss";
@@ -123,10 +123,10 @@ aucune règle CSS : bordures et fonds de sélection disparaissent, l'espacement 
 @source "../node_modules/@tacxou/jsonforms_builder/dist";
 ```
 
-> Si votre thème de marque est déclaré dans un bloc `@theme`, utilisez **`@theme static`**.
-> Tailwind élague les variables qu'aucune source ne référence directement, et une couleur
-> consommée uniquement par le CSS généré de Nuxt UI (`--ui-primary: var(--color-ma-couleur-500)`)
-> tombe silencieusement — le thème repasse alors aux couleurs par défaut.
+> If your brand theme is declared in an `@theme` block, use **`@theme static`**.
+> Tailwind prunes variables that no source references directly, and a color consumed
+> only by Nuxt UI's generated CSS (`--ui-primary: var(--color-my-color-500)`)
+> silently falls away — the theme then reverts to default colors.
 
 ### Nuxt
 
@@ -135,28 +135,28 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui'],
   vite: {
     optimizeDeps: {
-      // La librairie conserve des imports vers les SFC de `@nuxt/ui` : le pré-bundleur
-      // esbuild ne sait pas les compiler, il faut donc l'en exclure.
+      // The library keeps imports into `@nuxt/ui` SFCs: esbuild's pre-bundler
+      // cannot compile them, so exclude it.
       exclude: ['@tacxou/jsonforms_builder'],
-      // `ajv` est du CommonJS. Sans pré-bundling, son export par défaut n'est pas exposé
-      // et `@jsonforms/core` échoue à l'import.
+      // `ajv` is CommonJS. Without pre-bundling, its default export is not exposed
+      // and `@jsonforms/core` fails on import.
       include: ['ajv', 'ajv-formats', '@jsonforms/core', '@jsonforms/vue'],
     },
   },
 })
 ```
 
-> **À la mise à jour de la librairie** — si le navigateur lève
-> `does not provide an export named '…'` sur `@jsonforms/vue` ou `@jsonforms/core`,
-> c'est le pré-bundle de Vite qui est périmé : une nouvelle version peut importer d'une
-> dépendance *déjà optimisée* un export qu'elle n'importait pas avant, et Vite n'invalide
-> pas toujours son cache pour autant. Un redémarrage avec cache vidé suffit :
+> **When updating the library** — if the browser throws
+> `does not provide an export named '…'` on `@jsonforms/vue` or `@jsonforms/core`,
+> Vite's pre-bundle is stale: a new version may import from an *already optimized*
+> dependency an export it did not import before, and Vite does not always invalidate
+> its cache. A restart with a cleared cache is enough:
 >
 > ```bash
 > rm -rf node_modules/.vite && vite --force
 > ```
 
-### Vue + Vite (sans Nuxt)
+### Vue + Vite (without Nuxt)
 
 ```ts
 import ui from '@nuxt/ui/vite'
@@ -166,7 +166,7 @@ export default defineConfig({
 })
 ```
 
-Le renderer WYSIWYG exige en plus de **dédupliquer ProseMirror** — ses plugins sont identifiés par identité d'objet, et deux copies dans l'arbre de dépendances lèvent `Adding different instances of a keyed plugin` :
+The WYSIWYG renderer also requires **deduplicating ProseMirror** — its plugins are identified by object identity, and two copies in the dependency tree throw `Adding different instances of a keyed plugin`:
 
 ```ts
 resolve: {
@@ -174,52 +174,51 @@ resolve: {
 }
 ```
 
-Voir `playground/vite.config.ts` pour une configuration complète et commentée (y compris les stubs `#imports` requis par `@nuxt/icon` hors Nuxt).
+See `playground/vite.config.ts` for a full commented configuration (including the `#imports` stubs required by `@nuxt/icon` outside Nuxt).
 
-## Défaut amont connu — `Cannot read properties of null (reading 'subTree')`
+## Known upstream default — `Cannot read properties of null (reading 'subTree')`
 
-`@vueuse/core` 14.4.0 (dernière version à ce jour, tirée par Nuxt UI) contient dans
-`onClickOutside` :
+`@vueuse/core` 14.4.0 (latest as of writing, pulled by Nuxt UI) contains in
+`onClickOutside`:
 
 ```js
 function hasMultipleRoots(target) {
   const vm = toValue(target)
-  return vm && vm.$.subTree.shapeFlag === 16   // `vm` est protégé, `vm.$` ne l'est pas
+  return vm && vm.$.subTree.shapeFlag === 16   // `vm` is guarded, `vm.$` is not
 }
 ```
 
-Après démontage d'un composant, `vm.$` vaut `null` : tout clic ultérieur atteignant un
-écouteur survivant lève l'erreur. Le cas déclenchant est **un menu ouvert dont le clic de
-sélection démonte le sous-arbre** — typiquement un changement de variante `oneOf`, ou la
-suppression d'une ligne de tableau.
+After a component unmounts, `vm.$` is `null`: any later click that reaches a surviving
+listener throws. The triggering case is **an open menu whose selection click unmounts
+the subtree** — typically a `oneOf` variant change, or removing an array row.
 
-La parade, appliquée dans les renderers concernés, est de différer d'un `nextTick` la
-mutation qui démonte, afin que la fermeture du menu s'achève d'abord. À reproduire dans
-l'application hôte si elle démonte elle-même des sous-arbres depuis un `@update:model-value`.
+The workaround applied in the affected renderers is to defer the unmounting mutation by
+one `nextTick`, so the menu can finish closing first. Reproduce this in the host app if
+it unmounts subtrees itself from an `@update:model-value` handler.
 
-## Développement
+## Development
 
-Ce projet tourne sur **Node.js ≥ 22** avec **Yarn** (Classic 1.x, cf. `packageManager`)
-comme unique gestionnaire de paquets : c'est `yarn.lock` qui fait foi, n'installez pas
-avec `npm` ou `pnpm`.
+This project runs on **Node.js ≥ 22** with **Yarn** (Classic 1.x, see `packageManager`)
+as the sole package manager: `yarn.lock` is authoritative — do not install with
+`npm` or `pnpm`.
 
 ```bash
 yarn install
-yarn start:dev        # playground : galerie d'exemples + builder
-yarn build            # build de la librairie (es + cjs + déclarations)
-yarn test             # suite Vitest
-yarn test:watch       # idem, en mode veille
-yarn test:coverage    # couverture v8 → ./coverage/lcov.info
-yarn lint             # Biome : lint + vérification du formatage
-yarn lint:fix         # applique les corrections sûres et reformate
+yarn start:dev        # playground: example gallery + builder
+yarn build            # library build (es + cjs + declarations)
+yarn test             # Vitest suite
+yarn test:watch       # same, watch mode
+yarn test:coverage    # v8 coverage → ./coverage/lcov.info
+yarn lint             # Biome: lint + format check
+yarn lint:fix         # apply safe fixes and reformat
 ```
 
-Le lint et le formatage sont assurés par **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
-qui remplace ESLint et Prettier. Deux limites tiennent au socle Vue + Pug :
+Linting and formatting are handled by **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
+replacing ESLint and Prettier. Two limits come from the Vue + Pug stack:
 
-- Biome n'analyse que le bloc `<script>` d'un SFC, jamais le `<template>`. Les règles
-  `noUnusedVariables` et `noUnusedImports` sont donc désactivées sur les `.vue`, où toute
-  liaison consommée par le template passerait pour inutilisée.
-- Le formatage ne touche pas les templates Pug, laissés à `.editorconfig`.
+- Biome only analyzes an SFC's `<script>` block, never the `<template>`. The
+  `noUnusedVariables` and `noUnusedImports` rules are therefore disabled on `.vue` files,
+  where any binding consumed by the template would look unused.
+- Formatting does not touch Pug templates, which are left to `.editorconfig`.
 
 ![Alt](https://repobeats.axiom.co/api/embed/a6c9d83d94634994e69a4302a2329c934a2cbcd6.svg "Repobeats analytics image")

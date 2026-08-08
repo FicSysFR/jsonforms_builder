@@ -2,9 +2,9 @@
   "compilerOptions": {
     "module": "es2022",
     "types": ["node"],
-    // `DOM` est indispensable : la librairie manipule des événements de glisser-déposer,
-    // `fetch`, `AbortController` et `structuredClone`. La v1 déclarait `["es7"]` seul, ce
-    // qui privait la génération de déclarations de tous ces types.
+    // `DOM` is required: the library uses drag-and-drop events, `fetch`,
+    // `AbortController`, and `structuredClone`. v1 declared `["es7"]` alone, which
+    // left declaration generation without those types.
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "declaration": true,
     "removeComments": true,

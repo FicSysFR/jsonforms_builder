@@ -13,7 +13,7 @@
       :editable="!isDisabled && !isReadonly"
       :placeholder="appliedOptions.placeholder"
       :class="[styles.control.input, 'rounded-md border border-default']"
-      :ui="{ content: 'min-h-40 p-3 focus:outline-none' }"
+      :ui="editorUi"
       @update:model-value="onChange"
     )
       template(#default="{ editor }")
@@ -116,8 +116,11 @@ const DEFAULT_TOOLBAR = [
  * Rich text editor for controls marked `options.wysiwyg: true`, built on `UEditor`
  * (Tiptap 3, provided by Nuxt UI).
  *
- * Storage format follows the schema type: `string` → HTML, `object` → Tiptap JSON document.
- * v1 could only produce JSON.
+ * Default storage is the TipTap / ProseMirror JSON document (`{ type: 'doc', content: […] }`),
+ * same as v1 — safe to round-trip and free of HTML injection concerns. Prefer a schema
+ * `type: 'object'` for the control.
+ *
+ * Opt into HTML with `options.contentType: 'html'` (typically on a `string` schema).
  *
  * `options.toolbar` replaces the default toolbar with an array of groups in Nuxt UI's
  * `EditorToolbarItem` format.
@@ -138,13 +141,30 @@ const controlRenderer: Component = defineComponent({
 
     const control = useUiControl(useJsonFormsControl(props), adaptTarget, 300)
 
-    const contentType = computed(() =>
-      control.control.value.schema?.type === 'object' ? 'json' : 'html',
-    )
+    const contentType = computed(() => {
+      const explicit = control.appliedOptions.value?.contentType
+      if (explicit === 'html' || explicit === 'json' || explicit === 'markdown') {
+        return explicit
+      }
+      // ProseMirror JSON by default (v1). HTML only when opted in above.
+      return 'json'
+    })
 
     const toolbarItems = computed(() => control.appliedOptions.value?.toolbar ?? DEFAULT_TOOLBAR)
 
-    return { ...control, contentType, toolbarItems }
+    /**
+     * Nuxt UI editor theme defaults to article prose (`*:my-5`, `sm:px-8`). Rewrite
+     * those defaults for form density; keep `p-3` for clickable padding inside the
+     * contenteditable (do not add `sm:px-0` — it would zero out `p-3` on sm+).
+     */
+    const editorUi = {
+      base: (defaults: string) =>
+        `${String(defaults ?? '')
+          .replaceAll('*:my-5', '*:my-1')
+          .replaceAll('sm:px-8', '')} min-h-40 p-3 focus:outline-none *:!my-1`.replace(/\s+/g, ' ').trim(),
+    }
+
+    return { ...control, contentType, toolbarItems, editorUi }
   },
 })
 

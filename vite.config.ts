@@ -24,28 +24,28 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'JsonFormBuilder',
       fileName: (format) => `json-formbuilder.${format}.js`,
-      // Pas d'UMD en v2 : les renderers importent des SFC de `@nuxt/ui` qui n'existent
-      // pas sous forme de global navigateur. La lib requiert désormais un bundler.
+      // No UMD in v2: renderers import `@nuxt/ui` SFCs that do not exist as browser
+      // globals. The library now requires a bundler.
       formats: ['es', 'cjs'],
     },
 
     rollupOptions: {
-      // `@nuxt/ui` reste externe *y compris* ses imports profonds de SFC
-      // (`@nuxt/ui/components/Input.vue`) : ces fichiers référencent les alias Nuxt
-      // `#build/ui/*` et `#imports`, que seul le plugin Vite du consommateur sait résoudre.
+      // Keep `@nuxt/ui` external *including* deep SFC imports
+      // (`@nuxt/ui/components/Input.vue`): those files reference Nuxt aliases
+      // `#build/ui/*` and `#imports`, which only the consumer's Vite plugin can resolve.
       external: [
         'vue',
         /^@nuxt\/ui(\/.*)?$/,
         '@jsonforms/core',
         '@jsonforms/vue',
-        // Externalisés pour éviter d'en embarquer un doublon : Nuxt UI fournit déjà
-        // `@internationalized/date`, et `defu`/`radash` sont de l'ESM sans piège d'interop.
+        // Externalized to avoid shipping a duplicate: Nuxt UI already provides
+        // `@internationalized/date`, and `defu`/`radash` are plain ESM with no interop trap.
         '@internationalized/date',
         'defu',
         'radash',
-        // `dayjs` est délibérément *inclus* dans le bundle : c'est du CommonJS, et le
-        // laisser externe obligerait chaque application hôte à le déclarer dans
-        // `optimizeDeps.include` pour que son export par défaut soit exposé. ~7 ko.
+        // `dayjs` is deliberately *included* in the bundle: it is CommonJS, and leaving
+        // it external would force every host app to list it in `optimizeDeps.include`
+        // so its default export is exposed. ~7 KB.
       ],
     },
 

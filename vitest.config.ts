@@ -1,16 +1,16 @@
 import { defineConfig } from 'vitest/config'
 
 /**
- * Configuration séparée de `vite.config.ts` : celle-ci décrit le *build de librairie*
- * (mode `lib`, génération de déclarations via `vite-plugin-dts`), inutile — et coûteux —
- * pour la suite de tests.
+ * Separate from `vite.config.ts`: that file describes the *library build*
+ * (`lib` mode, declaration generation via `vite-plugin-dts`), which is unused —
+ * and expensive — for the test suite.
  */
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
 
-    // Les tests portent sur des fonctions pures (composables et utilitaires) : aucun DOM
-    // n'est monté, l'environnement Node suffit.
+    // Tests cover pure functions (composables and utilities): no DOM is mounted,
+    // so the Node environment is enough.
     environment: 'node',
 
     coverage: {
