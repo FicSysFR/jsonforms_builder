@@ -40,7 +40,9 @@ export const onChange =
   (dispatch: Dispatch<AnyAction>) =>
   (_: any) =>
   ({ data, errors }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
-    Object.keys(data).forEach((key) => (touchedProperties[key] = true))
+    Object.keys(data).forEach((key) => {
+      touchedProperties[key] = true
+    })
 
     const newErrors = errors.filter((error) => {
       return touchedProperties[(error as any).dataPath ?? error.instancePath]

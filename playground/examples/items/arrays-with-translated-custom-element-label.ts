@@ -266,7 +266,7 @@ export const uischema = {
 }
 
 export const translate: Translator = (key) => {
-  return 'translator.' + key
+  return `translator.${key}`
 }
 
 registerExamples([
