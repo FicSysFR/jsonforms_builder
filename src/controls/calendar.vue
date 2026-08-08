@@ -8,25 +8,31 @@
   )
     .space-y-2
       u-calendar(
-        v-bind="uiProps('calendar')"
+        v-bind="calendarBind"
         :id="control.id + '-input'"
         :type="calendarType"
+        :range="isRange"
         :model-value="calendarValue"
         :locale="appliedOptions.locale ?? 'fr-FR'"
         :disabled="isDisabled || isReadonly"
         :color="control.errors ? 'error' : undefined"
-        :number-of-months="appliedOptions.months"
+        :number-of-months="appliedOptions.months ?? (isRange ? 2 : undefined)"
         :week-numbers="!!appliedOptions.weekNumbers"
-        @update:model-value="onChangeDateValue"
+        :min-value="dateConstraints.minValue"
+        :max-value="dateConstraints.maxValue"
+        :is-date-unavailable="dateConstraints.isDateUnavailable"
+        :is-month-unavailable="dateConstraints.isMonthUnavailable"
+        :is-year-unavailable="dateConstraints.isYearUnavailable"
+        @update:model-value="onCalendarChange"
       )
-      .flex.items-center.justify-end(v-if="calendarValue && !isDisabled && !isReadonly")
+      .flex.items-center.justify-end(v-if="hasValue && !isDisabled && !isReadonly")
         u-button(
           color="neutral"
           variant="link"
           size="xs"
           icon="i-lucide-x"
           label="Effacer"
-          @click="onChangeDateValue(null)"
+          @click="onCalendarChange(null)"
         )
 </template>
 
@@ -36,8 +42,11 @@ import {
   type JsonFormsRendererRegistryEntry,
   rankWith,
   and,
+  or,
   isDateControl,
   optionIs,
+  uiTypeIs,
+  schemaMatches,
 } from '@jsonforms/core'
 import { computed, defineComponent, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
@@ -45,25 +54,22 @@ import UButton from '@nuxt/ui/components/Button.vue'
 import UCalendar from '@nuxt/ui/components/Calendar.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { useDateControl } from '../composables'
+import {
+  CALENDAR_CONSTRAINT_CELL_UI,
+  fromDateRangeValue,
+  toDateRangeValue,
+  useDateControl,
+} from '../composables'
 
 /**
  * CalendarControlRenderer
  *
  * Rend les dates marquées `options.format: "calendar"` avec un `UCalendar` déplié.
  *
- * Complément de `DateControlRenderer` (champ segmenté) : le calendrier permanent sert les
- * formulaires où la date *est* le sujet — réservation, planning — et où l'utilisateur
- * raisonne en jours de la semaine plutôt qu'en chiffres.
- *
- * La conversion chaîne ⇄ `@internationalized/date` est celle de `useDateControl` : les deux
- * renderers écrivent donc exactement la même valeur pour le même schéma.
- *
- * `UCalendar` n'a pas de « vider » natif — un jour cliqué ne se déclique pas : le bouton
- * ci-dessus est le seul moyen de repasser un champ facultatif à vide.
+ * `options.range: true` sur un objet `{ start, end }` active la sélection d'intervalle.
+ * Les exclusions (`disabledDates`, weekdays, mois, années) passent par `is*Unavailable`
+ * (barré + atténué) pour rester lisibles sous le surlignage de plage.
  */
-// Annotation explicite : `UCalendar` expose des types internes de `reka-ui` que le
-// générateur de déclarations ne sait pas nommer depuis `dist/` (TS2742), comme `UInputDate`.
 const controlRenderer: Component = defineComponent({
   name: 'CalendarControlRenderer',
   components: {
@@ -83,21 +89,91 @@ const controlRenderer: Component = defineComponent({
       clearValue,
     })
 
-    /**
-     * `null` et non `undefined` pour l'absence de valeur : `undefined` fait basculer
-     * `UCalendar` en mode non contrôlé, et la sélection cesserait de suivre le modèle.
-     */
-    const calendarValue = computed(() => control.dateValue.value ?? null)
+    const isRange = computed(() => !!control.appliedOptions.value?.range)
 
-    return { ...control, calendarValue }
+    const calendarBind = computed(() => {
+      const fromOptions = control.uiProps('calendar') as Record<string, unknown>
+      const optionUi = (fromOptions.ui ?? {}) as Record<string, unknown>
+      const optionTrigger = optionUi.cellTrigger
+
+      return {
+        ...fromOptions,
+        ui: {
+          ...optionUi,
+          cellTrigger: [optionTrigger, CALENDAR_CONSTRAINT_CELL_UI].filter(Boolean).join(' '),
+        },
+      }
+    })
+
+    const calendarValue = computed(() => {
+      if (isRange.value) {
+        const range = toDateRangeValue(
+          control.control.value.data,
+          String(control.optionPattern.value ?? ''),
+        )
+        return {
+          start: range.start,
+          end: range.end,
+        }
+      }
+
+      return control.dateValue.value ?? null
+    })
+
+    const hasValue = computed(() => {
+      if (isRange.value) {
+        const data = control.control.value.data as { start?: string } | undefined
+        return !!data?.start
+      }
+
+      return !!calendarValue.value
+    })
+
+    const onCalendarChange = (value: unknown) => {
+      if (isRange.value) {
+        const next = fromDateRangeValue(
+          value as {
+            start?: { year: number; month: number; day: number }
+            end?: { year: number; month: number; day: number }
+          } | null,
+          String(control.optionPattern.value ?? ''),
+        )
+        control.onChange(control.adaptTarget(next))
+        return
+      }
+
+      control.onChangeDateValue(value as Parameters<typeof control.onChangeDateValue>[0])
+    }
+
+    return {
+      ...control,
+      isRange,
+      calendarBind,
+      calendarValue,
+      hasValue,
+      onCalendarChange,
+    }
   },
 })
 
 export default controlRenderer
 
+const isCalendarRangeObject = and(
+  uiTypeIs('Control'),
+  optionIs('format', 'calendar'),
+  optionIs('range', true),
+  schemaMatches((schema) => schema.type === 'object'),
+)
+
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
   // prettier-ignore
-  tester: rankWith(20, and(isDateControl, optionIs('format', 'calendar'))), // Matches date controls with option format set to 'calendar'
+  tester: rankWith(
+    25,
+    or(
+      and(isDateControl, optionIs('format', 'calendar')),
+      isCalendarRangeObject,
+    ),
+  ),
 }
 </script>

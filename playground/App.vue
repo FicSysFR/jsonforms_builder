@@ -43,20 +43,42 @@ u-app
     .flex.flex-col.items-stretch.gap-4.p-4(class="lg:flex-row lg:items-start" v-else)
       //- Sticky + max-height sous le header : la liste d'exemples scrolle
       //- indépendamment du formulaire quand elle dépasse la fenêtre.
-      nav.space-y-1.overflow-y-auto(
+      //- La barre de recherche reste hors du scroll pour rester accessible.
+      .flex.flex-col.gap-2(
         class="max-h-56 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-56 lg:shrink-0"
       )
-        u-button(
-          v-for="item in examples"
-          :key="item.name"
-          :label="item.label"
-          :color="item.name === example.name ? 'primary' : 'neutral'"
-          :variant="item.name === example.name ? 'soft' : 'ghost'"
+        u-input(
+          v-model="exampleQuery"
+          icon="i-lucide-search"
+          placeholder="Rechercher…"
           size="sm"
-          block
-          class="justify-start"
-          @click="selectExample(item.name)"
+          :ui="{ trailing: 'pe-1' }"
         )
+          template(#trailing)
+            u-button(
+              v-if="exampleQuery"
+              color="neutral"
+              variant="link"
+              size="sm"
+              icon="i-lucide-x"
+              aria-label="Effacer la recherche"
+              @click="exampleQuery = ''"
+            )
+        nav.space-y-1.min-h-0.flex-1.overflow-y-auto
+          u-button(
+            v-for="item in filteredExamples"
+            :key="item.name"
+            :label="item.label"
+            :color="item.name === example.name ? 'primary' : 'neutral'"
+            :variant="item.name === example.name ? 'soft' : 'ghost'"
+            size="sm"
+            block
+            class="justify-start"
+            @click="selectExample(item.name)"
+          )
+          p.py-2.text-center.text-xs.text-muted(
+            v-if="filteredExamples.length === 0"
+          ) Aucun exemple
 
       .min-w-0.flex-1.space-y-4
         u-card
@@ -94,6 +116,18 @@ const examples = getExamples()
 const renderers = Object.freeze(allRenderers)
 const additionalErrors: ErrorObject[] = []
 const ajv = createAjv()
+
+/** Filtre la liste latérale sur le libellé ou le nom technique de l'exemple. */
+const exampleQuery = ref('')
+const filteredExamples = computed(() => {
+  const q = exampleQuery.value.trim().toLowerCase()
+  if (!q) {
+    return examples
+  }
+  return examples.filter(
+    (item) => item.label.toLowerCase().includes(q) || item.name.toLowerCase().includes(q),
+  )
+})
 
 const localeItems = [
   { label: 'Français', value: 'fr' },

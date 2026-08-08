@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { CalendarDate } from '@internationalized/date'
 import {
+  buildDateConstraints,
+  fromDateRangeValue,
   fromDateValue,
   resolveCalendarType,
   resolveDateGranularity,
+  toCalendarDateBound,
+  toDateRangeValue,
   toDateValue,
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATETIME_FORMAT,
@@ -31,6 +36,74 @@ describe('resolveCalendarType', () => {
     expect(resolveCalendarType('YYYY.MM')).toBe('month')
     expect(resolveCalendarType('YYYY-MM')).toBe('month')
     expect(resolveCalendarType('YYYY')).toBe('year')
+  })
+})
+
+describe('buildDateConstraints', () => {
+  it('parses min/max bounds from ISO-like strings', () => {
+    const constraints = buildDateConstraints({
+      minDate: '2026-01-01',
+      maxDate: '2026-12-31',
+    })
+
+    expect(constraints.minValue?.toString()).toBe('2026-01-01')
+    expect(constraints.maxValue?.toString()).toBe('2026-12-31')
+    expect(constraints.isDateUnavailable).toBeUndefined()
+  })
+
+  it('disables listed dates and weekdays', () => {
+    const constraints = buildDateConstraints({
+      disabledDates: ['2026-08-15'],
+      disabledWeekdays: [0, 6],
+    })
+
+    expect(constraints.isDateUnavailable?.(new CalendarDate(2026, 8, 15))).toBe(true)
+    // 2026-08-10 = lundi
+    expect(constraints.isDateUnavailable?.(new CalendarDate(2026, 8, 10))).toBe(false)
+    // 2026-08-09 = dimanche
+    expect(constraints.isDateUnavailable?.(new CalendarDate(2026, 8, 9))).toBe(true)
+    // 2026-08-08 = samedi
+    expect(constraints.isDateUnavailable?.(new CalendarDate(2026, 8, 8))).toBe(true)
+  })
+
+  it('disables months and years for coarser pickers', () => {
+    const constraints = buildDateConstraints({
+      disabledMonths: [1, 2],
+      disabledYears: [2020, 2021],
+    })
+
+    expect(constraints.isMonthUnavailable?.(new CalendarDate(2026, 1, 1))).toBe(true)
+    expect(constraints.isMonthUnavailable?.(new CalendarDate(2026, 3, 1))).toBe(false)
+    expect(constraints.isYearUnavailable?.(new CalendarDate(2020, 6, 1))).toBe(true)
+    expect(constraints.isYearUnavailable?.(new CalendarDate(2026, 6, 1))).toBe(false)
+  })
+})
+
+describe('toCalendarDateBound', () => {
+  it('accepts year-month and year-only bounds', () => {
+    expect(toCalendarDateBound('2026.08')?.toString()).toBe('2026-08-01')
+    expect(toCalendarDateBound('2026')?.toString()).toBe('2026-01-01')
+  })
+})
+
+describe('date range conversion', () => {
+  it('round-trips a start/end pair', () => {
+    const range = toDateRangeValue(
+      { start: '2026-08-01', end: '2026-08-10' },
+      DEFAULT_DATE_FORMAT,
+    )
+
+    expect(range.start?.toString()).toBe('2026-08-01')
+    expect(range.end?.toString()).toBe('2026-08-10')
+    expect(fromDateRangeValue(range, DEFAULT_DATE_FORMAT)).toEqual({
+      start: '2026-08-01',
+      end: '2026-08-10',
+    })
+  })
+
+  it('returns undefined when the range has no start', () => {
+    expect(fromDateRangeValue(null, DEFAULT_DATE_FORMAT)).toBeUndefined()
+    expect(fromDateRangeValue({ start: undefined }, DEFAULT_DATE_FORMAT)).toBeUndefined()
   })
 })
 

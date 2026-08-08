@@ -62,6 +62,9 @@
       :autofocus="appliedOptions.focus"
       :granularity="granularity"
       :locale="appliedOptions.locale ?? 'fr-FR'"
+      :min-value="dateConstraints.minValue"
+      :max-value="dateConstraints.maxValue"
+      :is-date-unavailable="dateConstraints.isDateUnavailable"
       hour-cycle="24"
       @update:model-value="onChangeDateValue"
       @focus="handleFocus"
@@ -86,13 +89,18 @@
             u-card(v-bind="uiProps('calendarCard')" :ui="{ body: 'p-2' }")
               .flex.flex-col.gap-3.items-stretch(class="sm:flex-row")
                 u-calendar(
-                  v-bind="uiProps('calendar')"
+                  v-bind="calendarBind"
                   :type="calendarType"
                   :model-value="calendarValue"
                   :locale="appliedOptions.locale ?? 'fr-FR'"
                   :color="control.errors ? 'error' : undefined"
                   :number-of-months="appliedOptions.months"
                   :week-numbers="!!appliedOptions.weekNumbers"
+                  :min-value="dateConstraints.minValue"
+                  :max-value="dateConstraints.maxValue"
+                  :is-date-unavailable="dateConstraints.isDateUnavailable"
+                  :is-month-unavailable="dateConstraints.isMonthUnavailable"
+                  :is-year-unavailable="dateConstraints.isYearUnavailable"
                   @update:model-value="onCalendarSelect"
                 )
                 .flex.flex-col.justify-center.border-t.border-default.pt-3(
@@ -145,7 +153,7 @@ import UInputTime from '@nuxt/ui/components/InputTime.vue'
 import UPopover from '@nuxt/ui/components/Popover.vue'
 import { ControlWrapper, TimePicker } from '../common'
 import { determineClearValue } from '../utils'
-import { useDateControl } from '../composables'
+import { CALENDAR_CONSTRAINT_CELL_UI, useDateControl } from '../composables'
 
 /**
  * DateControlRenderer
@@ -196,6 +204,20 @@ const controlRenderer: Component = defineComponent({
     })
 
     const pickerOpen = ref(false)
+
+    const calendarBind = computed(() => {
+      const fromOptions = control.uiProps('calendar') as Record<string, unknown>
+      const optionUi = (fromOptions.ui ?? {}) as Record<string, unknown>
+      const optionTrigger = optionUi.cellTrigger
+
+      return {
+        ...fromOptions,
+        ui: {
+          ...optionUi,
+          cellTrigger: [optionTrigger, CALENDAR_CONSTRAINT_CELL_UI].filter(Boolean).join(' '),
+        },
+      }
+    })
 
     const calendarIcon = computed(() =>
       control.inputType.value === 'datetime-local'
@@ -327,6 +349,7 @@ const controlRenderer: Component = defineComponent({
     return {
       ...control,
       pickerOpen,
+      calendarBind,
       calendarIcon,
       pickerAriaLabel,
       showSeconds,

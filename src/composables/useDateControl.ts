@@ -6,9 +6,11 @@ import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import type { ManipulateType } from 'dayjs'
 import {
-  type CalendarDate,
+  CalendarDate,
   type CalendarDateTime,
+  type DateValue,
   type Time,
+  getLocalTimeZone,
   parseDate,
   parseDateTime,
   parseTime,
@@ -188,6 +190,154 @@ export const resolveCalendarType = (pattern: string): 'date' | 'month' | 'year' 
   return 'date'
 }
 
+/** Options déclaratives de bornes / exclusions pour `UCalendar` / `UInputDate`. */
+export type DateConstraintOptions = {
+  /** Borne basse inclusive (`YYYY-MM-DD`, `YYYY-MM` ou `YYYY`). */
+  minDate?: string
+  /** Borne haute inclusive. */
+  maxDate?: string
+  /** Jours exclusifs au format `YYYY-MM-DD`. */
+  disabledDates?: string[]
+  /**
+   * Jours de la semaine exclus (`Date#getDay`) : `0` = dimanche … `6` = samedi.
+   * Ex. week-end : `[0, 6]`.
+   */
+  disabledWeekdays?: number[]
+  /** Mois exclus (`1`–`12`), utile avec `calendarType: "month"`. */
+  disabledMonths?: number[]
+  /** Années exclues, utile avec `calendarType: "year"`. */
+  disabledYears?: number[]
+}
+
+export type DateConstraints = {
+  minValue?: CalendarDate
+  maxValue?: CalendarDate
+  /** Exclusions déclaratives — branché sur `isDateUnavailable` (barré, plus lisible). */
+  isDateUnavailable?: (date: DateValue) => boolean
+  isMonthUnavailable?: (date: DateValue) => boolean
+  isYearUnavailable?: (date: DateValue) => boolean
+}
+
+const pad2 = (value: number) => String(value).padStart(2, '0')
+
+export const toCalendarDateBound = (value: string | undefined): CalendarDate | undefined => {
+  if (!value || typeof value !== 'string') {
+    return undefined
+  }
+
+  const parsed = dayjs(value, ['YYYY-MM-DD', 'YYYY-MM', 'YYYY.MM', 'YYYY'], true)
+  if (parsed.isValid()) {
+    return new CalendarDate(parsed.year(), parsed.month() + 1, parsed.date() || 1)
+  }
+
+  const loose = dayjs(value)
+  if (!loose.isValid()) {
+    return undefined
+  }
+
+  return new CalendarDate(loose.year(), loose.month() + 1, loose.date() || 1)
+}
+
+/**
+ * Construit les props de contrainte Nuxt UI / reka-ui à partir des options uischema.
+ *
+ * Les exclusions passent par `*Unavailable` (barré + atténué) plutôt que `*Disabled`
+ * (simple `text-muted`) : sur un calendrier en plage, le contraste activé / exclu
+ * devient lisible. Les bornes `minDate` / `maxDate` restent en `minValue` / `maxValue`.
+ */
+export const buildDateConstraints = (
+  options: DateConstraintOptions | undefined,
+): DateConstraints => {
+  const minValue = toCalendarDateBound(options?.minDate)
+  const maxValue = toCalendarDateBound(options?.maxDate)
+  const disabledDates = new Set(options?.disabledDates ?? [])
+  const disabledWeekdays = options?.disabledWeekdays ?? []
+  const disabledMonths = new Set(options?.disabledMonths ?? [])
+  const disabledYears = new Set(options?.disabledYears ?? [])
+
+  const hasDayRules = disabledDates.size > 0 || disabledWeekdays.length > 0
+
+  return {
+    minValue,
+    maxValue,
+    isDateUnavailable: hasDayRules
+      ? (date: DateValue) => {
+          const key = `${date.year}-${pad2(date.month)}-${pad2(date.day)}`
+          if (disabledDates.has(key)) {
+            return true
+          }
+
+          if (disabledWeekdays.length > 0) {
+            const jsDay = date.toDate(getLocalTimeZone()).getDay()
+            if (disabledWeekdays.includes(jsDay)) {
+              return true
+            }
+          }
+
+          return false
+        }
+      : undefined,
+    isMonthUnavailable:
+      disabledMonths.size > 0 ? (date: DateValue) => disabledMonths.has(date.month) : undefined,
+    isYearUnavailable:
+      disabledYears.size > 0 ? (date: DateValue) => disabledYears.has(date.year) : undefined,
+  }
+}
+
+/**
+ * Classes `ui.cellTrigger` pour distinguer clairement les jours exclus / hors bornes
+ * du reste de la grille — surtout en mode plage où le surlignage `highlighted`
+ * masque le simple `text-muted` du thème Nuxt UI.
+ */
+export const CALENDAR_CONSTRAINT_CELL_UI =
+  'data-disabled:opacity-25 data-disabled:line-through data-disabled:pointer-events-none data-disabled:cursor-not-allowed data-unavailable:opacity-40 data-unavailable:line-through data-unavailable:text-muted data-unavailable:pointer-events-none'
+
+export type DateRangeValue = {
+  start?: string
+  end?: string
+}
+
+export const toDateRangeValue = (
+  value: unknown,
+  pattern: string,
+): { start?: CalendarDate; end?: CalendarDate } => {
+  if (!value || typeof value !== 'object') {
+    return {}
+  }
+
+  const range = value as DateRangeValue
+  const start = toDateValue(range.start, pattern, 'date')
+  const end = toDateValue(range.end, pattern, 'date')
+
+  return {
+    start: start && 'year' in start ? new CalendarDate(start.year, start.month, start.day) : undefined,
+    end: end && 'year' in end ? new CalendarDate(end.year, end.month, end.day) : undefined,
+  }
+}
+
+export const fromDateRangeValue = (
+  value:
+    | { start?: Pick<DateValue, 'year' | 'month' | 'day'> | null; end?: Pick<DateValue, 'year' | 'month' | 'day'> | null }
+    | null
+    | undefined,
+  pattern: string,
+): DateRangeValue | undefined => {
+  if (!value?.start) {
+    return undefined
+  }
+
+  const start = fromDateValue(
+    new CalendarDate(value.start.year, value.start.month, value.start.day),
+    pattern,
+    'date',
+  )
+  const end = value.end
+    ? fromDateValue(new CalendarDate(value.end.year, value.end.month, value.end.day), pattern, 'date')
+    : undefined
+
+  return { start, end }
+}
+
 /**
  * Convertit la valeur stockée (chaîne au motif du schéma) vers l'objet attendu par
  * `UInputDate` / `UInputTime`, qui travaillent en `@internationalized/date`.
@@ -294,6 +444,10 @@ export const useDateControl = ({
 
   const calendarType = computed(() => resolveCalendarType(String(optionPattern.value ?? '')))
 
+  const dateConstraints = computed(() =>
+    buildDateConstraints(control.appliedOptions.value as DateConstraintOptions | undefined),
+  )
+
   /** Valeur exposée à `UInputDate` / `UInputTime`. */
   const dateValue = computed(() =>
     toDateValue(control.control.value.data, optionPattern.value, rawFormat.value),
@@ -382,6 +536,7 @@ export const useDateControl = ({
     adaptTarget,
     granularity,
     calendarType,
+    dateConstraints,
     dateValue,
     onChangeDateValue,
     optionPattern,
