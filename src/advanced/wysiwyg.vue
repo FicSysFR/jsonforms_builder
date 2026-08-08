@@ -12,7 +12,7 @@
       :content-type="contentType"
       :editable="!isDisabled && !isReadonly"
       :placeholder="appliedOptions.placeholder"
-      :image="imageOptions"
+      :image="false"
       :extensions="editorExtensions"
       :handlers="editorHandlers"
       :class="[styles.control.input, 'rounded-md border border-default']"
@@ -44,9 +44,10 @@ import {
   isStringControl,
   optionIs,
 } from '@jsonforms/core'
-import { computed, defineComponent, provide, type Component } from 'vue'
+import { computed, defineComponent, onMounted, provide, type Component } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import type { Editor } from '@tiptap/vue-3'
+import Image from '@tiptap/extension-image'
 import UEditor from '@nuxt/ui/components/Editor.vue'
 import UEditorToolbar from '@nuxt/ui/components/EditorToolbar.vue'
 import { ControlWrapper } from '../common'
@@ -57,6 +58,7 @@ import {
   imageUploadHandler,
   readFileAsDataUrl,
 } from './wysiwygImageUpload'
+import { ensureWysiwygImageResizeStyles } from './wysiwygImageResizeStyles'
 
 /**
  * Default toolbar.
@@ -284,6 +286,12 @@ const controlRenderer: Component = defineComponent({
 
     const control = useUiControl(useJsonFormsControl(props), adaptTarget, 300)
 
+    onMounted(() => {
+      if (control.appliedOptions.value?.image !== false) {
+        ensureWysiwygImageResizeStyles()
+      }
+    })
+
     const contentType = computed(() => {
       const explicit = control.appliedOptions.value?.contentType
       if (explicit === 'html' || explicit === 'json') {
@@ -294,15 +302,18 @@ const controlRenderer: Component = defineComponent({
 
     const imagesEnabled = computed(() => control.appliedOptions.value?.image !== false)
 
-    const imageOptions = computed(() => {
-      if (!imagesEnabled.value) return false
+    const editorExtensions = computed(() => {
+      if (!imagesEnabled.value) return []
       const fromOptions = control.appliedOptions.value?.image
       const extra = fromOptions && typeof fromOptions === 'object' ? fromOptions : {}
-      return {
-        allowBase64: true,
-        resize: { ...DEFAULT_IMAGE_RESIZE },
-        ...extra,
-      }
+      return [
+        Image.configure({
+          allowBase64: true,
+          resize: { ...DEFAULT_IMAGE_RESIZE },
+          ...extra,
+        }),
+        ImageUpload,
+      ]
     })
 
     const imageUploadCtx = computed(() => {
@@ -324,8 +335,6 @@ const controlRenderer: Component = defineComponent({
     })
 
     provide(WysiwygImageUploadKey, imageUploadCtx)
-
-    const editorExtensions = computed(() => (imagesEnabled.value ? [ImageUpload] : []))
 
     const editorHandlers = computed(() =>
       imagesEnabled.value ? { imageUpload: imageUploadHandler } : undefined,
@@ -396,7 +405,6 @@ const controlRenderer: Component = defineComponent({
       contentType,
       toolbarItems,
       editorUi,
-      imageOptions,
       imagesEnabled,
       editorExtensions,
       editorHandlers,

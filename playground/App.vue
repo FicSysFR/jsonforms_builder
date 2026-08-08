@@ -110,30 +110,20 @@ u-app
           )
 
         //- Keep the form mounted (`v-show`) so switching tabs does not reset field state.
-        .space-y-4(v-show="inspectTab === 'form'")
-          u-card(:ui="{ body: 'p-6 sm:p-8' }")
-            json-forms(
-              :key="example.name"
-              :data="data"
-              :schema="example.schema"
-              :uischema="example.uischema"
-              :renderers="renderers"
-              :i18n="i18n"
-              :ajv="ajv"
-              :additional-errors="additionalErrors"
-              :config="{ ...example.config }"
-              validation-mode="ValidateAndShow"
-              @change="onChange"
-            )
-          //- Quasar-style Props API under the live demo (Documentation section only).
-          u-card(
-            v-if="gallerySection === 'docs' && apiGroups.length > 0"
-            :ui="{ body: 'p-4 sm:p-6 space-y-1' }"
+        u-card(v-show="inspectTab === 'form'" :ui="{ body: 'p-6 sm:p-8' }")
+          json-forms(
+            :key="example.name"
+            :data="data"
+            :schema="example.schema"
+            :uischema="example.uischema"
+            :renderers="renderers"
+            :i18n="i18n"
+            :ajv="ajv"
+            :additional-errors="additionalErrors"
+            :config="{ ...example.config }"
+            validation-mode="ValidateAndShow"
+            @change="onChange"
           )
-            .flex.flex-wrap.items-baseline.justify-between.gap-2.mb-3
-              h2.text-base.font-semibold.tracking-tight API — Options
-              p.text-xs.text-muted Name · Type · Default · Description
-            api-props-table(:groups="apiGroups")
 
         u-card(v-if="inspectTab === 'api'" :ui="{ body: 'p-4 sm:p-6' }")
           .flex.flex-wrap.items-baseline.justify-between.gap-2.mb-3
@@ -149,7 +139,8 @@ u-app
           pre.overflow-auto.p-6.text-xs.leading-relaxed(
             class="max-h-[calc(100dvh-12rem)]"
             v-text="inspectJson"
-          )</template>
+          )
+</template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, toRaw, watch } from 'vue'
