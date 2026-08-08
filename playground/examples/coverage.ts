@@ -13,6 +13,7 @@ import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { Generate, hasType, resolveSchema } from '@jsonforms/core'
 
 import { getExamples } from './register'
 
@@ -40,38 +41,104 @@ for (const file of readdirSync(itemsDir).filter((f) => f.endsWith('.ts'))) {
   await import(join(itemsDir, file))
 }
 
-type Gap = { type: string; scope?: string }
+type Gap = { type: string; scope?: string; reason: 'aucun renderer' | 'rendu vide' }
 
-/** Rang maximal atteint par un renderer pour cet élément ; -1 si aucun ne convient. */
-const bestRank = (uischema: any, schema: any, rootSchema: any): number =>
-  allRenderers.reduce((best: number, entry: any) => {
+/**
+ * Garde-fou du parcours, **sans valeur de diagnostic**.
+ *
+ * On déplie ici les dispositions générées de façon avide, alors que le navigateur ne
+ * déplie que ce qu'il affiche : un schéma légitimement récursif (le méta-schéma JSON
+ * Schema, par exemple) descendrait sans fin. Atteindre ce plafond n'est donc pas un
+ * défaut, juste une limite d'exploration.
+ */
+const MAX_DEPTH = 12
+
+/** Renderer retenu pour cet élément — nom et rang —, ou `null` si aucun ne convient. */
+const winner = (
+  uischema: any,
+  schema: any,
+  rootSchema: any,
+): { name: string; rank: number } | null =>
+  allRenderers.reduce<{ name: string; rank: number } | null>((best, entry: any) => {
     let rank = -1
     try {
       rank = entry.tester(uischema, schema, { rootSchema, config: undefined })
     } catch {
       // Un tester qui lève sur un schéma exotique ne « prend » pas l'élément.
     }
-    return rank > best ? rank : best
-  }, -1)
 
-/** Parcourt l'arbre du uischema et collecte les éléments qu'aucun renderer ne prend. */
-const walk = (uischema: any, schema: any, rootSchema: any, gaps: Gap[]): void => {
+    if (rank < 0 || (best && rank <= best.rank)) {
+      return best
+    }
+
+    return { name: entry.renderer?.name ?? '?', rank }
+  }, null)
+
+/**
+ * Parcourt l'arbre du uischema et collecte les éléments problématiques.
+ *
+ * Descend aussi dans les dispositions **générées** par les renderers d'objet, seul moyen
+ * de repérer une boucle : celle-ci n'existe pas dans le uischema écrit à la main.
+ */
+const walk = (
+  uischema: any,
+  schema: any,
+  rootSchema: any,
+  gaps: Gap[],
+  depth = 0,
+): void => {
   if (!uischema || typeof uischema !== 'object') return
 
-  if (bestRank(uischema, schema, rootSchema) < 0) {
-    gaps.push({ type: uischema.type, scope: uischema.scope })
+  if (depth > MAX_DEPTH) return
+
+  const chosen = winner(uischema, schema, rootSchema)
+
+  if (!chosen) {
+    gaps.push({ type: uischema.type, scope: uischema.scope, reason: 'aucun renderer' })
     return
   }
-
-  if (!Array.isArray(uischema.elements)) return
 
   // Les enfants d'un layout reçoivent **le même schéma** que lui : ce sont les testers
   // qui résolvent le `scope` eux-mêmes (`schemaMatches` appelle `resolveSchema`). Leur
   // passer un schéma déjà résolu leur ferait résoudre deux fois, et tout paraîtrait
   // non couvert.
-  for (const child of uischema.elements) {
-    walk(child, schema, rootSchema, gaps)
+  if (Array.isArray(uischema.elements)) {
+    for (const child of uischema.elements) {
+      walk(child, schema, rootSchema, gaps, depth + 1)
+    }
+    return
   }
+
+  // Un `Control` sur un objet : on rejoue ce que le renderer produirait.
+  if (uischema.type !== 'Control' || !uischema.scope) return
+
+  let resolved: any
+  try {
+    resolved = resolveSchema(schema, uischema.scope, rootSchema)
+  } catch {
+    return
+  }
+
+  if (!resolved || !hasType(resolved, 'object')) return
+
+  const generated = Generate.uiSchema(resolved, 'VerticalLayout')
+
+  /*
+   * Cas dégénéré : faute de `properties`, la génération renvoie un `Control` sur l'objet
+   * lui-même. Redispatché, il bouclerait — c'est ce que le garde-fou du renderer d'objet
+   * intercepte désormais, au prix d'un rendu vide.
+   *
+   * Ce n'est un défaut que pour `ObjectControlRenderer` : les schémas `allOf` atterrissent
+   * sur leur propre renderer, qui fusionne les branches au lieu de générer à l'aveugle.
+   */
+  if ((generated as any)?.type === 'Control') {
+    if (chosen.name === 'ObjectControlRenderer') {
+      gaps.push({ type: 'Control', scope: uischema.scope, reason: 'rendu vide' })
+    }
+    return
+  }
+
+  walk(generated, resolved, rootSchema, gaps, depth + 1)
 }
 
 const examples = getExamples()
@@ -90,6 +157,8 @@ console.log(`exemples analysés     : ${examples.length}`)
 console.log(`exemples avec trou    : ${report.length}`)
 
 for (const { name, gaps } of report) {
-  const summary = [...new Set(gaps.map((g) => `${g.type}${g.scope ? ` ${g.scope}` : ''}`))]
+  const summary = [
+    ...new Set(gaps.map((g) => `[${g.reason}] ${g.type}${g.scope ? ` ${g.scope}` : ''}`)),
+  ]
   console.log(`  ${name} → ${summary.join(', ')}`)
 }

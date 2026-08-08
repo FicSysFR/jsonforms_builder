@@ -3,6 +3,7 @@
     h4(v-if="computedLabel" :class="styles.group.label" v-text="computedLabel")
 
     dispatch-renderer(
+      v-if="detailUiSchema"
       :schema="control.schema"
       :uischema="detailUiSchema"
       :path="control.path"
@@ -61,14 +62,28 @@ const controlRenderer = defineComponent({
      * `Generate.uiSchema` produirait un `Control` sur l'objet lui-même, que ce même
      * renderer reprendrait — récursion infinie.
      */
-    const detailUiSchema = computed<UISchemaElement>(() => {
+    const detailUiSchema = computed<UISchemaElement | undefined>(() => {
       const detail = (control.control.value.uischema as any)?.options?.detail
 
       if (detail) {
         return detail as UISchemaElement
       }
 
-      return Generate.uiSchema(control.control.value.schema, 'VerticalLayout')
+      const generated = Generate.uiSchema(control.control.value.schema, 'VerticalLayout')
+
+      /*
+       * Garde-fou contre la récursion infinie.
+       *
+       * Faute de `properties`, `Generate.uiSchema` ne peut pas bâtir de disposition et
+       * retombe sur un `Control` de scope `#` — c'est-à-dire sur l'objet lui-même. Le
+       * dispatcher le renverrait à ce même renderer, indéfiniment
+       * (`Maximum call stack size exceeded`).
+       */
+      if ((generated as any)?.type === 'Control') {
+        return undefined
+      }
+
+      return generated
     })
 
     /** Clés présentes dans la donnée mais absentes des `properties` du schéma. */
