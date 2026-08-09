@@ -19,9 +19,11 @@
     p.text-xs.text-muted.leading-snug {{ sectionHint }}
     //- `readonly` until focus: Chrome ignores `autocomplete="off"` next to
     //- OTP pin inputs (`autocomplete="one-time-code"`) and dumps a saved email here.
+    //- `type="text"` (not `search`): Chromium/WebKit draw a native
+    //- `::-webkit-search-cancel-button` that would sit next to our clear control.
     u-input(
       v-model="exampleQuery"
-      type="search"
+      type="text"
       name="playground-example-filter"
       autocomplete="off"
       icon="i-lucide-search"
