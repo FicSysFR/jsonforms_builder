@@ -48,10 +48,15 @@
           )
 
       //- Children. The dashed zone lets you fill an empty container.
-      .space-y-1.border-t.border-default.p-2.pl-6(v-if="children")
+      //- HorizontalLayout keeps siblings on one row so the canvas matches the runtime layout.
+      .border-t.border-default.p-2.pl-6(
+        v-if="children"
+        :class="isHorizontal ? 'flex flex-wrap items-stretch gap-2' : 'space-y-1'"
+      )
         builder-node(
           v-for="(child, childIndex) in children"
           :key="`${path.join('-')}-${childIndex}`"
+          :class="isHorizontal ? 'min-w-40 flex-1' : undefined"
           :element="child"
           :path="[...path, childIndex]"
           :index="childIndex"
@@ -64,8 +69,8 @@
           @drop-item="$emit('drop-item', $event)"
         )
 
-        .rounded.border.border-dashed.py-2.text-center.text-xs.transition-colors(
-          :class="dropTarget === 'inside' ? 'border-primary text-primary' : 'border-default text-dimmed'"
+        .rounded.border.border-dashed.text-center.text-xs.transition-colors(
+          :class="insideDropClass"
           @dragover.prevent="dropTarget = 'inside'"
           @dragleave="dropTarget = null"
           @drop.prevent="onDropInside"
@@ -150,6 +155,17 @@ export default defineComponent({
       () => (props.element as { elements?: UISchemaElement[] }).elements,
     )
 
+    const isHorizontal = computed(() => props.element.type === 'HorizontalLayout')
+
+    const insideDropClass = computed(() => [
+      isHorizontal.value
+        ? 'flex min-w-28 shrink-0 items-center justify-center px-3 py-2'
+        : 'py-2',
+      dropTarget.value === 'inside'
+        ? 'border-primary text-primary'
+        : 'border-default text-dimmed',
+    ])
+
     const isSelected = computed(
       () => !!props.selectedPath && isSamePath(props.selectedPath, props.path),
     )
@@ -199,6 +215,8 @@ export default defineComponent({
     return {
       dropTarget,
       children,
+      isHorizontal,
+      insideDropClass,
       isSelected,
       nodeIcon,
       nodeLabel,

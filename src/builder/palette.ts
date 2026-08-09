@@ -54,19 +54,11 @@ export const PALETTE_FIELDS: PaletteField[] = [
   },
   {
     key: 'wysiwyg',
-    label: 'Texte riche (JSON)',
+    label: 'Texte riche',
     icon: 'i-lucide-pilcrow',
     group: 'Saisie',
     schema: () => ({ type: 'object' }),
     options: () => ({ wysiwyg: true, contentType: 'json' }),
-  },
-  {
-    key: 'wysiwyg-html',
-    label: 'Texte riche (HTML)',
-    icon: 'i-lucide-code-xml',
-    group: 'Saisie',
-    schema: () => ({ type: 'string' }),
-    options: () => ({ wysiwyg: true, contentType: 'html' }),
   },
   {
     key: 'password',

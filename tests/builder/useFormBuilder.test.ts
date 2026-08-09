@@ -291,6 +291,32 @@ describe('useFormBuilder', () => {
     stop()
   })
 
+  it('updates contentType and schema type atomically for wysiwyg', () => {
+    const { api, stop } = mountBuilder()
+
+    api.addField('wysiwyg', [], 0)
+    expect(api.definition.value.schema.properties?.texteRiche).toMatchObject({ type: 'object' })
+
+    api.updateControl(
+      [0],
+      'texteRiche',
+      { options: { wysiwyg: true, contentType: 'html' } },
+      { type: 'string' },
+    )
+
+    expect(api.definition.value.schema.properties?.texteRiche).toMatchObject({ type: 'string' })
+    expect(
+      (api.definition.value.uischema as { elements: Array<{ options?: Record<string, unknown> }> })
+        .elements[0].options,
+    ).toEqual({ wysiwyg: true, contentType: 'html' })
+    expect(api.canUndo.value).toBe(true)
+
+    api.undo()
+    expect(api.definition.value.schema.properties?.texteRiche).toMatchObject({ type: 'object' })
+
+    stop()
+  })
+
   it('deselects after removing the selected element', () => {
     const { api, stop } = mountBuilder()
 

@@ -109,6 +109,7 @@
           :required="selectedProperty ? isRequired(selectedProperty) : false"
           @update:element="onUpdateElement"
           @update:property="onUpdateProperty"
+          @update:control="onUpdateControl"
           @update:required="setRequired"
         )
 
@@ -143,38 +144,40 @@
       @confirm="confirmRemove"
     )
 
+    //- Nuxt UI: default slot = DialogTrigger; body content must use `#body`.
     u-modal(
       v-model:open="importOpen"
       title="Importer un formulaire"
       description="Collez un JSON `{ schema, uischema }` (ou un JSON Schema seul), ou chargez un fichier."
       :ui="{ content: 'sm:max-w-2xl' }"
     )
-      .space-y-3
-        .flex.flex-wrap.items-center.gap-2
-          u-button(
-            icon="i-lucide-file-up"
-            label="Charger un fichier…"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            @click="fileInput?.click()"
-          )
-          input.hidden(
-            ref="fileInput"
-            type="file"
-            accept="application/json,.json"
-            @change="onImportFile"
-          )
-          p.text-xs.text-muted Fichier .json — remplace le formulaire courant
+      template(#body)
+        .space-y-3
+          .flex.flex-wrap.items-center.gap-2
+            u-button(
+              icon="i-lucide-file-up"
+              label="Charger un fichier…"
+              color="neutral"
+              variant="outline"
+              size="sm"
+              @click="fileInput?.click()"
+            )
+            input.hidden(
+              ref="fileInput"
+              type="file"
+              accept="application/json,.json"
+              @change="onImportFile"
+            )
+            p.text-xs.text-muted Fichier .json — remplace le formulaire courant
 
-        u-form-field(label="JSON" :error="importError || undefined")
-          u-textarea(
-            v-model="importText"
-            :rows="14"
-            class="w-full font-mono text-xs"
-            placeholder='{\n  "schema": { "type": "object", "properties": { … } },\n  "uischema": { "type": "VerticalLayout", "elements": [ … ] }\n}'
-            @update:model-value="importError = ''"
-          )
+          u-form-field(label="JSON" :error="importError || undefined")
+            u-textarea(
+              v-model="importText"
+              :rows="14"
+              class="w-full font-mono text-xs"
+              placeholder='{\n  "schema": { "type": "object", "properties": { … } },\n  "uischema": { "type": "VerticalLayout", "elements": [ … ] }\n}'
+              @update:model-value="importError = ''"
+            )
 
       template(#footer)
         .flex.w-full.items-center.justify-end.gap-2
@@ -398,6 +401,20 @@ export default defineComponent({
       }
     }
 
+    const onUpdateControl = (payload: {
+      element: Record<string, unknown>
+      property: Record<string, unknown>
+    }) => {
+      if (builder.selectedPath.value && builder.selectedProperty.value) {
+        builder.updateControl(
+          builder.selectedPath.value,
+          builder.selectedProperty.value,
+          payload.element,
+          payload.property,
+        )
+      }
+    }
+
     const schemaJson = computed(() => JSON.stringify(builder.definition.value.schema, null, 2))
     const uischemaJson = computed(() => JSON.stringify(builder.definition.value.uischema, null, 2))
 
@@ -462,6 +479,7 @@ export default defineComponent({
       onRootDrop,
       onUpdateElement,
       onUpdateProperty,
+      onUpdateControl,
       schemaJson,
       uischemaJson,
       importOpen,

@@ -216,6 +216,33 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     })
   }
 
+  /**
+   * Atomically patches both the uischema element and its schema property
+   * (e.g. WYSIWYG `contentType` + schema `type`).
+   */
+  const updateControl = (
+    path: ElementPath,
+    propertyName: string,
+    elementPatch: Record<string, unknown>,
+    propertyPatch: SchemaFragment,
+  ) => {
+    const current = definition.value.schema.properties?.[propertyName]
+    if (!current) return
+
+    const merged: SchemaFragment = { ...current, ...propertyPatch }
+
+    for (const [key, value] of Object.entries(propertyPatch)) {
+      if (value === undefined) {
+        delete merged[key]
+      }
+    }
+
+    commit({
+      schema: addSchemaProperty(definition.value.schema, propertyName, merged),
+      uischema: updateElementAt(definition.value.uischema, path, elementPatch),
+    })
+  }
+
   const setRequired = (name: string, required: boolean) => {
     commit({
       schema: setSchemaPropertyRequired(definition.value.schema, name, required),
@@ -252,6 +279,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     move,
     updateElement,
     updateProperty,
+    updateControl,
     setRequired,
     isRequired,
     undo,

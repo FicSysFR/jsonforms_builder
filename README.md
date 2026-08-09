@@ -72,7 +72,30 @@ Palette, drag-and-drop reorderable tree, property inspector, live preview, and J
 | `object` / `string` + `options.wysiwyg` | `UEditor` (JSON or HTML via `contentType`) |
 | WYSIWYG images | upload dropzone, drag-resize, bubble replace/delete |
 
-WYSIWYG image options: `onImageUpload(file) => Promise<url>` (default: data URL), `imageMaxSize`, `imageAccept`, or `image: false` to disable.
+WYSIWYG options (`options.wysiwyg: true`):
+
+| Option | Role |
+|---|---|
+| `contentType` | `'json'` \| `'html'` (else inferred from schema) |
+| `toolbar` | Nuxt UI toolbar groups, or `false` to hide |
+| `density` | `'compact'` \| `'comfortable'` \| `'prose'` |
+| `minHeight` / `padding` / `blockSpacing` / `editorClass` | spacing overrides |
+| `debounce` | `onChange` debounce in ms (default `300`) |
+| `image` | `false` to disable, or `{ upload, accept, maxSize, resize, bubble, … }` |
+| `extensions` / `handlers` | extra TipTap extensions / Nuxt UI handlers |
+
+```ts
+options: {
+  wysiwyg: true,
+  contentType: 'html',
+  density: 'comfortable',
+  image: {
+    upload: async (file) => uploadedUrl,
+    maxSize: 5 * 1024 * 1024,
+    resize: { minWidth: 80, alwaysPreserveAspectRatio: true },
+  },
+}
+```
 | `string` + `options.format: pin` | `UPinInput` |
 | `string` + `format: color` | `UColorPicker` in a popover + text input |
 | `string` + `format: data-url` | `UFileUpload` |

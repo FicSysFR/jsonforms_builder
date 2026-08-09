@@ -443,13 +443,13 @@
         //- ── WYSIWYG ────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'wysiwyg'")
           p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — texte riche
-          u-form-field(label="Format stocké")
+          u-form-field(label="Format stocké" help="options.contentType — adapte aussi le type du schema")
             u-select(
               :model-value="options.contentType === 'html' ? 'html' : 'json'"
               :items="wysiwygContentItems"
               value-key="value"
               class="w-full"
-              @update:model-value="patchOption('contentType', $event)"
+              @update:model-value="patchWysiwygContentType($event)"
             )
 
         //- ── Array / ListWithDetail ─────────────────────────────────────────
@@ -524,7 +524,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['update:element', 'update:property', 'update:required'],
+  emits: ['update:element', 'update:property', 'update:control', 'update:required'],
   setup(props, { emit }) {
     const schemaProperty = computed<JsonSchema | undefined>(() =>
       props.property ? props.schema.properties?.[props.property] : undefined,
@@ -734,6 +734,15 @@ export default defineComponent({
       emit('update:element', { options: next })
     }
 
+    /** contentType drives both the option and the schema `type` (object vs string). */
+    const patchWysiwygContentType = (value: unknown) => {
+      const contentType = value === 'html' ? 'html' : 'json'
+      emit('update:control', {
+        element: { options: { ...options.value, contentType } },
+        property: { type: contentType === 'html' ? 'string' : 'object' },
+      })
+    }
+
     return {
       schemaProperty,
       options,
@@ -765,6 +774,7 @@ export default defineComponent({
       patchEnum,
       patchEnumPresentation,
       patchOrientation,
+      patchWysiwygContentType,
     }
   },
 })
