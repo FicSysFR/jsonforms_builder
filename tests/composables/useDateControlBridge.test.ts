@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { CalendarDate } from '@internationalized/date'
+import { CalendarDate, CalendarDateTime } from '@internationalized/date'
 import {
   buildDateConstraints,
   fromDateRangeValue,
   fromDateValue,
+  isIncompleteTypedYear,
   resolveCalendarType,
   resolveDateGranularity,
   toCalendarDateBound,
@@ -148,8 +149,29 @@ describe('fromDateValue', () => {
     )
   })
 
+  it('preserves years below 100 instead of remapping them to 19xx', () => {
+    // Regression: dayjs(CalendarDate.toString()) turned 0001-01-01 into 1901-01-01.
+    expect(fromDateValue(new CalendarDate(1, 1, 1), 'YYYY', 'date')).toBe('0001')
+    expect(fromDateValue(new CalendarDate(2, 6, 15), DEFAULT_DATE_FORMAT, 'date')).toBe(
+      '0002-06-15',
+    )
+    expect(
+      fromDateValue(new CalendarDateTime(99, 12, 31, 23, 59, 58), DEFAULT_DATETIME_FORMAT, 'date-time'),
+    ).toBe('0099-12-31T23:59:58')
+  })
+
   it('returns undefined when there is no value to convert', () => {
     expect(fromDateValue(null, DEFAULT_DATE_FORMAT, 'date')).toBeUndefined()
     expect(fromDateValue(undefined, DEFAULT_DATE_FORMAT, 'date')).toBeUndefined()
+  })
+})
+
+describe('isIncompleteTypedYear', () => {
+  it('flags 1–3 digit years emitted while typing in DateField', () => {
+    expect(isIncompleteTypedYear(1)).toBe(true)
+    expect(isIncompleteTypedYear(20)).toBe(true)
+    expect(isIncompleteTypedYear(202)).toBe(true)
+    expect(isIncompleteTypedYear(1000)).toBe(false)
+    expect(isIncompleteTypedYear(2024)).toBe(false)
   })
 })

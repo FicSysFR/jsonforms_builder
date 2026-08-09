@@ -383,7 +383,20 @@ export const toDateValue = (
 }
 
 /**
+ * True while the DateField year segment still has 1–3 digits.
+ *
+ * `UInputDate` / reka-ui emit a full `CalendarDate` on every year keystroke. Writing
+ * that back into a controlled `modelValue` resets the segment buffer, so the next
+ * digit starts over — and dayjs loose-parsing of `0001-01-01` yields **1901**.
+ */
+export const isIncompleteTypedYear = (year: number): boolean => year >= 1 && year < 1000
+
+/**
  * Return path: component object back to a string in the pattern expected by the schema.
+ *
+ * Builds dayjs from numeric parts — never from `DateValue.toString()`. Years
+ * `0001`–`0099` round-tripped via an ISO string are remapped to `1901`–`1999`
+ * (JavaScript `Date` 0–99 → 1900+n).
  */
 export const fromDateValue = (
   value: CalendarDate | CalendarDateTime | Time | null | undefined,
@@ -394,17 +407,21 @@ export const fromDateValue = (
     return undefined
   }
 
-  const iso = value.toString()
-  const sourcePattern =
-    format === 'time'
-      ? DEFAULT_TIME_FORMAT
-      : format === 'date-time'
-        ? DEFAULT_DATETIME_FORMAT
-        : DEFAULT_DATE_FORMAT
+  if (format === 'time' || !('year' in value)) {
+    // `Time` serializes as `HH:mm:ss[.SSS]`: truncate to seconds before reparsing.
+    const normalized = value.toString().slice(0, 8)
+    const parsed = dayjs(normalized, DEFAULT_TIME_FORMAT, false)
+    return parsed.isValid() ? parsed.format(pattern) : undefined
+  }
 
-  // `Time` serializes as `HH:mm:ss[.SSS]`: truncate to seconds before reparsing.
-  const normalized = format === 'time' ? iso.slice(0, 8) : iso
-  const parsed = dayjs(normalized, sourcePattern, false)
+  const parsed = dayjs()
+    .year(value.year)
+    .month(value.month - 1)
+    .date(value.day)
+    .hour('hour' in value ? value.hour : 0)
+    .minute('minute' in value ? value.minute : 0)
+    .second('second' in value ? (value.second ?? 0) : 0)
+    .millisecond(0)
 
   return parsed.isValid() ? parsed.format(pattern) : undefined
 }
@@ -463,6 +480,11 @@ export const useDateControl = ({
 
   /** Component return: convert back to a schema-pattern string before propagating. */
   const onChangeDateValue = (value: CalendarDate | CalendarDateTime | Time | null | undefined) => {
+    // Skip write-back while the year segment is still being typed (see `isIncompleteTypedYear`).
+    if (value && 'year' in value && isIncompleteTypedYear(value.year)) {
+      return
+    }
+
     control.onChange(adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)))
   }
 
