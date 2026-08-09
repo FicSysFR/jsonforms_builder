@@ -123,7 +123,7 @@ import { JsonForms, type JsonFormsChangeEvent } from '@jsonforms/vue'
 import type { JsonFormsI18nState } from '@jsonforms/core'
 import type { ErrorObject } from 'ajv'
 import { get } from 'radash'
-import { allRenderers, createAjv } from '../../src'
+import { allRenderers, createAjv, createJsonFormsTranslator } from '../../src'
 import type { ExampleSection } from '../examples/example'
 import { getExamples } from '../examples/register'
 import ApiPropsTable from '../docs-api/ApiPropsTable.vue'
@@ -254,22 +254,21 @@ watch(
   { immediate: true },
 )
 
-const i18n = computed<JsonFormsI18nState>(() => ({
-  locale: props.locale,
+const i18n = computed<JsonFormsI18nState>(() => {
+  const messages = get(example.value.i18n, props.locale, {}) as Record<string, unknown>
   /**
-   * With neither a translation nor a default message, return `''` rather than the
-   * raw key (`exampleRadioEnum.description`) — JSONForms always calls the translator
-   * even when the schema has no description (`defaultMessage` is `undefined`).
+   * Built-in AJV messages follow `locale`. Returning `undefined` (not `''`) when a
+   * key has no translation lets JSON Forms try the next error key
+   * (`field.error.keyword` → `error.keyword` → AJV message).
    */
-  translate: (key: string, defaultMessage?: string) => {
-    const dict = get(example.value.i18n, props.locale, {}) as Record<string, unknown>
-    const translated = get(dict, key) as string | undefined
-    if (translated !== undefined) {
-      return translated
-    }
-    return defaultMessage ?? ''
-  },
-}))
+  return {
+    locale: props.locale,
+    translate: createJsonFormsTranslator({
+      locale: props.locale,
+      messages,
+    }),
+  }
+})
 
 const onChange = (event: JsonFormsChangeEvent) => {
   data.value = event.data
