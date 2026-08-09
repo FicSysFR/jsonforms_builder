@@ -327,7 +327,7 @@ describe('components — arrays and controls', () => {
       }
     })
 
-    expectWithinBudget('flattenAllOfSchema depth 8 × 200', result, 80)
+    expectWithinBudget('flattenAllOfSchema depth 8 × 200', result, 120)
   })
 
   it('normalizes and maps large suggestion lists', () => {

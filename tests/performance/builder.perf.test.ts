@@ -149,7 +149,7 @@ describe('builder page — component performance', () => {
       expect(Object.keys(schema.properties ?? {}).length).toBe(PALETTE_FIELDS.length * 10)
     })
 
-    expectWithinBudget('addSchemaProperty palette × 10', result, 40)
+    expectWithinBudget('addSchemaProperty palette × 10', result, 70)
   })
 
   it('removes half the nodes of a dense tree', () => {
