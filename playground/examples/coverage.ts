@@ -12,7 +12,14 @@
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Generate, hasType, resolveSchema, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
+import {
+  Generate,
+  hasType,
+  resolveSchema,
+  type JsonSchema,
+  type RankedTester,
+  type UISchemaElement,
+} from '@jsonforms/core'
 
 import { getExamples } from './register'
 
@@ -20,7 +27,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..', '..')
 
 type RendererEntry = {
-  tester: Function
+  tester: RankedTester
   renderer?: { name?: string }
 }
 
@@ -209,7 +216,12 @@ for (const example of examples) {
   if (!example.schema || !example.uischema) continue
 
   const gaps: Gap[] = []
-  walk(example.uischema as WalkUiSchema, example.schema as JsonSchema, example.schema as JsonSchema, gaps)
+  walk(
+    example.uischema as WalkUiSchema,
+    example.schema as JsonSchema,
+    example.schema as JsonSchema,
+    gaps,
+  )
   if (gaps.length) report.push({ name: example.name, gaps })
 }
 

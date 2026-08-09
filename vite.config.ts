@@ -11,6 +11,8 @@ export default defineConfig({
       include: ['src'],
       insertTypesEntry: true,
     }),
+    // vite-plugin-pug options typing is incomplete for Vue SFC usage.
+    // biome-ignore lint/suspicious/noExplicitAny: plugin options not fully typed
     pugPlugin(<any>{
       pretty: true,
       compilerOptions: {},

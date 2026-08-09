@@ -48,10 +48,7 @@ const gedcomRoot: JsonSchema = {
       },
     },
     subject: {
-      allOf: [
-        { $ref: '#/definitions/conclusion' },
-        { properties: { media: { type: 'string' } } },
-      ],
+      allOf: [{ $ref: '#/definitions/conclusion' }, { properties: { media: { type: 'string' } } }],
     },
     person: {
       allOf: [
@@ -412,7 +409,7 @@ describe('REGRESSION — combinator item arrays', () => {
     expect(isCombinatorItemsArray(uischema, schema, { rootSchema: schema })).toBe(true)
 
     const items = resolveItemsSchema(
-      (schema.properties?.entries as JsonSchema).items as JsonSchema,
+      (schema.properties!.entries as JsonSchema).items as JsonSchema,
       schema,
     )
     expect(isCombinatorSchema(items)).toBe(true)

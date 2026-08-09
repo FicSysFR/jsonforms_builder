@@ -24,9 +24,9 @@ describe('isPrimitiveItemSchema', () => {
 
   it('treats anything with properties as an object, whatever its declared type', () => {
     expect(isPrimitiveItemSchema({ type: 'object', properties: {} })).toBe(false)
-    expect(
-      isPrimitiveItemSchema({ type: 'string', properties: { a: { type: 'string' } } }),
-    ).toBe(false)
+    expect(isPrimitiveItemSchema({ type: 'string', properties: { a: { type: 'string' } } })).toBe(
+      false,
+    )
   })
 
   it('resolves union types on their first entry', () => {
@@ -173,10 +173,7 @@ describe('isCombinatorItemsArray', () => {
       definitions: {
         base: { type: 'object', properties: { id: { type: 'string' } } },
         entity: {
-          allOf: [
-            { $ref: '#/definitions/base' },
-            { properties: { note: { type: 'string' } } },
-          ],
+          allOf: [{ $ref: '#/definitions/base' }, { properties: { note: { type: 'string' } } }],
         },
       },
     }
@@ -239,7 +236,7 @@ describe('allOf array item pipeline', () => {
     }
 
     const items = resolveItemsSchema(
-      (rootSchema.properties?.entries as JsonSchema).items as JsonSchema,
+      (rootSchema.properties!.entries as JsonSchema).items as JsonSchema,
       rootSchema,
     )
     expect(isCombinatorSchema(items)).toBe(true)

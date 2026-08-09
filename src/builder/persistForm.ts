@@ -49,7 +49,11 @@ export const readFormDraft = (
     }
 
     const parsed: unknown = JSON.parse(raw)
-    if (!isPlainObject(parsed) || !isPlainObject(parsed.schema) || !isPlainObject(parsed.uischema)) {
+    if (
+      !isPlainObject(parsed) ||
+      !isPlainObject(parsed.schema) ||
+      !isPlainObject(parsed.uischema)
+    ) {
       return undefined
     }
 

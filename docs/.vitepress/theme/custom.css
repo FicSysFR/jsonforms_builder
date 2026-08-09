@@ -14,15 +14,19 @@
   background: var(--vp-c-bg-alt);
 }
 
+/* VitePress theme defaults need !important to yield full-bleed playground layout. */
 .playground-page .VPDoc {
+  /* biome-ignore lint/complexity/noImportantStyles: override VitePress padding */
   padding: 0 !important;
 }
 
 .playground-page .content-container {
+  /* biome-ignore lint/complexity/noImportantStyles: override VitePress max-width */
   max-width: 100% !important;
 }
 
 .playground-page .aside {
+  /* biome-ignore lint/complexity/noImportantStyles: hide VitePress aside on playground */
   display: none !important;
 }
 

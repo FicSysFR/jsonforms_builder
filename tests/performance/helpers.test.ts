@@ -54,9 +54,9 @@ describe('buildNestedAllOfSchema', () => {
     expect(Object.keys(root.definitions.layer_0.properties!)).toHaveLength(fieldsPerLayer)
 
     expect(root.definitions.layer_3.allOf?.[0]).toEqual({ $ref: '#/definitions/layer_2' })
-    expect(Object.keys((root.definitions.layer_3.allOf?.[1] as { properties: object }).properties)).toHaveLength(
-      fieldsPerLayer,
-    )
+    expect(
+      Object.keys((root.definitions.layer_3.allOf![1] as { properties: object }).properties),
+    ).toHaveLength(fieldsPerLayer)
   })
 
   it('produces depth definitions', () => {

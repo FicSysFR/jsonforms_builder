@@ -516,11 +516,7 @@ import {
   resolveControlKind,
   type BuilderControlKind,
 } from './controlKind'
-import {
-  formatPropertyPathInput,
-  getSchemaPropertyAtPath,
-  propertyPathFromScope,
-} from './tree'
+import { formatPropertyPathInput, getSchemaPropertyAtPath, propertyPathFromScope } from './tree'
 
 /** UISchema types that carry their own label, independent of the schema. */
 const SELF_LABELLED = ['Group', 'Category']

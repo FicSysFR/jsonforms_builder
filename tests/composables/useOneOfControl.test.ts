@@ -146,7 +146,9 @@ describe('createVariantValue', () => {
   })
 
   it('does not throw on a branch without properties', () => {
-    expect(() => createVariantValue({ type: 'object', required: ['x'] }, { type: 'object' })).not.toThrow()
+    expect(() =>
+      createVariantValue({ type: 'object', required: ['x'] }, { type: 'object' }),
+    ).not.toThrow()
   })
 })
 
@@ -213,10 +215,7 @@ describe('resolveCombinatorBranches edge cases', () => {
 
   it('preserves branch order', () => {
     const schema: JsonSchema = {
-      anyOf: [
-        { $ref: '#/definitions/user' },
-        { $ref: '#/definitions/address' },
-      ],
+      anyOf: [{ $ref: '#/definitions/user' }, { $ref: '#/definitions/address' }],
     }
     const branches = resolveCombinatorBranches(schema, refRoot)
 

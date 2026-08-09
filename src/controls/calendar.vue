@@ -170,10 +170,7 @@ export const entry: JsonFormsRendererRegistryEntry = {
   // prettier-ignore
   tester: rankWith(
     25,
-    or(
-      and(isDateControl, optionIs('format', 'calendar')),
-      isCalendarRangeObject,
-    ),
+    or(and(isDateControl, optionIs('format', 'calendar')), isCalendarRangeObject),
   ),
 }
 </script>

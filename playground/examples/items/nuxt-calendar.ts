@@ -14,7 +14,8 @@ export const schema = {
     arrival: {
       type: 'string',
       title: 'Date d’arrivée',
-      description: 'Calendrier déplié (options.format: "calendar") — même stockage qu’un champ date.',
+      description:
+        'Calendrier déplié (options.format: "calendar") — même stockage qu’un champ date.',
       format: 'date',
     },
     departure: {

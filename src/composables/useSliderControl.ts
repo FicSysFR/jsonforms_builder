@@ -37,9 +37,7 @@ export const isSliderControl: Tester = and(
   or(schemaTypeIs('number'), schemaTypeIs('integer')),
   (uischema) => isSliderOption(uischema),
   schemaMatches(
-    (schema: JsonSchema) =>
-      Object.prototype.hasOwnProperty.call(schema, 'maximum') &&
-      Object.prototype.hasOwnProperty.call(schema, 'minimum'),
+    (schema: JsonSchema) => Object.hasOwn(schema, 'maximum') && Object.hasOwn(schema, 'minimum'),
   ),
 )
 
@@ -66,10 +64,7 @@ export const resolveSliderMax = (schemaMaximum: number | undefined): number => {
   return schemaMaximum ?? 100
 }
 
-export const resolveSliderStep = (
-  multipleOf: number | undefined,
-  optionStep?: unknown,
-): number => {
+export const resolveSliderStep = (multipleOf: number | undefined, optionStep?: unknown): number => {
   if (typeof optionStep === 'number' && Number.isFinite(optionStep) && optionStep > 0) {
     return optionStep
   }
@@ -87,10 +82,7 @@ export const useSliderControl = ({
   const min = computed(() => resolveSliderMin(control.control.value.schema?.minimum))
   const max = computed(() => resolveSliderMax(control.control.value.schema?.maximum))
   const step = computed(() =>
-    resolveSliderStep(
-      control.control.value.schema?.multipleOf,
-      control.appliedOptions.value?.step,
-    ),
+    resolveSliderStep(control.control.value.schema?.multipleOf, control.appliedOptions.value?.step),
   )
   const modelValue = computed(() => {
     const data = control.control.value.data

@@ -13,8 +13,7 @@ export const schema = {
     contacts: {
       type: 'array',
       title: 'Contacts',
-      description:
-        'Cartes répétables Nuxt UI — showSortButtons + elementLabelProp + detail.',
+      description: 'Cartes répétables Nuxt UI — showSortButtons + elementLabelProp + detail.',
       items: {
         type: 'object',
         properties: {

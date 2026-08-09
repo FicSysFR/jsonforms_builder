@@ -25,11 +25,7 @@
 </template>
 
 <script lang="ts">
-import {
-  type ControlElement,
-  type JsonFormsRendererRegistryEntry,
-  rankWith,
-} from '@jsonforms/core'
+import { type ControlElement, type JsonFormsRendererRegistryEntry, rankWith } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import USlider from '@nuxt/ui/components/Slider.vue'

@@ -51,7 +51,12 @@ export const createJsonFormsTranslator = (
   return (key, defaultMessage, values) => {
     const fromMessages = options.messages ? (get(options.messages, key) as unknown) : undefined
     const fromAjv = get(ajvDict, key) as unknown
-    const raw = typeof fromMessages === 'string' ? fromMessages : typeof fromAjv === 'string' ? fromAjv : undefined
+    const raw =
+      typeof fromMessages === 'string'
+        ? fromMessages
+        : typeof fromAjv === 'string'
+          ? fromAjv
+          : undefined
 
     if (raw !== undefined) {
       return interpolateAjvErrorMessage(raw, values)

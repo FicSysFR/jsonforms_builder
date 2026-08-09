@@ -112,8 +112,8 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     selectedPath.value ? getElementAt(definition.value.uischema, selectedPath.value) : undefined,
   )
 
-  const selectedPropertyPath = computed(
-    () => propertyPathFromScope((selectedElement.value as ControlElement | undefined)?.scope),
+  const selectedPropertyPath = computed(() =>
+    propertyPathFromScope((selectedElement.value as ControlElement | undefined)?.scope),
   )
 
   /** Leaf property name — kept for callers that only need the last segment. */

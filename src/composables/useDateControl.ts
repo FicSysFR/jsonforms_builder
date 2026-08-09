@@ -310,14 +310,18 @@ export const toDateRangeValue = (
   const end = toDateValue(range.end, pattern, 'date')
 
   return {
-    start: start && 'year' in start ? new CalendarDate(start.year, start.month, start.day) : undefined,
+    start:
+      start && 'year' in start ? new CalendarDate(start.year, start.month, start.day) : undefined,
     end: end && 'year' in end ? new CalendarDate(end.year, end.month, end.day) : undefined,
   }
 }
 
 export const fromDateRangeValue = (
   value:
-    | { start?: Pick<DateValue, 'year' | 'month' | 'day'> | null; end?: Pick<DateValue, 'year' | 'month' | 'day'> | null }
+    | {
+        start?: Pick<DateValue, 'year' | 'month' | 'day'> | null
+        end?: Pick<DateValue, 'year' | 'month' | 'day'> | null
+      }
     | null
     | undefined,
   pattern: string,
@@ -332,7 +336,11 @@ export const fromDateRangeValue = (
     'date',
   )
   const end = value.end
-    ? fromDateValue(new CalendarDate(value.end.year, value.end.month, value.end.day), pattern, 'date')
+    ? fromDateValue(
+        new CalendarDate(value.end.year, value.end.month, value.end.day),
+        pattern,
+        'date',
+      )
     : undefined
 
   return { start, end }

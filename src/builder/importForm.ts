@@ -22,15 +22,7 @@ const UI_SCHEMA_TYPES = new Set([
   'ListWithDetail',
 ])
 
-const SCHEMA_TYPES = new Set([
-  'object',
-  'array',
-  'string',
-  'number',
-  'integer',
-  'boolean',
-  'null',
-])
+const SCHEMA_TYPES = new Set(['object', 'array', 'string', 'number', 'integer', 'boolean', 'null'])
 
 const looksLikeSchema = (value: Record<string, unknown>): boolean => {
   if (typeof value.type === 'string' && UI_SCHEMA_TYPES.has(value.type)) {

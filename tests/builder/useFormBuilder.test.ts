@@ -129,9 +129,7 @@ describe('useFormBuilder', () => {
     api.remove([0])
 
     expect(listPropertyNames(api.definition.value.schema)).toEqual(['nombre'])
-    expect(
-      (api.definition.value.uischema as { elements: unknown[] }).elements,
-    ).toHaveLength(1)
+    expect((api.definition.value.uischema as { elements: unknown[] }).elements).toHaveLength(1)
 
     stop()
   })

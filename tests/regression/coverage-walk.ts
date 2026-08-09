@@ -138,6 +138,4 @@ export const collectCoverageGaps = (
 }
 
 export const formatCoverageGaps = (gaps: CoverageGap[]): string =>
-  [...new Set(gaps.map((g) => `[${g.reason}] ${g.type}${g.scope ? ` ${g.scope}` : ''}`))].join(
-    ', ',
-  )
+  [...new Set(gaps.map((g) => `[${g.reason}] ${g.type}${g.scope ? ` ${g.scope}` : ''}`))].join(', ')

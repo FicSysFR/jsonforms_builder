@@ -438,8 +438,7 @@ export const uischemas = [
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
       return 'http://json-schema.org/draft-07/schema#' ===
-        (jsonSchema as Record<string, unknown>).$id &&
-        jsonSchema.type === 'object'
+        (jsonSchema as Record<string, unknown>).$id && jsonSchema.type === 'object'
         ? 2
         : NOT_APPLICABLE
     },
@@ -518,8 +517,7 @@ export const uischemas = [
   {
     tester: (jsonSchema: JsonSchema, _schemaPath: string, _path: string) => {
       return 'http://json-schema.org/draft-07/schema#' ===
-        (jsonSchema as Record<string, unknown>).$id &&
-        jsonSchema.type === 'boolean'
+        (jsonSchema as Record<string, unknown>).$id && jsonSchema.type === 'boolean'
         ? 2
         : NOT_APPLICABLE
     },

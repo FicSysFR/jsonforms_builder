@@ -45,8 +45,7 @@ export const onChange =
     })
 
     const newErrors = errors.filter((error) => {
-      const path =
-        (error as { dataPath?: string }).dataPath ?? error.instancePath
+      const path = (error as { dataPath?: string }).dataPath ?? error.instancePath
       return touchedProperties[path]
     })
 

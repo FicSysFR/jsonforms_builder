@@ -119,7 +119,7 @@ export const formatFileSize = (bytes: unknown): string => {
 /** Rebuilds a `File` from a data URL, to redisplay a loaded form. */
 export const dataUrlToFile = (value: unknown): File | undefined => {
   const parsed = parseDataUrl(value)
-  if (!parsed || !parsed.isBase64) {
+  if (!parsed?.isBase64) {
     return undefined
   }
 

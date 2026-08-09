@@ -92,7 +92,12 @@ import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/cor
 import UBadge from '@nuxt/ui/components/Badge.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UIcon from '@nuxt/ui/components/Icon.vue'
-import { isSamePath, getSchemaPropertyAtPath, propertyPathFromScope, type ElementPath } from './tree'
+import {
+  isSamePath,
+  getSchemaPropertyAtPath,
+  propertyPathFromScope,
+  type ElementPath,
+} from './tree'
 import { readDragPayload, writeDragPayload } from './drag'
 
 const NODE_ICONS: Record<string, string> = {
@@ -158,12 +163,8 @@ export default defineComponent({
     const isHorizontal = computed(() => props.element.type === 'HorizontalLayout')
 
     const insideDropClass = computed(() => [
-      isHorizontal.value
-        ? 'flex min-w-28 shrink-0 items-center justify-center px-3 py-2'
-        : 'py-2',
-      dropTarget.value === 'inside'
-        ? 'border-primary text-primary'
-        : 'border-default text-dimmed',
+      isHorizontal.value ? 'flex min-w-28 shrink-0 items-center justify-center px-3 py-2' : 'py-2',
+      dropTarget.value === 'inside' ? 'border-primary text-primary' : 'border-default text-dimmed',
     ])
 
     const isSelected = computed(
@@ -179,8 +180,11 @@ export default defineComponent({
       // For a `Control`, the readable label lives in the schema (`title`) rather than
       // in the uischema: without this resolution, the tree would show only technical names.
       const title = path?.length
-        ? (getSchemaPropertyAtPath(props.schema ?? { type: 'object' }, path) as JsonSchema | undefined)
-            ?.title
+        ? (
+            getSchemaPropertyAtPath(props.schema ?? { type: 'object' }, path) as
+              | JsonSchema
+              | undefined
+          )?.title
         : undefined
 
       return (

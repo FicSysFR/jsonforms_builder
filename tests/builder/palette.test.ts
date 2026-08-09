@@ -22,7 +22,9 @@ describe('PALETTE_FIELDS', () => {
     for (const field of PALETTE_FIELDS) {
       const schema = field.schema()
       expect(schema).toBeTypeOf('object')
-      expect(schema.type ?? schema.enum ?? schema.allOf ?? schema.oneOf ?? schema.anyOf).toBeDefined()
+      expect(
+        schema.type ?? schema.enum ?? schema.allOf ?? schema.oneOf ?? schema.anyOf,
+      ).toBeDefined()
     }
   })
 

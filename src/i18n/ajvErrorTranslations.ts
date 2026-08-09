@@ -86,8 +86,7 @@ export const ajvErrorTranslations: Record<AjvErrorLocale, AjvErrorMessageDict> =
       allOf: 'doit correspondre à tous les schémas de « allOf »',
       not: 'est invalide selon le schéma « not »',
       if: 'doit correspondre au schéma « {{failingKeyword}} »',
-      dependentRequired:
-        'doit avoir la/les propriété(s) {{deps}} quand {{property}} est présent',
+      dependentRequired: 'doit avoir la/les propriété(s) {{deps}} quand {{property}} est présent',
       propertyNames: 'le nom de propriété est invalide',
       unevaluatedProperties: 'ne doit pas contenir de propriétés non évaluées',
       unevaluatedItems: 'ne doit pas contenir d’éléments non évalués',

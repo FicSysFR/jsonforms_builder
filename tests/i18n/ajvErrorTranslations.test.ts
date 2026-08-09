@@ -8,7 +8,11 @@ import {
   normalizeAjvErrorLocale,
 } from '../../src/i18n'
 
-const error = (keyword: string, params: Record<string, unknown> = {}, message = 'raw'): ErrorObject =>
+const error = (
+  keyword: string,
+  params: Record<string, unknown> = {},
+  message = 'raw',
+): ErrorObject =>
   ({
     keyword,
     message,
@@ -102,7 +106,7 @@ describe('defaultErrorTranslator + createJsonFormsTranslator', () => {
   it('localizes required rewrite key', () => {
     const t = createJsonFormsTranslator({ locale: 'fr' })
     const message = defaultErrorTranslator(
-      error('required', { missingProperty: 'name' }, 'must have required property \'name\''),
+      error('required', { missingProperty: 'name' }, "must have required property 'name'"),
       t,
     )
     expect(message).toBe('est une propriété obligatoire')

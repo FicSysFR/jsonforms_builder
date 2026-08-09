@@ -497,9 +497,7 @@ export default defineComponent({
         importError.value = ''
       } catch (error) {
         importError.value =
-          error instanceof FormImportError
-            ? error.message
-            : "Impossible d'importer ce formulaire."
+          error instanceof FormImportError ? error.message : "Impossible d'importer ce formulaire."
       }
     }
 

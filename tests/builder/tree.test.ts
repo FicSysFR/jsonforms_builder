@@ -281,7 +281,7 @@ describe('nested schema property helpers', () => {
     )
 
     expect(isSchemaPropertyRequiredAtPath(schema, ['address', 'city'])).toBe(true)
-    expect((schema.properties?.address as JsonSchema).required).toEqual(['city'])
+    expect((schema.properties!.address as JsonSchema).required).toEqual(['city'])
   })
 })
 

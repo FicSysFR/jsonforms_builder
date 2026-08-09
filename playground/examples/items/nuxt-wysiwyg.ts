@@ -19,8 +19,7 @@ export const schema = {
     body: {
       type: 'object',
       title: 'Corps (ProseMirror JSON)',
-      description:
-        'options.wysiwyg + contentType: "json" — nécessite allRenderers (UEditor).',
+      description: 'options.wysiwyg + contentType: "json" — nécessite allRenderers (UEditor).',
     },
     notesHtml: {
       type: 'string',

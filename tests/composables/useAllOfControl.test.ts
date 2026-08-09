@@ -20,10 +20,7 @@ const root: JsonSchema = {
     },
     subject: {
       title: 'Subject',
-      allOf: [
-        { $ref: '#/definitions/conclusion' },
-        { properties: { media: { type: 'string' } } },
-      ],
+      allOf: [{ $ref: '#/definitions/conclusion' }, { properties: { media: { type: 'string' } } }],
     },
     gender: {
       allOf: [

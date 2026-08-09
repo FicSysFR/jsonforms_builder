@@ -88,10 +88,7 @@ describe('toCalendarDateBound', () => {
 
 describe('date range conversion', () => {
   it('round-trips a start/end pair', () => {
-    const range = toDateRangeValue(
-      { start: '2026-08-01', end: '2026-08-10' },
-      DEFAULT_DATE_FORMAT,
-    )
+    const range = toDateRangeValue({ start: '2026-08-01', end: '2026-08-10' }, DEFAULT_DATE_FORMAT)
 
     expect(range.start?.toString()).toBe('2026-08-01')
     expect(range.end?.toString()).toBe('2026-08-10')

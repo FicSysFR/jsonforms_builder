@@ -20,9 +20,9 @@ describe('isRenderableObjectSchema', () => {
   })
 
   it('accepts a union that still declares properties', () => {
-    expect(
-      isRenderableObjectSchema({ type: ['object', 'boolean'], properties: { a: {} } }),
-    ).toBe(true)
+    expect(isRenderableObjectSchema({ type: ['object', 'boolean'], properties: { a: {} } })).toBe(
+      true,
+    )
   })
 
   it('accepts patternProperties as renderable content', () => {

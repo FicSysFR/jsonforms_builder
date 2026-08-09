@@ -148,7 +148,10 @@ export const buildNestedAllOfSchema = (depth: number, fieldsPerLayer = 10) => {
       type?: 'object'
       title?: string
       properties?: Record<string, { type: string; title: string }>
-      allOf?: Array<{ $ref: string } | { type: 'object'; properties: Record<string, { type: string; title: string }> }>
+      allOf?: Array<
+        | { $ref: string }
+        | { type: 'object'; properties: Record<string, { type: string; title: string }> }
+      >
     }
   > = {}
 
@@ -165,10 +168,7 @@ export const buildNestedAllOfSchema = (depth: number, fieldsPerLayer = 10) => {
 
     definitions[`layer_${level}`] = {
       title: `Layer ${level}`,
-      allOf: [
-        { $ref: `#/definitions/layer_${level - 1}` },
-        { type: 'object', properties },
-      ],
+      allOf: [{ $ref: `#/definitions/layer_${level - 1}` }, { type: 'object', properties }],
     }
   }
 

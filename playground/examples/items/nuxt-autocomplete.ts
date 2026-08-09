@@ -8,8 +8,7 @@ export const schema = {
     addressId: {
       type: 'string',
       title: 'Adresse',
-      description:
-        'options.api → UInputMenu. Recherche Géoportail (min. 3 caractères).',
+      description: 'options.api → UInputMenu. Recherche Géoportail (min. 3 caractères).',
     },
     cityHint: {
       type: 'string',

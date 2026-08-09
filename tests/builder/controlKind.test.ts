@@ -8,9 +8,9 @@ describe('resolveControlKind', () => {
     expect(resolveControlKind({ type: 'integer' }, { slider: true })).toBe('slider')
     expect(resolveControlKind({ type: 'string' }, { format: 'pin' })).toBe('pin')
     expect(resolveControlKind({ type: 'integer' }, { format: 'rating' })).toBe('rating')
-    expect(resolveControlKind({ type: 'array', items: { type: 'string' } }, { format: 'tags' })).toBe(
-      'tags',
-    )
+    expect(
+      resolveControlKind({ type: 'array', items: { type: 'string' } }, { format: 'tags' }),
+    ).toBe('tags')
     expect(resolveControlKind({ type: 'string', format: 'date' }, { format: 'calendar' })).toBe(
       'calendar',
     )
