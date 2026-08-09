@@ -20,7 +20,6 @@ import {
   isObjectControl,
   isOneOfControl,
   isPrimitiveArrayControl,
-  isRangeControl,
   isStringControl,
   optionIs,
   or,
@@ -32,6 +31,7 @@ import {
 } from '@jsonforms/core'
 import { isCombinatorItemsArray } from '../../src/composables/useArrayControl'
 import { isRenderableObjectSchema } from '../../src/composables/useObjectControl'
+import { isSliderControl } from '../../src/composables/useSliderControl'
 
 export type MirroredTester = {
   name: string
@@ -54,7 +54,7 @@ export const mirroredTesters: MirroredTester[] = [
     name: 'RadioGroupControl',
     tester: rankWith(20, and(isEnumControl, optionIs('format', 'radio'))),
   },
-  { name: 'SliderControl', tester: rankWith(4, isRangeControl) },
+  { name: 'SliderControl', tester: rankWith(4, isSliderControl) },
   {
     name: 'ObjectControl',
     tester: rankWith(2, and(isObjectControl, schemaMatches(isRenderableObjectSchema))),

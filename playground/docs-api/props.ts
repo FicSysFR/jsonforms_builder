@@ -309,7 +309,18 @@ const SLIDER: ApiPropGroup = {
     {
       name: 'slider',
       type: 'Boolean | Object',
-      description: 'true active le renderer ; un objet est spread sur USlider.',
+      description:
+        'true active le renderer ; un objet active aussi et est spread sur USlider (size, color, …).',
+    },
+    {
+      name: 'step',
+      type: 'Number',
+      description: 'Pas du curseur (prioritaire sur schema.multipleOf).',
+    },
+    {
+      name: 'hideValue',
+      type: 'Boolean',
+      description: 'Masque le badge numérique à droite (tooltip conservé).',
     },
   ],
 }
@@ -672,7 +683,8 @@ export const API_BY_EXAMPLE: Record<string, ApiPropGroup[]> = {
   ],
   'simple-form': [COMMON_OPTIONS, STRING, BOOLEAN],
   'nuxt-string': [COMMON_OPTIONS, STRING, TEXTAREA],
-  'nuxt-number': [COMMON_OPTIONS, NUMBER, SLIDER],
+  'nuxt-number': [COMMON_OPTIONS, NUMBER],
+  'nuxt-slider': [COMMON_OPTIONS, SLIDER],
   'nuxt-boolean': [COMMON_OPTIONS, BOOLEAN],
   'nuxt-radio': [COMMON_OPTIONS, ENUM],
   'nuxt-select': [COMMON_OPTIONS, ENUM],

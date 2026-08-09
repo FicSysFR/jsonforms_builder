@@ -18,7 +18,10 @@
         tooltip
         @update:model-value="onChange"
       )
-      span.w-12.shrink-0.text-right.text-sm.tabular-nums.text-muted(v-text="modelValue ?? '—'")
+      span.w-12.shrink-0.text-right.text-sm.tabular-nums.text-muted(
+        v-if="showValue"
+        v-text="modelValue"
+      )
 </template>
 
 <script lang="ts">
@@ -26,22 +29,25 @@ import {
   type ControlElement,
   type JsonFormsRendererRegistryEntry,
   rankWith,
-  isRangeControl,
 } from '@jsonforms/core'
 import { defineComponent } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import USlider from '@nuxt/ui/components/Slider.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
-import { useSliderControl } from '../composables'
+import { isSliderControl, useSliderControl } from '../composables'
 
 /**
  * SliderControlRenderer
  *
  * Renders numbers marked `options.slider` with a `USlider`.
  *
+ * Activation: `options.slider: true` or a Nuxt UI props object
+ * (`{ size, color, … }`). Schema must declare `minimum` and `maximum`.
+ *
  * `USlider` does not show the value permanently (unlike Quasar's `label-always`): we add
- * a numeric badge on the right to keep that reference, in addition to the hover tooltip.
+ * a numeric badge on the right (`options.hideValue: true` removes it), in addition to
+ * the hover tooltip.
  */
 const controlRenderer = defineComponent({
   name: 'SliderControlRenderer',
@@ -67,7 +73,7 @@ export default controlRenderer
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  // prettier-ignore
-  tester: rankWith(4, isRangeControl), // Matches schema properties with type "number" or "integer" and with "range" option set to true
+  // Rank above NumericControl (1): any control with options.slider + min/max.
+  tester: rankWith(4, isSliderControl),
 }
 </script>

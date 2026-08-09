@@ -3,7 +3,6 @@ import { registerExamples } from '../register'
 export const data = {
   age: 32,
   price: 19.9,
-  volume: 40,
 }
 
 export const schema = {
@@ -21,14 +20,6 @@ export const schema = {
       title: 'Prix (€)',
       description: 'Pas décimal 0.01 via options.step.',
       minimum: 0,
-    },
-    volume: {
-      type: 'number',
-      title: 'Volume',
-      description: 'options.slider: true → USlider piloté par minimum / maximum / multipleOf.',
-      minimum: 0,
-      maximum: 100,
-      multipleOf: 5,
     },
   },
   required: ['age'],
@@ -55,21 +46,13 @@ export const uischema = {
         showUnfocusedDescription: true,
       },
     },
-    {
-      type: 'Control',
-      scope: '#/properties/volume',
-      options: {
-        slider: { size: 'lg', color: 'primary' },
-        showUnfocusedDescription: true,
-      },
-    },
   ],
 }
 
 registerExamples([
   {
     name: 'nuxt-number',
-    label: 'Nuxt UI — Number & Slider',
+    label: 'Nuxt UI — Number',
     data,
     schema,
     uischema,

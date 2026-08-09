@@ -86,7 +86,7 @@ export const PALETTE_FIELDS: PaletteField[] = [
     label: 'Curseur',
     icon: 'i-lucide-sliders-horizontal',
     group: 'Saisie',
-    schema: () => ({ type: 'integer', minimum: 0, maximum: 100 }),
+    schema: () => ({ type: 'integer', minimum: 0, maximum: 100, default: 50 }),
     options: () => ({ slider: true }),
   },
   {

@@ -34,7 +34,8 @@ Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans *
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [Number & Slider](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber`, `USlider` | `step`, `slider`, `inputNumber` |
+| [Number](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber` | `step`, `inputNumber` |
+| [Slider](/play/index.html?section=docs&example=nuxt-slider) | `USlider` | `slider`, `step`, `hideValue` |
 | [Rating](/play/index.html?section=docs&example=nuxt-rating) | `UInputRating` | `format: rating`, `icon`, `hideValue` |
 | [Boolean](/play/index.html?section=docs&example=nuxt-boolean) | `UCheckbox`, `USwitch` | `toggle`, `checkbox`, `switch` |
 

@@ -46,7 +46,8 @@ Dans l’onglet **Documentation**, chaque vitrine affiche le formulaire live + u
 |---|---|---|
 | [Vitrine des contrôles](/play/index.html?section=docs&example=nuxt-ui-showcase) | Vue d’ensemble (select, pin, color, tags, rating, date, file…) | [Renderers](/guide/renderers) |
 | [String & Textarea](/play/index.html?section=docs&example=nuxt-string) | `UInput`, `UTextarea`, password | [Texte](/guide/options/string) |
-| [Number & Slider](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber`, `USlider` | [Nombres](/guide/options/number) |
+| [Number](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber` | [Nombres](/guide/options/number) |
+| [Slider](/play/index.html?section=docs&example=nuxt-slider) | `USlider` | [Slider](/guide/options/number#slider--uslider) |
 | [Boolean](/play/index.html?section=docs&example=nuxt-boolean) | `UCheckbox`, `USwitch` | [Booléen](/guide/options/boolean) |
 | [Select](/play/index.html?section=docs&example=nuxt-select) | `USelect`, `USelectMenu` | [Enum](/guide/options/enum) |
 | [Radio & Multi-enum](/play/index.html?section=docs&example=nuxt-radio) | `URadioGroup`, `UCheckboxGroup` | [Enum](/guide/options/enum) |

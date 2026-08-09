@@ -47,17 +47,20 @@ Les bornes `minimum` / `maximum` viennent du **schema**.
 
 ## Slider — `USlider`
 
-**Activation :** `options.slider: true` (tester JSON Forms `isRangeControl`).
+**Activation :** `options.slider: true` **ou** un objet de props Nuxt UI (`options.slider: { size, color, … }`).  
+Le schéma doit déclarer `minimum` et `maximum` (pas besoin de `default` — contrairement au tester stock JSON Forms `isRangeControl`).
 
 ### API
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `slider` | `Boolean` \| `Object` | — | `true` active le renderer. Un objet est aussi spread sur `USlider` (pass-through). |
+| `slider` | `Boolean` \| `Object` | — | `true` active le renderer. Un objet active aussi et est spread sur `USlider`. |
+| `step` | `Number` | `schema.multipleOf` \| `1` | Pas du curseur (prioritaire sur `multipleOf`). |
+| `hideValue` | `Boolean` | — | Masque le badge numérique à droite (tooltip conservé). |
 
-`minimum`, `maximum`, `multipleOf` du schema pilotent min / max / step.
+`minimum` / `maximum` / `multipleOf` du schema pilotent min / max / step.
 
-### Exemple
+### Exemples
 
 ```json
 {
@@ -77,17 +80,24 @@ Les bornes `minimum` / `maximum` viennent du **schema**.
 }
 ```
 
-Avec props Nuxt UI :
+Avec props Nuxt UI + pas décimal :
 
 ```json
 {
   "type": "Control",
-  "scope": "#/properties/volume",
+  "scope": "#/properties/temperature",
   "options": {
-    "slider": { "size": "lg", "color": "primary" }
+    "slider": { "size": "lg", "color": "primary" },
+    "step": 0.5
   }
 }
 ```
+
+## Playground
+
+- [Number](/play/index.html?section=docs&example=nuxt-number)
+- [Slider](/play/index.html?section=docs&example=nuxt-slider)
+- [Rating](/play/index.html?section=docs&example=nuxt-rating)
 
 ---
 
@@ -140,8 +150,3 @@ Avec props Nuxt UI :
   }
 }
 ```
-
-## Playground
-
-- [Number & Slider](/play/index.html?section=docs&example=nuxt-number)
-- [Rating](/play/index.html?section=docs&example=nuxt-rating)
