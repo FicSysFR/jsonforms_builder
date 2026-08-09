@@ -23,7 +23,7 @@ features:
   - title: Builder visuel
     details: Palette, arbre réordonnable, inspecteur de propriétés, aperçu live et export JSON.
   - title: Playground
-    details: Documentation vivante (vitrine des contrôles) séparée des exemples JSONForms et cas limites.
+    details: Documentation vivante Nuxt UI (vitrines + API) séparée des exemples JSONForms et cas limites — voir le catalogue des exemples.
   - title: Options API
     details: Chaque option documentée en tableaux Name / Type / Default / Description, avec exemples JSON (style Quasar / Vuetify).
 ---

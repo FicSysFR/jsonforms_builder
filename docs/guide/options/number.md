@@ -140,3 +140,8 @@ Avec props Nuxt UI :
   }
 }
 ```
+
+## Playground
+
+- [Number & Slider](/play/index.html?section=docs&example=nuxt-number)
+- [Rating](/play/index.html?section=docs&example=nuxt-rating)

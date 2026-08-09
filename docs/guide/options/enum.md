@@ -145,3 +145,8 @@
   }
 }
 ```
+
+## Playground
+
+- [Select](/play/index.html?section=docs&example=nuxt-select)
+- [Radio & Multi-enum](/play/index.html?section=docs&example=nuxt-radio)

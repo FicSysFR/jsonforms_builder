@@ -29,3 +29,5 @@ Correspondance schéma / options → composant Nuxt UI.
 | `Label` | titre + `USeparator` | [Label](./options/layouts#label) |
 
 → [Index complet de l’API options](./options/) (tableaux Name / Type / Default / Description + exemples, style Quasar / Vuetify).
+
+→ [Catalogue des vitrines playground](./playground-examples) (formulaires live + onglet API).

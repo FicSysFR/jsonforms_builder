@@ -71,4 +71,4 @@ Appliquées à la plupart des contrôles (label, description, lecture seule, err
 }
 ```
 
-Voir aussi l’exemple **Control Options** dans le [playground](/playground) (onglet Documentation).
+Voir aussi l’exemple **Control Options** dans le [playground](/playground) (onglet Documentation), et le [catalogue Nuxt UI](/guide/playground-examples).

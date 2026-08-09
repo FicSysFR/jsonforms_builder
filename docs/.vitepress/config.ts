@@ -59,6 +59,7 @@ export default defineConfig({
           { text: 'Personnalisation', link: '/guide/customization' },
           { text: 'Intégration', link: '/guide/integration' },
           { text: 'Builder visuel', link: '/guide/builder' },
+          { text: 'Exemples playground', link: '/guide/playground-examples' },
         ],
       },
       {
@@ -81,6 +82,7 @@ export default defineConfig({
         text: 'Playground',
         items: [
           { text: 'Galerie interactive', link: '/playground' },
+          { text: 'Exemples Nuxt UI', link: '/guide/playground-examples' },
           {
             text: 'Ouvrir en plein écran',
             link: '/play/index.html',

@@ -141,3 +141,9 @@ Plage avec contraintes :
   }
 }
 ```
+
+## Playground
+
+- [Date & Time](/play/index.html?section=docs&example=nuxt-dates)
+- [Calendar](/play/index.html?section=docs&example=nuxt-calendar)
+- [Date ranges & constraints](/play/index.html?section=docs&example=nuxt-date-ranges)

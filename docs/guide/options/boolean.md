@@ -44,3 +44,7 @@ Composant par défaut : `UCheckbox`. Avec `toggle` : `USwitch`.
   }
 }
 ```
+
+## Playground
+
+→ [Boolean](/play/index.html?section=docs&example=nuxt-boolean)

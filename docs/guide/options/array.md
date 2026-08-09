@@ -150,3 +150,8 @@ Sélecteur de variante + sous-formulaire. Pas d’options métier dédiées au-d
   ]
 }
 ```
+
+## Playground
+
+- [Tags](/play/index.html?section=docs&example=nuxt-tags)
+- [Array](/play/index.html?section=docs&example=nuxt-array)

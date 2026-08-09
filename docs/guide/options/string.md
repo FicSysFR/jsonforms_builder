@@ -312,3 +312,12 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
   }
 }
 ```
+
+## Playground
+
+- [String & Textarea](/play/index.html?section=docs&example=nuxt-string)
+- [Pin Input](/play/index.html?section=docs&example=nuxt-pin-input)
+- [Color](/play/index.html?section=docs&example=nuxt-color)
+- [File Upload](/play/index.html?section=docs&example=nuxt-file-upload)
+- [Autocomplete API](/play/index.html?section=docs&example=nuxt-autocomplete)
+- [WYSIWYG](/play/index.html?section=docs&example=nuxt-wysiwyg)

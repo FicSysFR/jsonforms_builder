@@ -39,3 +39,7 @@ Chaque section se termine par un ou plusieurs **exemples** JSON prêts à coller
 ```
 
 Les options peuvent aussi être fournies globalement via la prop `config` de `JsonForms` — les options locales au contrôle priment.
+
+## Playground
+
+Les vitrines interactives Nuxt UI (onglet Documentation) sont listées dans [Exemples playground Nuxt UI](/guide/playground-examples). Chaque page d’options ci-dessous pointe aussi vers sa vitrine live.

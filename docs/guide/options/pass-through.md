@@ -100,3 +100,7 @@ Consultez la [doc Nuxt UI](https://ui.nuxt.com) pour la liste des props de chaqu
   }
 }
 ```
+
+## Playground
+
+Les vitrines passent souvent des objets pass-through (`input`, `radioGroup`, `card`, …). Voir le [catalogue](/guide/playground-examples).
