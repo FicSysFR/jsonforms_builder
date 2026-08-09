@@ -7,21 +7,41 @@ title: Playground
 ---
 
 <script setup>
+import { computed } from 'vue'
 import { withBase } from 'vitepress'
+
+/**
+ * DEV (`yarn docs:dev`): iframe → playground Vite on :5174 (HMR).
+ * PROD / `docs:preview`: iframe → static build under `/play/`.
+ * Hash query (`#/?embed=1`) matches `createWebHashHistory` in the playground.
+ */
+const playSrc = computed(() => {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5174/#/?embed=1'
+  }
+  return `${withBase('/play/index.html')}#/?embed=1`
+})
+
+const fullscreenHref = computed(() => {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5174/'
+  }
+  return withBase('/play/index.html')
+})
 </script>
 
-<div class="px-4 py-4 space-y-3">
-  <div class="flex flex-wrap items-center justify-between gap-3">
+<div class="playground-shell">
+  <div class="playground-toolbar">
     <div>
-      <h1 class="text-2xl font-semibold tracking-tight m-0">Playground</h1>
-      <p class="text-sm opacity-70 m-0 mt-1">
+      <h1 class="playground-title">Playground</h1>
+      <p class="playground-lead">
         Onglet <strong>Documentation</strong> = vitrines de contrôles Nuxt UI.
         Onglet <strong>Examples</strong> = démos JSONForms et cas limites.
       </p>
     </div>
     <a
       class="VPButton medium brand"
-      :href="withBase('/play/index.html')"
+      :href="fullscreenHref"
       target="_blank"
       rel="noopener"
     >
@@ -31,38 +51,15 @@ import { withBase } from 'vitepress'
 
   <iframe
     class="playground-frame"
-    :src="withBase('/play/index.html')"
+    :src="playSrc"
     title="JSONForms Builder playground"
-    loading="lazy"
+    loading="eager"
     referrerpolicy="no-referrer"
+    allow="clipboard-read; clipboard-write"
   />
+
+  <p class="playground-foot">
+    Catalogue détaillé :
+    <a href="./guide/playground-examples">Exemples playground Nuxt UI</a>
+  </p>
 </div>
-
-## Documentation Nuxt UI
-
-Dans l’onglet **Documentation**, chaque vitrine affiche le formulaire live + un onglet **API** (Name / Type / Default / Description). Les noms techniques commencent par `nuxt-`.
-
-| Vitrine | Contrôles Nuxt UI | Guide options |
-|---|---|---|
-| [Vitrine des contrôles](/play/index.html?section=docs&example=nuxt-ui-showcase) | Vue d’ensemble (select, pin, color, tags, rating, date, file…) | [Renderers](/guide/renderers) |
-| [String & Textarea](/play/index.html?section=docs&example=nuxt-string) | `UInput`, `UTextarea`, password | [Texte](/guide/options/string) |
-| [Number](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber` | [Nombres](/guide/options/number) |
-| [Slider](/play/index.html?section=docs&example=nuxt-slider) | `USlider` | [Slider](/guide/options/number#slider--uslider) |
-| [Boolean](/play/index.html?section=docs&example=nuxt-boolean) | `UCheckbox`, `USwitch` | [Booléen](/guide/options/boolean) |
-| [Select](/play/index.html?section=docs&example=nuxt-select) | `USelect`, `USelectMenu` | [Enum](/guide/options/enum) |
-| [Radio & Multi-enum](/play/index.html?section=docs&example=nuxt-radio) | `URadioGroup`, `UCheckboxGroup` | [Enum](/guide/options/enum) |
-| [Autocomplete API](/play/index.html?section=docs&example=nuxt-autocomplete) | `UInputMenu` + `options.api` | [Autocomplete](/guide/options/string#autocomplete-api--uinputmenu) |
-| [Pin Input](/play/index.html?section=docs&example=nuxt-pin-input) | `UPinInput` | [Pin](/guide/options/string#pin--upininput) |
-| [Color Picker](/play/index.html?section=docs&example=nuxt-color) | `UColorPicker` | [Color](/guide/options/string#color--ucolorpicker) |
-| [File Upload](/play/index.html?section=docs&example=nuxt-file-upload) | `UFileUpload` | [File](/guide/options/string#file-upload--ufileupload) |
-| [Tags](/play/index.html?section=docs&example=nuxt-tags) | `UInputTags` | [Tags](/guide/options/array#tags--uinputtags) |
-| [Rating](/play/index.html?section=docs&example=nuxt-rating) | `UInputRating` | [Rating](/guide/options/number#rating--uinputrating) |
-| [Date & Time](/play/index.html?section=docs&example=nuxt-dates) | `UInputDate`, `UInputTime` | [Dates](/guide/options/date) |
-| [Calendar](/play/index.html?section=docs&example=nuxt-calendar) | `UCalendar` | [Calendar](/guide/options/date#calendar--ucalendar-déplié) |
-| [Date ranges](/play/index.html?section=docs&example=nuxt-date-ranges) | Plages & contraintes | [Dates](/guide/options/date) |
-| [Array](/play/index.html?section=docs&example=nuxt-array) | Cartes répétables | [Array](/guide/options/array#array--cartes-répétables) |
-| [WYSIWYG](/play/index.html?section=docs&example=nuxt-wysiwyg) | `UEditor` (`allRenderers`) | [WYSIWYG](/guide/options/string#wysiwyg--ueditor) |
-| [Layouts](/play/index.html?section=docs&example=nuxt-layouts) | `UCard`, `UTabs`, Label | [Layouts](/guide/options/layouts) |
-| [Control Options](/play/index.html?section=docs&example=control-options) | Options communes + mix | [Communes](/guide/options/common) |
-
-→ Catalogue détaillé : [Exemples playground Nuxt UI](/guide/playground-examples).

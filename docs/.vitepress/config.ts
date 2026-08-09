@@ -87,6 +87,7 @@ export default defineConfig({
             text: 'Ouvrir en plein écran',
             link: '/play/index.html',
             target: '_blank',
+            rel: 'noopener',
           },
         ],
       },

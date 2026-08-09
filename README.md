@@ -231,8 +231,9 @@ as the sole package manager: `yarn.lock` is authoritative — do not install wit
 
 ```bash
 yarn install
-yarn start:dev        # playground: documentation + examples + builder
-yarn docs:dev         # VitePress documentation site (local)
+yarn start:dev        # playground alone (http://localhost:5174)
+yarn docs:dev         # VitePress (:5173) + playground (:5174), iframe live
+yarn docs:dev:only    # VitePress alone (needs a built `docs/public/play`)
 yarn docs:build       # build docs + playground for GitHub Pages
 yarn build            # library build (es + cjs + declarations)
 yarn test             # Vitest suite
@@ -246,7 +247,8 @@ yarn lint:fix         # apply safe fixes and reformat
 
 The VitePress site in `docs/` is published to
 [GitHub Pages](https://tacxou.github.io/jsonforms_builder/) and embeds the
-interactive playground.
+interactive playground via iframe (`/playground` → `/play/` in production,
+live Vite server on `:5174` during `yarn docs:dev`).
 
 In the playground sidebar:
 

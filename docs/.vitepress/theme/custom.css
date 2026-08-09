@@ -5,9 +5,40 @@
   --vp-c-brand-soft: rgba(0, 168, 107, 0.12);
 }
 
+.playground-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  min-height: calc(100vh - var(--vp-nav-height));
+}
+
+.playground-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.playground-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.playground-lead {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
 .playground-frame {
+  flex: 1;
   width: 100%;
-  height: calc(100vh - var(--vp-nav-height) - 2rem);
+  height: calc(100vh - var(--vp-nav-height) - 7rem);
   min-height: 36rem;
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
@@ -28,6 +59,17 @@
 .playground-page .aside {
   /* biome-ignore lint/complexity/noImportantStyles: hide VitePress aside on playground */
   display: none !important;
+}
+
+.playground-page .VPFooter {
+  /* biome-ignore lint/complexity/noImportantStyles: hide footer under the live playground */
+  display: none !important;
+}
+
+.playground-foot {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.75;
 }
 
 /* API tables — denser, Quasar/Vuetify-like */
