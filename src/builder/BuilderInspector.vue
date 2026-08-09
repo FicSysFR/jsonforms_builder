@@ -160,6 +160,20 @@
               class="w-full"
               @update:model-value="patchOption('placeholder', $event)"
             )
+          u-form-field(label="Icône avant" help="Nom Nuxt Icon, ex. i-lucide-mail")
+            u-input(
+              :model-value="options.leadingIcon ?? ''"
+              placeholder="i-lucide-mail"
+              class="w-full"
+              @update:model-value="patchOption('leadingIcon', $event || undefined)"
+            )
+          u-form-field(label="Icône après" help="Nom Nuxt Icon, ex. i-lucide-check")
+            u-input(
+              :model-value="options.trailingIcon ?? ''"
+              placeholder="i-lucide-check"
+              class="w-full"
+              @update:model-value="patchOption('trailingIcon', $event || undefined)"
+            )
           u-checkbox(
             :model-value="!!options.focus"
             label="Autofocus"

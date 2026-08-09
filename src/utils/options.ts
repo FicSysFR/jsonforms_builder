@@ -9,4 +9,15 @@ export interface Options {
    * to keep data while off-screen.
    */
   clearOnHide?: boolean
+  /**
+   * Icon rendered before the control (Nuxt Icon name, e.g. `i-lucide-mail`).
+   * Placed beside the widget inside `UFormField`.
+   * For icons inside the Nuxt UI input chrome, use `options.input.leadingIcon` instead.
+   */
+  leadingIcon?: string
+  /**
+   * Icon rendered after the control (Nuxt Icon name, e.g. `i-lucide-check`).
+   * See {@link leadingIcon}.
+   */
+  trailingIcon?: string
 }

@@ -8,6 +8,8 @@
     :errors="controlWrapper.errors"
     :visible="controlWrapper.visible"
     :required="controlWrapper.required"
+    :leading-icon="controlWrapper.leadingIcon"
+    :trailing-icon="controlWrapper.trailingIcon"
     :styles="styles"
     :ui-props="uiProps"
     :show-description="showDescription()"

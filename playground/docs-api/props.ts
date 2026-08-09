@@ -66,6 +66,16 @@ export const COMMON_OPTIONS: ApiPropGroup = {
       description: 'Comportement clear (ex. rating : re-clic pour vider).',
     },
     {
+      name: 'leadingIcon',
+      type: 'String',
+      description: 'Icône Nuxt Icon avant le contrôle (ex. i-lucide-mail).',
+    },
+    {
+      name: 'trailingIcon',
+      type: 'String',
+      description: 'Icône Nuxt Icon après le contrôle (ex. i-lucide-check).',
+    },
+    {
       name: 'styles',
       type: 'Partial<Theme>',
       description: 'Surcharge locale des classes Tailwind du thème.',

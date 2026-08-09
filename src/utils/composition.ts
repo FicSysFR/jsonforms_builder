@@ -113,6 +113,10 @@ export const useComputedLabel = <
  * { "type": "Control", "scope": "#/properties/name",
  *   "options": { "input": { "size": "lg", "ui": { "base": "font-mono" } } } }
  * ```
+ *
+ * Top-level `leadingIcon` / `trailingIcon` are rendered by the control wrapper beside the
+ * widget. Pass-through stays free for icons inside Nuxt UI chrome
+ * (`options.input.leadingIcon`, …).
  */
 const createUiProps = (appliedOptions: ComputedRef<UiOptionBag>) => {
   return (path: string): UiOptionBag => {
@@ -261,6 +265,15 @@ export const useUiControl = <
     // `hideDescription` removes help text for this field. Used by the array renderer on
     // primitive item rows, where the item schema description would repeat identically under
     // every row.
+    const leadingIcon =
+      typeof appliedOptions.value?.leadingIcon === 'string' && appliedOptions.value.leadingIcon
+        ? appliedOptions.value.leadingIcon
+        : undefined
+    const trailingIcon =
+      typeof appliedOptions.value?.trailingIcon === 'string' && appliedOptions.value.trailingIcon
+        ? appliedOptions.value.trailingIcon
+        : undefined
+
     return {
       id,
       description: appliedOptions.value?.hideDescription === true ? undefined : description,
@@ -268,6 +281,8 @@ export const useUiControl = <
       label,
       visible,
       required,
+      leadingIcon,
+      trailingIcon,
     }
   })
 

@@ -27,8 +27,26 @@
 
     //- Wrap only the control: `flex` on the `UFormField` container (which also holds
     //- `help`) aligned the description to the right of the checkbox.
-    div(v-if="reserveLabelSpace" class="min-h-8 flex items-center w-full")
-      slot(name="default")
+    //-
+    //- `leadingIcon` / `trailingIcon`: icons before / after the control widget.
+    .flex.items-center.gap-2.w-full(
+      v-if="reserveLabelSpace || leadingIcon || trailingIcon"
+      :class="reserveLabelSpace ? 'min-h-8' : undefined"
+    )
+      u-icon(
+        v-if="leadingIcon"
+        :name="leadingIcon"
+        class="text-muted shrink-0 size-5"
+        aria-hidden="true"
+      )
+      .min-w-0.flex-1
+        slot(name="default")
+      u-icon(
+        v-if="trailingIcon"
+        :name="trailingIcon"
+        class="text-muted shrink-0 size-5"
+        aria-hidden="true"
+      )
     template(v-else)
       slot(name="default")
 </template>
@@ -36,6 +54,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
 import UFormField from '@nuxt/ui/components/FormField.vue'
+import UIcon from '@nuxt/ui/components/Icon.vue'
 import type { Theme } from '../theme'
 
 /**
@@ -48,6 +67,10 @@ import type { Theme } from '../theme'
  * label, required asterisk, help text, and error; the control renders only its input in
  * the default slot.
  *
+ * Optional `leadingIcon` / `trailingIcon` (uischema options) render Nuxt Icons before /
+ * after the control. For icons inside a `UInput` / `USelect` border, use pass-through
+ * (`options.input.leadingIcon`, …).
+ *
  * @example
  * <control-wrapper v-bind="controlWrapper" :styles="styles">
  *   <u-input v-model="value" />
@@ -57,6 +80,7 @@ export default defineComponent({
   name: 'ControlWrapperCommonComponent',
   components: {
     UFormField,
+    UIcon,
   },
   props: {
     /** Unique field id, also used as `name` for `UForm` binding. */
@@ -127,6 +151,20 @@ export default defineComponent({
       required: false as const,
       type: Boolean,
       default: false,
+    },
+
+    /** Nuxt Icon name shown before the control. */
+    leadingIcon: {
+      required: false as const,
+      type: String,
+      default: undefined,
+    },
+
+    /** Nuxt Icon name shown after the control. */
+    trailingIcon: {
+      required: false as const,
+      type: String,
+      default: undefined,
     },
 
     /** Resolved theme for this element. */
