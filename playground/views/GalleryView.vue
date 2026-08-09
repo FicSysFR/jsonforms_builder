@@ -17,12 +17,22 @@
       :ui="{ list: 'w-full' }"
     )
     p.text-xs.text-muted.leading-snug {{ sectionHint }}
+    //- `readonly` until focus: Chrome ignores `autocomplete="off"` next to
+    //- OTP pin inputs (`autocomplete="one-time-code"`) and dumps a saved email here.
     u-input(
       v-model="exampleQuery"
+      type="search"
+      name="playground-example-filter"
+      autocomplete="off"
       icon="i-lucide-search"
       placeholder="Search…"
       size="sm"
+      :readonly="exampleSearchLocked"
+      data-1p-ignore
+      data-lpignore="true"
+      data-form-type="other"
       :ui="{ trailing: 'pe-1' }"
+      @focus="exampleSearchLocked = false"
     )
       template(#trailing)
         u-button(
@@ -147,6 +157,13 @@ const sectionHint = computed(() =>
 
 /** Filters the sidebar list by example label or technical name; carried by `?q=`. */
 const exampleQuery = ref(queryString(route.query.q))
+
+/**
+ * Stay `readonly` until the user focuses the filter. Otherwise Chrome’s password
+ * manager treats it as a username field when an OTP pin input mounts and autofills
+ * a saved email into `exampleQuery` (and thus into `?q=`).
+ */
+const exampleSearchLocked = ref(true)
 
 /** The current example is carried by `?example=` so links stay shareable. */
 const selected = ref(queryString(route.query.example))
@@ -298,5 +315,7 @@ const selectExample = async (name: string) => {
   await nextTick()
   selected.value = name
   inspectTab.value = 'form'
+  // Re-lock so a newly mounted OTP form cannot autofill the filter again.
+  exampleSearchLocked.value = true
 }
 </script>
