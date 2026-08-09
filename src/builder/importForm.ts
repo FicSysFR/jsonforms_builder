@@ -51,15 +51,21 @@ const looksLikeUiSchema = (value: Record<string, unknown>): boolean =>
   typeof value.type === 'string' &&
   (UI_SCHEMA_TYPES.has(value.type) || Array.isArray(value.elements))
 
+export interface FormImportResult extends FormDefinition {
+  /** Optional instance data from the imported document (used by the builder preview). */
+  data?: unknown
+}
+
 /**
- * Normalizes a pasted / uploaded JSON document into a `{ schema, uischema }` pair.
+ * Normalizes a pasted / uploaded JSON document into a `{ schema, uischema }` pair,
+ * preserving `data` when present.
  *
  * Accepted shapes:
- * - `{ schema, uischema }` (optionally with ignored `data`)
+ * - `{ schema, uischema, data? }`
  * - a bare JSON Schema (`type` / `properties` / combinators) — uischema is generated
  * - `{ schema }` alone — uischema is generated
  */
-export const parseFormImport = (raw: string): FormDefinition => {
+export const parseFormImport = (raw: string): FormImportResult => {
   const trimmed = raw.trim()
   if (!trimmed) {
     throw new FormImportError('Le JSON est vide.')
@@ -77,6 +83,7 @@ export const parseFormImport = (raw: string): FormDefinition => {
   }
 
   const empty = createEmptyDefinition()
+  const data = 'data' in parsed ? parsed.data : undefined
 
   if (isPlainObject(parsed.schema)) {
     const schema = parsed.schema as JsonSchema
@@ -84,7 +91,7 @@ export const parseFormImport = (raw: string): FormDefinition => {
       ? (parsed.uischema as UISchemaElement)
       : Generate.uiSchema(schema, 'VerticalLayout')
 
-    return { schema, uischema: uischema ?? empty.uischema }
+    return { schema, uischema: uischema ?? empty.uischema, data }
   }
 
   if (looksLikeUiSchema(parsed) && !looksLikeSchema(parsed)) {
@@ -98,6 +105,7 @@ export const parseFormImport = (raw: string): FormDefinition => {
     return {
       schema,
       uischema: Generate.uiSchema(schema, 'VerticalLayout') ?? empty.uischema,
+      data,
     }
   }
 

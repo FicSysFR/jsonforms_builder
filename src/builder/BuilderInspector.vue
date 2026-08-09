@@ -6,13 +6,25 @@
       .flex.flex-wrap.items-center.gap-2
         u-badge(:label="element.type" color="neutral" variant="subtle" size="sm")
         u-badge(
-          v-if="controlKind !== 'unknown' && (property || element.type === 'ListWithDetail')"
+          v-if="controlKind !== 'unknown' && (propertyPath || element.type === 'ListWithDetail')"
           :label="controlKind"
           color="primary"
           variant="subtle"
           size="sm"
         )
-        span.text-xs.text-dimmed(v-if="property" v-text="`#/properties/${property}`")
+
+      //- ── Control path (JSON Forms scope) ──────────────────────────────────
+      template(v-if="hasEditableScope")
+        u-form-field(
+          label="Chemin"
+          help="Pointeur vers la propriété, ex. properties/adresse/properties/rue"
+        )
+          u-input(
+            :model-value="scopeInput"
+            class="w-full font-mono text-xs"
+            placeholder="properties/monChamp"
+            @update:model-value="onScopeInput"
+          )
 
       //- ── Label ────────────────────────────────────────────────────────────
       template(v-if="element.type === 'Label'")
@@ -77,7 +89,7 @@
           )
 
       //- ── Schema-backed control / ListWithDetail ───────────────────────────
-      template(v-if="property && schemaProperty")
+      template(v-if="propertyPath && schemaProperty")
         u-form-field(label="Libellé")
           u-input(
             :model-value="schemaProperty.title ?? ''"
@@ -95,7 +107,7 @@
         u-checkbox(
           :model-value="required"
           label="Champ obligatoire"
-          @update:model-value="$emit('update:required', property, $event)"
+          @update:model-value="$emit('update:required', propertyPath, $event)"
         )
 
         //- Schema constraints
@@ -485,15 +497,22 @@ import {
   resolveControlKind,
   type BuilderControlKind,
 } from './controlKind'
+import {
+  formatPropertyPathInput,
+  getSchemaPropertyAtPath,
+  propertyPathFromScope,
+} from './tree'
 
 /** UISchema types that carry their own label, independent of the schema. */
 const SELF_LABELLED = ['Group', 'Category']
+
+const SCOPE_EDITABLE = new Set(['Control', 'ListWithDetail'])
 
 /**
  * Panel for editing the selected element and its renderer options.
  *
  * Does not mutate anything itself: it emits intents (`update:element`, `update:property`,
- * `update:required`); the root component alone owns the history stack.
+ * `update:required`, `update:scope`); the root component alone owns the history stack.
  */
 export default defineComponent({
   name: 'BuilderInspector',
@@ -511,6 +530,12 @@ export default defineComponent({
       type: Object as PropType<UISchemaElement | undefined>,
       default: undefined,
     },
+    /** Nested path segments, e.g. `['adresse', 'rue']`. Preferred over `property`. */
+    propertyPath: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
+    /** @deprecated Root-only leaf name; kept so a stale HMR parent still works. */
     property: {
       type: String as PropType<string | undefined>,
       default: undefined,
@@ -524,11 +549,34 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['update:element', 'update:property', 'update:control', 'update:required'],
+  emits: ['update:element', 'update:property', 'update:control', 'update:required', 'update:scope'],
   setup(props, { emit }) {
-    const schemaProperty = computed<JsonSchema | undefined>(() =>
-      props.property ? props.schema.properties?.[props.property] : undefined,
+    /** Prefer `propertyPath`; fall back to legacy root `property` during HMR mismatches. */
+    const propertyPath = computed(() =>
+      props.propertyPath?.length
+        ? props.propertyPath
+        : props.property
+          ? [props.property]
+          : undefined,
     )
+
+    const schemaProperty = computed<JsonSchema | undefined>(() =>
+      propertyPath.value?.length
+        ? getSchemaPropertyAtPath(props.schema, propertyPath.value)
+        : undefined,
+    )
+
+    const hasEditableScope = computed(() => SCOPE_EDITABLE.has(props.element?.type ?? ''))
+
+    const scopeInput = computed(() => {
+      const scope = (props.element as ControlElement | undefined)?.scope
+      const path = propertyPathFromScope(scope)
+      return path ? formatPropertyPathInput(path) : (scope?.replace(/^#\//, '') ?? '')
+    })
+
+    const onScopeInput = (value: unknown) => {
+      emit('update:scope', String(value ?? ''))
+    }
 
     const options = computed<Record<string, unknown>>(
       () => (props.element as ControlElement | undefined)?.options ?? {},
@@ -744,7 +792,11 @@ export default defineComponent({
     }
 
     return {
+      propertyPath,
       schemaProperty,
+      hasEditableScope,
+      scopeInput,
+      onScopeInput,
       options,
       controlKind,
       hasOwnLabel,

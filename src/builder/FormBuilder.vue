@@ -104,13 +104,14 @@
       u-card(:ui="{ body: 'p-3' }")
         builder-inspector(
           :element="selectedElement"
-          :property="selectedProperty"
+          :property-path="selectedPropertyPath"
           :schema="definition.schema"
-          :required="selectedProperty ? isRequired(selectedProperty) : false"
+          :required="selectedPropertyPath ? isRequired(selectedPropertyPath) : false"
           @update:element="onUpdateElement"
           @update:property="onUpdateProperty"
           @update:control="onUpdateControl"
           @update:required="setRequired"
+          @update:scope="onUpdateScope"
         )
 
     //- ── Preview ─────────────────────────────────────────────────────────────────
@@ -126,7 +127,11 @@
       )
 
     //- ── JSON ───────────────────────────────────────────────────────────────────
-    .grid.grid-cols-1.gap-3(v-show="view === 'json'" class="md:grid-cols-2")
+    .grid.grid-cols-1.gap-3(v-show="view === 'json'" class="md:grid-cols-2 xl:grid-cols-3")
+      u-card(:ui="{ body: 'p-0' }")
+        template(#header)
+          span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Data
+        pre.overflow-x-auto.p-3.text-xs(v-text="dataJson")
       u-card(:ui="{ body: 'p-0' }")
         template(#header)
           span.text-xs.font-semibold.uppercase.tracking-wide.text-muted JSON Schema
@@ -148,7 +153,7 @@
     u-modal(
       v-model:open="importOpen"
       title="Importer un formulaire"
-      description="Collez un JSON `{ schema, uischema }` (ou un JSON Schema seul), ou chargez un fichier."
+      description="Collez un JSON `{ schema, uischema, data? }` (ou un JSON Schema seul), ou chargez un fichier."
       :ui="{ content: 'sm:max-w-2xl' }"
     )
       template(#body)
@@ -175,7 +180,7 @@
               v-model="importText"
               :rows="14"
               class="w-full font-mono text-xs"
-              placeholder='{\n  "schema": { "type": "object", "properties": { … } },\n  "uischema": { "type": "VerticalLayout", "elements": [ … ] }\n}'
+              placeholder='{\n  "schema": { "type": "object", "properties": { … } },\n  "uischema": { "type": "VerticalLayout", "elements": [ … ] },\n  "data": { … }\n}'
               @update:model-value="importError = ''"
             )
 
@@ -213,17 +218,28 @@ import { PALETTE_CONTAINERS, PALETTE_FIELDS } from './palette'
 import { readDragPayload, writeDragPayload, type DropEvent } from './drag'
 import { useFormBuilder, type FormDefinition } from './useFormBuilder'
 import { FormImportError, parseFormImport } from './importForm'
+import {
+  DEFAULT_FORM_BUILDER_STORAGE_KEY,
+  getBrowserFormDraftStorage,
+  isMeaningfulDefinition,
+  readFormDraft,
+  writeFormDraft,
+} from './persistForm'
 import { allRenderers } from '../renderers'
 import { getElementAt, type ElementPath } from './tree'
 
 /**
  * FormBuilder
  *
- * Visual editor producing the `{ schema, uischema }` pair consumed by `<JsonForms>`.
+ * Visual editor producing the `{ schema, uischema }` pair consumed by `<JsonForms>`,
+ * with live preview `data` visible in the JSON tab.
  *
  * Three panels: palette, form tree, inspector — plus a Preview tab that mounts the
- * real `<JsonForms>` with v2 renderers, a read-only JSON tab, and an import dialog
- * (paste or file upload) to load an existing definition for editing.
+ * real `<JsonForms>` with v2 renderers, a read-only JSON tab (data / schema / uischema),
+ * and an import dialog (paste or file upload) to load an existing definition for editing.
+ *
+ * By default the in-progress form (`schema`, `uischema`, preview `data`) is persisted to
+ * `localStorage` so a refresh keeps the draft. Pass `:storage-key="false"` to disable.
  *
  * @example
  * <form-builder v-model="definition" />
@@ -254,10 +270,31 @@ export default defineComponent({
       type: Array as PropType<JsonFormsRendererRegistryEntry[]>,
       default: () => allRenderers,
     },
+    /**
+     * `localStorage` key for the draft. Default enables persistence; set to `false` to opt out.
+     */
+    storageKey: {
+      type: [String, Boolean] as PropType<string | false>,
+      default: DEFAULT_FORM_BUILDER_STORAGE_KEY,
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const builder = useFormBuilder(props.modelValue)
+    const draftStorage = getBrowserFormDraftStorage()
+    const resolvedStorageKey = computed(() =>
+      props.storageKey === false ? undefined : props.storageKey || DEFAULT_FORM_BUILDER_STORAGE_KEY,
+    )
+
+    const storedDraft =
+      resolvedStorageKey.value && draftStorage
+        ? readFormDraft(draftStorage, resolvedStorageKey.value)
+        : undefined
+
+    const initialDefinition = isMeaningfulDefinition(props.modelValue)
+      ? props.modelValue
+      : (storedDraft ?? props.modelValue)
+
+    const builder = useFormBuilder(initialDefinition)
 
     const view = ref<'edit' | 'preview' | 'json'>('edit')
     const viewItems = [
@@ -266,7 +303,11 @@ export default defineComponent({
       { value: 'json', label: 'JSON', icon: 'i-lucide-braces' },
     ]
 
-    const previewData = ref<Record<string, unknown>>({})
+    // Preview `data` is internal (not part of `v-model`): always rehydrate it from the
+    // draft when present so remounts (playground mode switch, page reload) keep values.
+    const previewData = ref<unknown>(
+      storedDraft && storedDraft.data !== undefined ? structuredClone(storedDraft.data) : {},
+    )
     const isRootDropActive = ref(false)
 
     const importOpen = ref(false)
@@ -277,6 +318,21 @@ export default defineComponent({
     /** Emitting the definition on every change makes the component usable with `v-model`. */
     watch(builder.definition, (value) => emit('update:modelValue', value), { deep: true })
 
+    /** Keep the browser draft in sync with the editor (definition + preview data). */
+    watch(
+      [builder.definition, previewData, resolvedStorageKey],
+      ([definition, data, key]) => {
+        if (!key || !draftStorage) {
+          return
+        }
+        writeFormDraft(draftStorage, key, {
+          schema: definition.schema,
+          uischema: definition.uischema,
+          data,
+        })
+      },
+      { deep: true },
+    )
     const rootElements = computed<UISchemaElement[]>(
       () => (builder.definition.value.uischema as { elements?: UISchemaElement[] }).elements ?? [],
     )
@@ -396,8 +452,8 @@ export default defineComponent({
     }
 
     const onUpdateProperty = (patch: Record<string, unknown>) => {
-      if (builder.selectedProperty.value) {
-        builder.updateProperty(builder.selectedProperty.value, patch)
+      if (builder.selectedPropertyPath.value) {
+        builder.updateProperty(builder.selectedPropertyPath.value, patch)
       }
     }
 
@@ -405,16 +461,23 @@ export default defineComponent({
       element: Record<string, unknown>
       property: Record<string, unknown>
     }) => {
-      if (builder.selectedPath.value && builder.selectedProperty.value) {
+      if (builder.selectedPath.value && builder.selectedPropertyPath.value) {
         builder.updateControl(
           builder.selectedPath.value,
-          builder.selectedProperty.value,
+          builder.selectedPropertyPath.value,
           payload.element,
           payload.property,
         )
       }
     }
 
+    const onUpdateScope = (rawPath: string) => {
+      if (builder.selectedPath.value) {
+        builder.updateScope(builder.selectedPath.value, rawPath)
+      }
+    }
+
+    const dataJson = computed(() => JSON.stringify(previewData.value, null, 2))
     const schemaJson = computed(() => JSON.stringify(builder.definition.value.schema, null, 2))
     const uischemaJson = computed(() => JSON.stringify(builder.definition.value.uischema, null, 2))
 
@@ -428,7 +491,7 @@ export default defineComponent({
       try {
         const next = parseFormImport(importText.value)
         builder.reset(next)
-        previewData.value = {}
+        previewData.value = next.data === undefined ? {} : structuredClone(next.data)
         view.value = 'edit'
         importOpen.value = false
         importError.value = ''
@@ -480,6 +543,8 @@ export default defineComponent({
       onUpdateElement,
       onUpdateProperty,
       onUpdateControl,
+      onUpdateScope,
+      dataJson,
       schemaJson,
       uischemaJson,
       importOpen,

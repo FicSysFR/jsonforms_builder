@@ -4,13 +4,20 @@ import { createControl, findPaletteContainer, findPaletteField } from './palette
 import {
   addSchemaProperty,
   getElementAt,
+  getSchemaPropertyAtPath,
   insertElementAt,
   isSamePath,
+  isSchemaPropertyRequiredAtPath,
   moveElement,
-  propertyFromScope,
+  moveSchemaPropertyPath,
+  parsePropertyPathInput,
+  propertyPathFromScope,
+  propertyPathKey,
   removeElementAt,
-  removeSchemaProperty,
-  setSchemaPropertyRequired,
+  removeSchemaPropertyAtPath,
+  scopeFromPropertyPath,
+  setSchemaPropertyAtPath,
+  setSchemaPropertyRequiredAtPath,
   shiftElement,
   slugifyPropertyName,
   updateElementAt,
@@ -33,21 +40,24 @@ export const listPropertyNames = (schema: JsonSchema): string[] =>
   Object.keys(schema.properties ?? {})
 
 /**
- * Collects properties still referenced by at least one `Control` in the tree.
+ * Collects property paths still referenced by at least one `Control` in the tree.
  *
- * Used to find orphaned properties after removing a container: removing a group takes
- * its fields, and leaving their properties in the schema would produce data the form
- * can no longer display.
+ * Keys are `propertyPathKey` values (`a`, `a/b`, …). Used to find orphaned properties
+ * after removing a container: removing a group takes its fields, and leaving their
+ * properties in the schema would produce data the form can no longer display.
  */
 export const collectReferencedProperties = (element: UISchemaElement | undefined): string[] => {
   if (!element) {
     return []
   }
 
-  const property = propertyFromScope((element as ControlElement).scope)
+  const path = propertyPathFromScope((element as ControlElement).scope)
   const children = (element as { elements?: UISchemaElement[] }).elements ?? []
 
-  return [...(property ? [property] : []), ...children.flatMap(collectReferencedProperties)]
+  return [
+    ...(path ? [propertyPathKey(path)] : []),
+    ...children.flatMap(collectReferencedProperties),
+  ]
 }
 
 const HISTORY_LIMIT = 50
@@ -102,9 +112,15 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     selectedPath.value ? getElementAt(definition.value.uischema, selectedPath.value) : undefined,
   )
 
-  const selectedProperty = computed(() =>
-    propertyFromScope((selectedElement.value as ControlElement | undefined)?.scope),
+  const selectedPropertyPath = computed(
+    () => propertyPathFromScope((selectedElement.value as ControlElement | undefined)?.scope),
   )
+
+  /** Leaf property name — kept for callers that only need the last segment. */
+  const selectedProperty = computed(() => {
+    const path = selectedPropertyPath.value
+    return path?.[path.length - 1]
+  })
 
   const select = (path: ElementPath | null) => {
     selectedPath.value = path
@@ -153,10 +169,13 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     const stillReferenced = new Set(collectReferencedProperties(uischema))
 
     let schema = definition.value.schema
-    for (const property of new Set(collectReferencedProperties(element))) {
-      if (!stillReferenced.has(property)) {
-        schema = removeSchemaProperty(schema, property)
+    for (const key of new Set(collectReferencedProperties(element))) {
+      if (stillReferenced.has(key)) {
+        continue
       }
+
+      const propertyPath = key.split('/')
+      schema = removeSchemaPropertyAtPath(schema, propertyPath)
     }
 
     commit({ schema, uischema })
@@ -198,8 +217,8 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
    * A key set to `undefined` is removed: that is how the inspector clears a bound or
    * max length without leaving `"maximum": null` in the schema.
    */
-  const updateProperty = (name: string, patch: SchemaFragment) => {
-    const current = definition.value.schema.properties?.[name]
+  const updateProperty = (propertyPath: string[], patch: SchemaFragment) => {
+    const current = getSchemaPropertyAtPath(definition.value.schema, propertyPath)
     if (!current) return
 
     const merged: SchemaFragment = { ...current, ...patch }
@@ -211,7 +230,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     }
 
     commit({
-      schema: addSchemaProperty(definition.value.schema, name, merged),
+      schema: setSchemaPropertyAtPath(definition.value.schema, propertyPath, merged),
       uischema: definition.value.uischema,
     })
   }
@@ -222,11 +241,11 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
    */
   const updateControl = (
     path: ElementPath,
-    propertyName: string,
+    propertyPath: string[],
     elementPatch: Record<string, unknown>,
     propertyPatch: SchemaFragment,
   ) => {
-    const current = definition.value.schema.properties?.[propertyName]
+    const current = getSchemaPropertyAtPath(definition.value.schema, propertyPath)
     if (!current) return
 
     const merged: SchemaFragment = { ...current, ...propertyPatch }
@@ -238,19 +257,57 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     }
 
     commit({
-      schema: addSchemaProperty(definition.value.schema, propertyName, merged),
+      schema: setSchemaPropertyAtPath(definition.value.schema, propertyPath, merged),
       uischema: updateElementAt(definition.value.uischema, path, elementPatch),
     })
   }
 
-  const setRequired = (name: string, required: boolean) => {
+  /**
+   * Changes the control scope / schema path.
+   * Moves the schema property when the previous path was valid.
+   */
+  const updateScope = (elementPath: ElementPath, rawPath: string) => {
+    const nextPath = parsePropertyPathInput(rawPath)
+    if (!nextPath) {
+      return
+    }
+
+    const element = getElementAt(definition.value.uischema, elementPath) as
+      | ControlElement
+      | undefined
+    if (!element || typeof (element as { scope?: string }).scope !== 'string') {
+      return
+    }
+
+    const previousPath = propertyPathFromScope(element.scope)
+    const nextScope = scopeFromPropertyPath(nextPath)
+
+    if (element.scope === nextScope) {
+      return
+    }
+
+    let schema = definition.value.schema
+    if (previousPath) {
+      schema = moveSchemaPropertyPath(schema, previousPath, nextPath)
+    } else if (!getSchemaPropertyAtPath(schema, nextPath)) {
+      schema = setSchemaPropertyAtPath(schema, nextPath, { type: 'string' })
+    }
+
     commit({
-      schema: setSchemaPropertyRequired(definition.value.schema, name, required),
+      schema,
+      uischema: updateElementAt(definition.value.uischema, elementPath, { scope: nextScope }),
+    })
+  }
+
+  const setRequired = (propertyPath: string[], required: boolean) => {
+    commit({
+      schema: setSchemaPropertyRequiredAtPath(definition.value.schema, propertyPath, required),
       uischema: definition.value.uischema,
     })
   }
 
-  const isRequired = (name: string) => (definition.value.schema.required ?? []).includes(name)
+  const isRequired = (propertyPath: string[]) =>
+    isSchemaPropertyRequiredAtPath(definition.value.schema, propertyPath)
 
   const reset = (next?: Partial<FormDefinition>) => {
     const blank = createEmptyDefinition()
@@ -269,6 +326,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     selectedPath,
     selectedElement,
     selectedProperty,
+    selectedPropertyPath,
     canUndo,
     canRedo,
     select,
@@ -280,6 +338,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
     updateElement,
     updateProperty,
     updateControl,
+    updateScope,
     setRequired,
     isRequired,
     undo,

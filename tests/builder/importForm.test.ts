@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { FormImportError, parseFormImport } from '../../src/builder/importForm'
 
 describe('parseFormImport', () => {
-  it('accepts { schema, uischema }', () => {
+  it('accepts { schema, uischema, data }', () => {
     const result = parseFormImport(
       JSON.stringify({
         schema: { type: 'object', properties: { name: { type: 'string' } } },
@@ -10,12 +10,13 @@ describe('parseFormImport', () => {
           type: 'VerticalLayout',
           elements: [{ type: 'Control', scope: '#/properties/name' }],
         },
-        data: { name: 'ignored' },
+        data: { name: 'Alice' },
       }),
     )
 
     expect(result.schema.properties).toHaveProperty('name')
     expect(result.uischema).toMatchObject({ type: 'VerticalLayout' })
+    expect(result.data).toEqual({ name: 'Alice' })
   })
 
   it('generates a uischema when only schema is provided', () => {

@@ -195,9 +195,257 @@ export const shiftElement = (
 
 /** Property name referenced by a `Control`, extracted from its `scope`. */
 export const propertyFromScope = (scope: string | undefined): string | undefined => {
-  const match = /^#\/properties\/([^/]+)$/.exec(scope ?? '')
+  const path = propertyPathFromScope(scope)
+  return path?.[path.length - 1]
+}
 
-  return match?.[1]
+/**
+ * Property segments for a JSON Forms scope.
+ * `#/properties/a/properties/b` → `['a', 'b']`.
+ */
+export const propertyPathFromScope = (scope: string | undefined): string[] | undefined => {
+  if (!scope?.startsWith('#/')) {
+    return undefined
+  }
+
+  const parts = scope.slice(2).split('/').filter(Boolean)
+  if (parts.length < 2 || parts.length % 2 !== 0) {
+    return undefined
+  }
+
+  const path: string[] = []
+  for (let i = 0; i < parts.length; i += 2) {
+    if (parts[i] !== 'properties' || !parts[i + 1]) {
+      return undefined
+    }
+    path.push(parts[i + 1])
+  }
+
+  return path
+}
+
+/** Builds a JSON Forms scope from property segments. */
+export const scopeFromPropertyPath = (path: string[]): string =>
+  `#/${path.map((segment) => `properties/${segment}`).join('/')}`
+
+/**
+ * Accepts builder input for a control path:
+ * - `#/properties/a/properties/b`
+ * - `properties/a/properties/b`
+ * - `properties/a/b` (shorthand)
+ * - `a/b` (shorthand)
+ */
+export const parsePropertyPathInput = (raw: string): string[] | undefined => {
+  const trimmed = raw.trim().replace(/^#\/?/, '')
+  if (!trimmed) {
+    return undefined
+  }
+
+  const parts = trimmed.split('/').filter(Boolean)
+  if (!parts.length) {
+    return undefined
+  }
+
+  const path: string[] = []
+  let i = 0
+
+  while (i < parts.length) {
+    if (parts[i] === 'properties') {
+      i += 1
+      if (!parts[i] || parts[i] === 'properties') {
+        return undefined
+      }
+      path.push(parts[i])
+      i += 1
+      continue
+    }
+
+    path.push(parts[i])
+    i += 1
+  }
+
+  return path.length ? path : undefined
+}
+
+/** Human-editable path shown in the inspector (without the leading `#/`). */
+export const formatPropertyPathInput = (path: string[]): string =>
+  path.map((segment) => `properties/${segment}`).join('/')
+
+export const isSamePropertyPath = (a: string[], b: string[]): boolean =>
+  a.length === b.length && a.every((segment, index) => segment === b[index])
+
+export const propertyPathKey = (path: string[]): string => path.join('/')
+
+/** Resolves a nested schema property along `path`. */
+export const getSchemaPropertyAtPath = (
+  schema: JsonSchema,
+  path: string[],
+): JsonSchema | undefined => {
+  if (!path.length) {
+    return undefined
+  }
+
+  let current: JsonSchema | undefined = schema
+  for (const segment of path) {
+    current = current?.properties?.[segment] as JsonSchema | undefined
+    if (!current) {
+      return undefined
+    }
+  }
+
+  return current
+}
+
+const ensureObjectSchema = (node: JsonSchema): JsonSchema => {
+  if (node.type !== 'object' && node.type !== undefined) {
+    node.type = 'object'
+  } else if (node.type === undefined) {
+    node.type = 'object'
+  }
+  node.properties = { ...(node.properties ?? {}) } as JsonSchema['properties']
+  return node
+}
+
+/** Sets (or replaces) a property at a possibly nested path, creating object parents. */
+export const setSchemaPropertyAtPath = (
+  schema: JsonSchema,
+  path: string[],
+  property: SchemaFragment,
+): JsonSchema => {
+  if (!path.length) {
+    return schema
+  }
+
+  const next = cloneJson(schema)
+  let parent = ensureObjectSchema(next)
+
+  for (let i = 0; i < path.length - 1; i += 1) {
+    const segment = path[i]
+    const existing = (parent.properties?.[segment] as JsonSchema | undefined) ?? {
+      type: 'object',
+      properties: {},
+    }
+    const child = ensureObjectSchema(cloneJson(existing))
+    parent.properties = {
+      ...(parent.properties ?? {}),
+      [segment]: child,
+    } as JsonSchema['properties']
+    parent = child
+  }
+
+  const leaf = path[path.length - 1]
+  parent.properties = {
+    ...(parent.properties ?? {}),
+    [leaf]: property,
+  } as JsonSchema['properties']
+
+  return next
+}
+
+export const removeSchemaPropertyAtPath = (schema: JsonSchema, path: string[]): JsonSchema => {
+  if (!path.length) {
+    return schema
+  }
+
+  if (path.length === 1) {
+    return removeSchemaProperty(schema, path[0])
+  }
+
+  const next = cloneJson(schema)
+  let parent: JsonSchema | undefined = next
+
+  for (let i = 0; i < path.length - 1; i += 1) {
+    parent = parent?.properties?.[path[i]] as JsonSchema | undefined
+    if (!parent) {
+      return schema
+    }
+  }
+
+  const leaf = path[path.length - 1]
+  if (parent.properties) {
+    delete parent.properties[leaf]
+  }
+
+  if (parent.required) {
+    parent.required = parent.required.filter((key) => key !== leaf)
+  }
+
+  return next
+}
+
+/**
+ * Moves a property definition from one path to another and returns the moved fragment
+ * (or `undefined` if the source was missing — target is still created empty-safe).
+ */
+export const moveSchemaPropertyPath = (
+  schema: JsonSchema,
+  from: string[],
+  to: string[],
+): JsonSchema => {
+  if (!from.length || !to.length || isSamePropertyPath(from, to)) {
+    return schema
+  }
+
+  const property = getSchemaPropertyAtPath(schema, from) ?? { type: 'string' }
+  const without = removeSchemaPropertyAtPath(schema, from)
+  return setSchemaPropertyAtPath(without, to, property as SchemaFragment)
+}
+
+export const setSchemaPropertyRequiredAtPath = (
+  schema: JsonSchema,
+  path: string[],
+  required: boolean,
+): JsonSchema => {
+  if (!path.length) {
+    return schema
+  }
+
+  if (path.length === 1) {
+    return setSchemaPropertyRequired(schema, path[0], required)
+  }
+
+  const next = cloneJson(schema)
+  let parent: JsonSchema | undefined = next
+
+  for (let i = 0; i < path.length - 1; i += 1) {
+    parent = parent?.properties?.[path[i]] as JsonSchema | undefined
+    if (!parent) {
+      return schema
+    }
+  }
+
+  parent = ensureObjectSchema(parent)
+  const leaf = path[path.length - 1]
+  const current = new Set(parent.required ?? [])
+
+  if (required) {
+    current.add(leaf)
+  } else {
+    current.delete(leaf)
+  }
+
+  parent.required = [...current]
+  return next
+}
+
+export const isSchemaPropertyRequiredAtPath = (schema: JsonSchema, path: string[]): boolean => {
+  if (!path.length) {
+    return false
+  }
+
+  if (path.length === 1) {
+    return (schema.required ?? []).includes(path[0])
+  }
+
+  let parent: JsonSchema | undefined = schema
+  for (let i = 0; i < path.length - 1; i += 1) {
+    parent = parent?.properties?.[path[i]] as JsonSchema | undefined
+    if (!parent) {
+      return false
+    }
+  }
+
+  return (parent.required ?? []).includes(path[path.length - 1])
 }
 
 /**

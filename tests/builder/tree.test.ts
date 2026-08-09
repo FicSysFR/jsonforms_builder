@@ -4,15 +4,22 @@ import {
   addSchemaProperty,
   adjustPathAfterRemoval,
   getElementAt,
+  getSchemaPropertyAtPath,
   insertElementAt,
   isAncestorPath,
   isContainer,
   isSamePath,
+  isSchemaPropertyRequiredAtPath,
   moveElement,
+  moveSchemaPropertyPath,
+  parsePropertyPathInput,
   propertyFromScope,
+  propertyPathFromScope,
   removeElementAt,
   removeSchemaProperty,
+  scopeFromPropertyPath,
   setSchemaPropertyRequired,
+  setSchemaPropertyRequiredAtPath,
   shiftElement,
   slugifyPropertyName,
   updateElementAt,
@@ -206,15 +213,75 @@ describe('shiftElement', () => {
   })
 })
 
-describe('propertyFromScope', () => {
+describe('propertyFromScope / propertyPathFromScope', () => {
   it('extracts a root property name', () => {
     expect(propertyFromScope('#/properties/name')).toBe('name')
+    expect(propertyPathFromScope('#/properties/name')).toEqual(['name'])
   })
 
-  it('ignores nested or malformed scopes', () => {
-    expect(propertyFromScope('#/properties/a/properties/b')).toBeUndefined()
+  it('supports nested scopes', () => {
+    expect(propertyFromScope('#/properties/a/properties/b')).toBe('b')
+    expect(propertyPathFromScope('#/properties/a/properties/b')).toEqual(['a', 'b'])
+    expect(scopeFromPropertyPath(['a', 'b'])).toBe('#/properties/a/properties/b')
+  })
+
+  it('ignores malformed scopes', () => {
     expect(propertyFromScope('#')).toBeUndefined()
     expect(propertyFromScope(undefined)).toBeUndefined()
+    expect(propertyPathFromScope('#/properties')).toBeUndefined()
+  })
+})
+
+describe('parsePropertyPathInput', () => {
+  it('accepts JSON Forms scopes and shorthand paths', () => {
+    expect(parsePropertyPathInput('#/properties/a/properties/b')).toEqual(['a', 'b'])
+    expect(parsePropertyPathInput('properties/a/properties/b')).toEqual(['a', 'b'])
+    expect(parsePropertyPathInput('properties/a/b')).toEqual(['a', 'b'])
+    expect(parsePropertyPathInput('a/b')).toEqual(['a', 'b'])
+    expect(parsePropertyPathInput('monChamp')).toEqual(['monChamp'])
+  })
+
+  it('rejects empty input', () => {
+    expect(parsePropertyPathInput('')).toBeUndefined()
+    expect(parsePropertyPathInput('properties/')).toBeUndefined()
+  })
+})
+
+describe('nested schema property helpers', () => {
+  it('gets, sets and moves nested properties', () => {
+    let schema: JsonSchema = {
+      type: 'object',
+      properties: {
+        street: { type: 'string', title: 'Rue' },
+      },
+    }
+
+    schema = moveSchemaPropertyPath(schema, ['street'], ['address', 'street'])
+    expect(schema.properties?.street).toBeUndefined()
+    expect(getSchemaPropertyAtPath(schema, ['address', 'street'])).toMatchObject({
+      type: 'string',
+      title: 'Rue',
+    })
+    expect(schema.properties?.address).toMatchObject({ type: 'object' })
+  })
+
+  it('toggles required on a nested parent', () => {
+    const schema = setSchemaPropertyRequiredAtPath(
+      {
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: { city: { type: 'string' } },
+          },
+        },
+      },
+      ['address', 'city'],
+      true,
+    )
+
+    expect(isSchemaPropertyRequiredAtPath(schema, ['address', 'city'])).toBe(true)
+    expect((schema.properties?.address as JsonSchema).required).toEqual(['city'])
   })
 })
 

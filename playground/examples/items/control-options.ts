@@ -292,17 +292,6 @@ export const extendedData = {
         content: [
           {
             type: 'text',
-            marks: [
-              {
-                type: 'textStyle',
-                attrs: {
-                  fontFamily: 'BBH Sans Bogle',
-                  fontSize: null,
-                  color: null,
-                  backgroundColor: null,
-                },
-              },
-            ],
             text: 'test',
           },
         ],

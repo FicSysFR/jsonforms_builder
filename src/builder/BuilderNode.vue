@@ -92,7 +92,7 @@ import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/cor
 import UBadge from '@nuxt/ui/components/Badge.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UIcon from '@nuxt/ui/components/Icon.vue'
-import { isSamePath, propertyFromScope, type ElementPath } from './tree'
+import { isSamePath, getSchemaPropertyAtPath, propertyPathFromScope, type ElementPath } from './tree'
 import { readDragPayload, writeDragPayload } from './drag'
 
 const NODE_ICONS: Record<string, string> = {
@@ -174,15 +174,22 @@ export default defineComponent({
 
     const nodeLabel = computed(() => {
       const element = props.element as ControlElement & { label?: string; text?: string }
-      const property = propertyFromScope(element.scope)
+      const path = propertyPathFromScope(element.scope)
 
       // For a `Control`, the readable label lives in the schema (`title`) rather than
       // in the uischema: without this resolution, the tree would show only technical names.
-      const title = property
-        ? (props.schema?.properties?.[property] as JsonSchema | undefined)?.title
+      const title = path?.length
+        ? (getSchemaPropertyAtPath(props.schema ?? { type: 'object' }, path) as JsonSchema | undefined)
+            ?.title
         : undefined
 
-      return element.label ?? element.text ?? title ?? property ?? element.type
+      return (
+        element.label ??
+        element.text ??
+        title ??
+        (path ? path[path.length - 1] : undefined) ??
+        element.type
+      )
     })
 
     const badge = computed(() =>

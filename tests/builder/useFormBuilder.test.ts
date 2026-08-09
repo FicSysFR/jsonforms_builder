@@ -46,12 +46,21 @@ describe('collectReferencedProperties', () => {
     expect(collectReferencedProperties(tree).sort()).toEqual(['a', 'b'])
   })
 
-  it('ignores undefined and non-root scopes', () => {
-    expect(collectReferencedProperties(undefined)).toEqual([])
+  it('collects nested Control scopes in the tree', () => {
     expect(
       collectReferencedProperties({
         type: 'Control',
         scope: '#/properties/a/properties/b',
+      } as UISchemaElement),
+    ).toEqual(['a/b'])
+  })
+
+  it('ignores undefined and malformed scopes', () => {
+    expect(collectReferencedProperties(undefined)).toEqual([])
+    expect(
+      collectReferencedProperties({
+        type: 'Control',
+        scope: '#',
       } as UISchemaElement),
     ).toEqual([])
   })
@@ -203,7 +212,7 @@ describe('useFormBuilder', () => {
 
     api.addField('text', [], 0)
     api.updateElement([0], { label: 'Nom' })
-    api.updateProperty('texte', { maxLength: 40, minLength: undefined })
+    api.updateProperty(['texte'], { maxLength: 40, minLength: undefined })
 
     const control = (api.definition.value.uischema as { elements: Array<{ label?: string }> })
       .elements[0]
@@ -221,13 +230,34 @@ describe('useFormBuilder', () => {
     const { api, stop } = mountBuilder()
 
     api.addField('text', [], 0)
-    expect(api.isRequired('texte')).toBe(false)
+    expect(api.isRequired(['texte'])).toBe(false)
 
-    api.setRequired('texte', true)
-    expect(api.isRequired('texte')).toBe(true)
+    api.setRequired(['texte'], true)
+    expect(api.isRequired(['texte'])).toBe(true)
 
-    api.setRequired('texte', false)
-    expect(api.isRequired('texte')).toBe(false)
+    api.setRequired(['texte'], false)
+    expect(api.isRequired(['texte'])).toBe(false)
+
+    stop()
+  })
+
+  it('renames and nests a control path via updateScope', () => {
+    const { api, stop } = mountBuilder()
+
+    api.addField('text', [], 0)
+    api.updateScope([0], 'properties/adresse/properties/rue')
+
+    expect(api.selectedPropertyPath.value).toEqual(['adresse', 'rue'])
+    expect(api.definition.value.schema.properties?.texte).toBeUndefined()
+    expect(api.definition.value.schema.properties?.adresse).toMatchObject({
+      type: 'object',
+      properties: {
+        rue: { type: 'string', title: 'Texte' },
+      },
+    })
+    expect(
+      (api.definition.value.uischema as { elements: Array<{ scope?: string }> }).elements[0].scope,
+    ).toBe('#/properties/adresse/properties/rue')
 
     stop()
   })
@@ -299,7 +329,7 @@ describe('useFormBuilder', () => {
 
     api.updateControl(
       [0],
-      'texteRiche',
+      ['texteRiche'],
       { options: { wysiwyg: true, contentType: 'html' } },
       { type: 'string' },
     )
