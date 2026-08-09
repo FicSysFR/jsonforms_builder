@@ -68,8 +68,8 @@ import type { Theme } from '../theme'
  * the default slot.
  *
  * Optional `leadingIcon` / `trailingIcon` (uischema options) render Nuxt Icons before /
- * after the control. For icons inside a `UInput` / `USelect` border, use pass-through
- * (`options.input.leadingIcon`, …).
+ * after the control when `iconPlacement` is `outside` (default). With
+ * `iconPlacement: 'inside'`, icons are merged into the Nuxt UI component instead.
  *
  * @example
  * <control-wrapper v-bind="controlWrapper" :styles="styles">

@@ -104,6 +104,47 @@ export const useComputedLabel = <
 }
 
 /**
+ * Pass-through keys whose Nuxt UI target accepts `leadingIcon` / `trailingIcon`.
+ * Used when `options.iconPlacement` is `inside`.
+ */
+const UI_ICON_PROP_PATHS = new Set([
+  'input',
+  'textarea',
+  'select',
+  'selectMenu',
+  'inputMenu',
+  'inputTags',
+  'inputDate',
+  'inputTime',
+])
+
+export type ControlIconPlacement = 'outside' | 'inside'
+
+export type ResolvedControlIcons = {
+  leadingIcon?: string
+  trailingIcon?: string
+  iconPlacement: ControlIconPlacement
+}
+
+/**
+ * Resolves top-level icon options from applied uischema / config.
+ */
+export const resolveControlIcons = (options?: UiOptionBag): ResolvedControlIcons => {
+  const leadingIcon =
+    typeof options?.leadingIcon === 'string' && options.leadingIcon
+      ? options.leadingIcon
+      : undefined
+  const trailingIcon =
+    typeof options?.trailingIcon === 'string' && options.trailingIcon
+      ? options.trailingIcon
+      : undefined
+  const iconPlacement: ControlIconPlacement =
+    options?.iconPlacement === 'inside' ? 'inside' : 'outside'
+
+  return { leadingIcon, trailingIcon, iconPlacement }
+}
+
+/**
  * Extracts a prop bag for a Nuxt UI component from uischema options.
  *
  * Replaces v1's `quasarProps('q-input')`. The uischema can thus drive any component in
@@ -114,15 +155,32 @@ export const useComputedLabel = <
  *   "options": { "input": { "size": "lg", "ui": { "base": "font-mono" } } } }
  * ```
  *
- * Top-level `leadingIcon` / `trailingIcon` are rendered by the control wrapper beside the
- * widget. Pass-through stays free for icons inside Nuxt UI chrome
- * (`options.input.leadingIcon`, …).
+ * When `iconPlacement` is `inside`, top-level `leadingIcon` / `trailingIcon` are merged
+ * into icon-capable paths. Explicit pass-through (`options.input.leadingIcon`, …) wins.
  */
 const createUiProps = (appliedOptions: ComputedRef<UiOptionBag>) => {
   return (path: string): UiOptionBag => {
     const props = get(appliedOptions.value, path)
+    const base = props && isObject(props) ? (props as UiOptionBag) : {}
 
-    return props && isObject(props) ? (props as UiOptionBag) : {}
+    if (!UI_ICON_PROP_PATHS.has(path)) {
+      return base
+    }
+
+    const { leadingIcon, trailingIcon, iconPlacement } = resolveControlIcons(appliedOptions.value)
+    if (iconPlacement !== 'inside' || (!leadingIcon && !trailingIcon)) {
+      return base
+    }
+
+    const icons: UiOptionBag = {}
+    if (leadingIcon) {
+      icons.leadingIcon = leadingIcon
+    }
+    if (trailingIcon) {
+      icons.trailingIcon = trailingIcon
+    }
+
+    return defu(base, icons)
   }
 }
 
@@ -265,14 +323,11 @@ export const useUiControl = <
     // `hideDescription` removes help text for this field. Used by the array renderer on
     // primitive item rows, where the item schema description would repeat identically under
     // every row.
-    const leadingIcon =
-      typeof appliedOptions.value?.leadingIcon === 'string' && appliedOptions.value.leadingIcon
-        ? appliedOptions.value.leadingIcon
-        : undefined
-    const trailingIcon =
-      typeof appliedOptions.value?.trailingIcon === 'string' && appliedOptions.value.trailingIcon
-        ? appliedOptions.value.trailingIcon
-        : undefined
+    //
+    // Outside icons only: when `iconPlacement: 'inside'`, icons are merged into uiProps
+    // for UInput / USelect / … instead of flanking the widget here.
+    const icons = resolveControlIcons(appliedOptions.value)
+    const showOutside = icons.iconPlacement === 'outside'
 
     return {
       id,
@@ -281,8 +336,8 @@ export const useUiControl = <
       label,
       visible,
       required,
-      leadingIcon,
-      trailingIcon,
+      leadingIcon: showOutside ? icons.leadingIcon : undefined,
+      trailingIcon: showOutside ? icons.trailingIcon : undefined,
     }
   })
 

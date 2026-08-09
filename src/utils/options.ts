@@ -10,14 +10,21 @@ export interface Options {
    */
   clearOnHide?: boolean
   /**
-   * Icon rendered before the control (Nuxt Icon name, e.g. `i-lucide-mail`).
-   * Placed beside the widget inside `UFormField`.
-   * For icons inside the Nuxt UI input chrome, use `options.input.leadingIcon` instead.
+   * Icon before the control (Nuxt Icon name, e.g. `i-lucide-mail`).
+   * Placement depends on {@link iconPlacement}.
    */
   leadingIcon?: string
   /**
-   * Icon rendered after the control (Nuxt Icon name, e.g. `i-lucide-check`).
+   * Icon after the control (Nuxt Icon name, e.g. `i-lucide-check`).
    * See {@link leadingIcon}.
    */
   trailingIcon?: string
+  /**
+   * Where `leadingIcon` / `trailingIcon` render:
+   * - `outside` (default) — beside the widget in the form field wrapper
+   * - `inside` — Nuxt UI chrome (`leadingIcon` / `trailingIcon` on UInput, USelect, …)
+   *
+   * Pass-through still wins when set (`options.input.leadingIcon`, …).
+   */
+  iconPlacement?: 'outside' | 'inside'
 }

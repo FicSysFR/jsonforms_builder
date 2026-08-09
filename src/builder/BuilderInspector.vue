@@ -175,6 +175,11 @@
               @update:model-value="patchOption('trailingIcon', $event || undefined)"
             )
           u-checkbox(
+            :model-value="options.iconPlacement === 'inside'"
+            label="Icônes dans le champ (sinon à côté)"
+            @update:model-value="patchOption('iconPlacement', $event ? 'inside' : undefined)"
+          )
+          u-checkbox(
             :model-value="!!options.focus"
             label="Autofocus"
             @update:model-value="patchOption('focus', $event || undefined)"

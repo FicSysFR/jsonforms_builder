@@ -76,6 +76,13 @@ export const COMMON_OPTIONS: ApiPropGroup = {
       description: 'Icône Nuxt Icon après le contrôle (ex. i-lucide-check).',
     },
     {
+      name: 'iconPlacement',
+      type: "'outside' | 'inside'",
+      default: "'outside'",
+      description:
+        'outside : à côté du widget. inside : dans le chrome Nuxt UI (UInput, USelect, …).',
+    },
+    {
       name: 'styles',
       type: 'Partial<Theme>',
       description: 'Surcharge locale des classes Tailwind du thème.',

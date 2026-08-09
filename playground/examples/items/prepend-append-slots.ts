@@ -1,10 +1,10 @@
 import { registerExamples } from '../register'
 
 /**
- * Leading / trailing icons beside controls (`options.leadingIcon` / `trailingIcon`).
+ * Leading / trailing icons (`options.leadingIcon` / `trailingIcon`).
  *
- * For icons *inside* UInput chrome, use pass-through instead:
- * `options.input: { leadingIcon: 'i-lucide-…' }`.
+ * - `iconPlacement: 'outside'` (default) — beside the widget
+ * - `iconPlacement: 'inside'` — Nuxt UI field chrome (UInput, …)
  */
 
 export const schema = {
@@ -13,24 +13,24 @@ export const schema = {
     displayName: {
       type: 'string',
       title: 'Nom affiché',
-      description: 'Icône décorative avant le champ',
+      description: 'Icône à côté du champ (outside)',
     },
     email: {
       type: 'string',
       format: 'email',
       title: 'E-mail',
-      description: 'Icônes avant et après',
+      description: 'Icônes dans le champ (inside)',
     },
     amount: {
       type: 'number',
       title: 'Montant',
-      description: 'Suffixe € via trailingIcon',
+      description: 'Outside — UInputNumber n’a pas de chrome d’icônes',
       minimum: 0,
     },
     accepted: {
       type: 'boolean',
       title: 'Conditions acceptées',
-      description: 'Fonctionne aussi sur checkbox / switch',
+      description: 'Outside — checkbox / switch',
     },
   },
 }
@@ -39,20 +39,15 @@ export const uischema = {
   type: 'VerticalLayout',
   elements: [
     {
+      type: 'Label',
+      text: 'À côté du contrôle (outside)',
+    },
+    {
       type: 'Control',
       scope: '#/properties/displayName',
       options: {
         leadingIcon: 'i-lucide-user',
         placeholder: 'Camille Dupont',
-      },
-    },
-    {
-      type: 'Control',
-      scope: '#/properties/email',
-      options: {
-        leadingIcon: 'i-lucide-mail',
-        trailingIcon: 'i-lucide-check',
-        placeholder: 'vous@exemple.fr',
       },
     },
     {
@@ -69,6 +64,20 @@ export const uischema = {
       scope: '#/properties/accepted',
       options: {
         leadingIcon: 'i-lucide-shield-check',
+      },
+    },
+    {
+      type: 'Label',
+      text: 'Dans le champ (inside)',
+    },
+    {
+      type: 'Control',
+      scope: '#/properties/email',
+      options: {
+        leadingIcon: 'i-lucide-mail',
+        trailingIcon: 'i-lucide-check',
+        iconPlacement: 'inside',
+        placeholder: 'vous@exemple.fr',
       },
     },
   ],

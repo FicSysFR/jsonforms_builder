@@ -17,10 +17,11 @@ Appliquées à la plupart des contrôles (label, description, lecture seule, err
 | `clearable` | `Boolean` | — | Comportement « clear » (notamment rating : re-clic pour vider). |
 | `leadingIcon` | `String` | — | Icône Nuxt Icon avant le contrôle (ex. `i-lucide-mail`). |
 | `trailingIcon` | `String` | — | Icône Nuxt Icon après le contrôle (ex. `i-lucide-check`). |
+| `iconPlacement` | `'outside' \| 'inside'` | `'outside'` | `outside` : à côté du widget. `inside` : dans le chrome Nuxt UI (`UInput`, `USelect`, …). |
 | `styles` | `Partial<Theme>` | — | Surcharge locale des classes Tailwind du thème (voir [Personnalisation](/guide/customization)). |
 | `formField` | `Object` | — | Props pass-through vers `UFormField` (voir [Pass-through](./pass-through)). |
 
-Pour une icône *à l’intérieur* du chrome Nuxt UI (`UInput`, `USelect`, …), utilisez plutôt le pass-through : `options.input.leadingIcon` / `trailingIcon` (voir [Pass-through](./pass-through)).
+En mode `inside`, le pass-through reste prioritaire (`options.input.leadingIcon`, …). Les contrôles sans chrome d’icônes (checkbox, slider, number, …) ignorent `inside` — utilisez `outside` pour ceux-là.
 
 ## Exemples
 
@@ -77,6 +78,8 @@ Pour une icône *à l’intérieur* du chrome Nuxt UI (`UInput`, `USelect`, …)
 
 ### Icônes avant / après le contrôle
 
+À côté du widget (`outside`, défaut) :
+
 ```json
 {
   "type": "Control",
@@ -89,6 +92,19 @@ Pour une icône *à l’intérieur* du chrome Nuxt UI (`UInput`, `USelect`, …)
 }
 ```
 
-Ces options placent l’icône **à côté** du widget. Pour l’intégrer **dans** le chrome Nuxt UI (`UInput`, `USelect`, …), utilisez le pass-through : `options.input.leadingIcon` / `trailingIcon` (voir [Pass-through](./pass-through)).
+Dans le champ Nuxt UI (`inside`) :
+
+```json
+{
+  "type": "Control",
+  "scope": "#/properties/email",
+  "options": {
+    "leadingIcon": "i-lucide-mail",
+    "trailingIcon": "i-lucide-check",
+    "iconPlacement": "inside",
+    "placeholder": "vous@exemple.fr"
+  }
+}
+```
 
 Voir aussi l’exemple **Leading / Trailing Icons** (`prepend-append-slots`) dans le [playground](/playground).
