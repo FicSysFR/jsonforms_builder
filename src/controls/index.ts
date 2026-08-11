@@ -1,74 +1,87 @@
-export { default as ControlWrapper } from '../common/control-wrapper.vue'
-export { default as InputControlRenderer } from './input.vue'
-export { default as BooleanControlRenderer } from './boolean.vue'
-export { default as DateControlRenderer } from './date.vue'
-export { default as PasswordControlRenderer } from './password.vue'
-export { default as SliderControlRenderer } from './slider.vue'
-export { default as EnumAndSuggestionControlRenderer } from './enum-and-suggestion.vue'
-export { default as RadioGroupControlRenderer } from './radio-group.vue'
-export { default as numericControlRenderer } from './numeric.vue'
-export { default as TextareaControlRenderer } from './textarea.vue'
-export { default as AutocompleteControlRenderer } from './autocomplete.vue'
-export { default as ArrayControlRenderer } from './array.vue'
-export { default as OneOfControlRenderer } from './one-of.vue'
-export { default as ObjectControlRenderer } from './object.vue'
-export { default as MultiEnumControlRenderer } from './multi-enum.vue'
-export { default as ConstControlRenderer } from './const.vue'
-export { default as AllOfControlRenderer } from './all-of.vue'
-export { default as PinInputControlRenderer } from './pin-input.vue'
-export { default as RatingControlRenderer } from './rating.vue'
-export { default as TagsControlRenderer } from './tags.vue'
-export { default as ColorControlRenderer } from './color.vue'
-export { default as FileUploadControlRenderer } from './file-upload.vue'
-export { default as CalendarControlRenderer } from './calendar.vue'
-export { default as SelectControlRenderer } from './select.vue'
+import { rendererEntry } from '../rendererEntry'
 
-import { entry as inputControlRendererEntry } from './input.vue'
-import { entry as booleanControlRendererEntry } from './boolean.vue'
-import { entry as dateControlRendererEntry } from './date.vue'
-import { entry as passwordControlRendererEntry } from './password.vue'
-import { entry as sliderControlRendererEntry } from './slider.vue'
-import { entry as enumAndSuggestionControlRenderer } from './enum-and-suggestion.vue'
-import { entry as radioGroupControlRenderer } from './radio-group.vue'
-import { entry as numericControlRendererEntry } from './numeric.vue'
-import { entry as textareaControlRendererEntry } from './textarea.vue'
-import { entry as autocompleteControlRendererEntry } from './autocomplete.vue'
-import { entry as arrayControlRendererEntry } from './array.vue'
-import { entry as oneOfControlRendererEntry } from './one-of.vue'
-import { entry as objectControlRendererEntry } from './object.vue'
-import { entry as multiEnumControlRendererEntry } from './multi-enum.vue'
-import { entry as constControlRendererEntry } from './const.vue'
-import { entry as allOfControlRendererEntry } from './all-of.vue'
-import { entry as pinInputControlRendererEntry } from './pin-input.vue'
-import { entry as ratingControlRendererEntry } from './rating.vue'
-import { entry as tagsControlRendererEntry } from './tags.vue'
-import { entry as colorControlRendererEntry } from './color.vue'
-import { entry as fileUploadControlRendererEntry } from './file-upload.vue'
-import { entry as calendarControlRendererEntry } from './calendar.vue'
-import { entry as selectControlRendererEntry } from './select.vue'
+import ControlWrapper from '../common/control-wrapper.vue'
+import InputControlRenderer, { entry as inputControlRendererEntry } from './input.vue'
+import BooleanControlRenderer, { entry as booleanControlRendererEntry } from './boolean.vue'
+import DateControlRenderer, { entry as dateControlRendererEntry } from './date.vue'
+import PasswordControlRenderer, { entry as passwordControlRendererEntry } from './password.vue'
+import SliderControlRenderer, { entry as sliderControlRendererEntry } from './slider.vue'
+import EnumAndSuggestionControlRenderer, {
+  entry as enumAndSuggestionControlRenderer,
+} from './enum-and-suggestion.vue'
+import RadioGroupControlRenderer, { entry as radioGroupControlRenderer } from './radio-group.vue'
+import NumericControlRenderer, { entry as numericControlRendererEntry } from './numeric.vue'
+import TextareaControlRenderer, { entry as textareaControlRendererEntry } from './textarea.vue'
+import AutocompleteControlRenderer, {
+  entry as autocompleteControlRendererEntry,
+} from './autocomplete.vue'
+import ArrayControlRenderer, { entry as arrayControlRendererEntry } from './array.vue'
+import OneOfControlRenderer, { entry as oneOfControlRendererEntry } from './one-of.vue'
+import ObjectControlRenderer, { entry as objectControlRendererEntry } from './object.vue'
+import MultiEnumControlRenderer, { entry as multiEnumControlRendererEntry } from './multi-enum.vue'
+import ConstControlRenderer, { entry as constControlRendererEntry } from './const.vue'
+import AllOfControlRenderer, { entry as allOfControlRendererEntry } from './all-of.vue'
+import PinInputControlRenderer, { entry as pinInputControlRendererEntry } from './pin-input.vue'
+import RatingControlRenderer, { entry as ratingControlRendererEntry } from './rating.vue'
+import TagsControlRenderer, { entry as tagsControlRendererEntry } from './tags.vue'
+import ColorControlRenderer, { entry as colorControlRendererEntry } from './color.vue'
+import FileUploadControlRenderer, {
+  entry as fileUploadControlRendererEntry,
+} from './file-upload.vue'
+import CalendarControlRenderer, { entry as calendarControlRendererEntry } from './calendar.vue'
+import SelectControlRenderer, { entry as selectControlRendererEntry } from './select.vue'
 
+export {
+  ControlWrapper,
+  InputControlRenderer,
+  BooleanControlRenderer,
+  DateControlRenderer,
+  PasswordControlRenderer,
+  SliderControlRenderer,
+  EnumAndSuggestionControlRenderer,
+  RadioGroupControlRenderer,
+  NumericControlRenderer as numericControlRenderer,
+  TextareaControlRenderer,
+  AutocompleteControlRenderer,
+  ArrayControlRenderer,
+  OneOfControlRenderer,
+  ObjectControlRenderer,
+  MultiEnumControlRenderer,
+  ConstControlRenderer,
+  AllOfControlRenderer,
+  PinInputControlRenderer,
+  RatingControlRenderer,
+  TagsControlRenderer,
+  ColorControlRenderer,
+  FileUploadControlRenderer,
+  CalendarControlRenderer,
+  SelectControlRenderer,
+}
+
+// `rendererEntry` pairs each entry with the component's default export — see its doc:
+// without that reference the compiled templates are tree-shaken out of production builds.
 export const controlsRenderers = [
-  inputControlRendererEntry,
-  booleanControlRendererEntry,
-  dateControlRendererEntry,
-  passwordControlRendererEntry,
-  sliderControlRendererEntry,
-  enumAndSuggestionControlRenderer,
-  radioGroupControlRenderer,
-  numericControlRendererEntry,
-  textareaControlRendererEntry,
-  autocompleteControlRendererEntry,
-  arrayControlRendererEntry,
-  oneOfControlRendererEntry,
-  objectControlRendererEntry,
-  multiEnumControlRendererEntry,
-  constControlRendererEntry,
-  allOfControlRendererEntry,
-  pinInputControlRendererEntry,
-  ratingControlRendererEntry,
-  tagsControlRendererEntry,
-  colorControlRendererEntry,
-  fileUploadControlRendererEntry,
-  calendarControlRendererEntry,
-  selectControlRendererEntry,
+  rendererEntry(inputControlRendererEntry, InputControlRenderer),
+  rendererEntry(booleanControlRendererEntry, BooleanControlRenderer),
+  rendererEntry(dateControlRendererEntry, DateControlRenderer),
+  rendererEntry(passwordControlRendererEntry, PasswordControlRenderer),
+  rendererEntry(sliderControlRendererEntry, SliderControlRenderer),
+  rendererEntry(enumAndSuggestionControlRenderer, EnumAndSuggestionControlRenderer),
+  rendererEntry(radioGroupControlRenderer, RadioGroupControlRenderer),
+  rendererEntry(numericControlRendererEntry, NumericControlRenderer),
+  rendererEntry(textareaControlRendererEntry, TextareaControlRenderer),
+  rendererEntry(autocompleteControlRendererEntry, AutocompleteControlRenderer),
+  rendererEntry(arrayControlRendererEntry, ArrayControlRenderer),
+  rendererEntry(oneOfControlRendererEntry, OneOfControlRenderer),
+  rendererEntry(objectControlRendererEntry, ObjectControlRenderer),
+  rendererEntry(multiEnumControlRendererEntry, MultiEnumControlRenderer),
+  rendererEntry(constControlRendererEntry, ConstControlRenderer),
+  rendererEntry(allOfControlRendererEntry, AllOfControlRenderer),
+  rendererEntry(pinInputControlRendererEntry, PinInputControlRenderer),
+  rendererEntry(ratingControlRendererEntry, RatingControlRenderer),
+  rendererEntry(tagsControlRendererEntry, TagsControlRenderer),
+  rendererEntry(colorControlRendererEntry, ColorControlRenderer),
+  rendererEntry(fileUploadControlRendererEntry, FileUploadControlRenderer),
+  rendererEntry(calendarControlRendererEntry, CalendarControlRenderer),
+  rendererEntry(selectControlRendererEntry, SelectControlRenderer),
 ]

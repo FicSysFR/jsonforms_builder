@@ -1,16 +1,28 @@
-export { default as VerticalAndHorizontalLayoutRenderer } from './vertical-and-horizontal.vue'
-export { default as CategorizationLayoutRenderer } from './categorization.vue'
-export { default as GroupLayoutRenderer } from './group.vue'
-export { default as ListWithDetailRenderer } from './list-with-detail.vue'
+import { rendererEntry } from '../rendererEntry'
 
-import { entry as verticalAndHorizontalRendererEntry } from './vertical-and-horizontal.vue'
-import { entry as categorizationRendererEntry } from './categorization.vue'
-import { entry as groupRendererEntry } from './group.vue'
-import { entry as listWithDetailRendererEntry } from './list-with-detail.vue'
+import VerticalAndHorizontalLayoutRenderer, {
+  entry as verticalAndHorizontalRendererEntry,
+} from './vertical-and-horizontal.vue'
+import CategorizationLayoutRenderer, {
+  entry as categorizationRendererEntry,
+} from './categorization.vue'
+import GroupLayoutRenderer, { entry as groupRendererEntry } from './group.vue'
+import ListWithDetailRenderer, {
+  entry as listWithDetailRendererEntry,
+} from './list-with-detail.vue'
 
+export {
+  VerticalAndHorizontalLayoutRenderer,
+  CategorizationLayoutRenderer,
+  GroupLayoutRenderer,
+  ListWithDetailRenderer,
+}
+
+// `rendererEntry` pairs each entry with the component's default export — see its doc:
+// without that reference the compiled templates are tree-shaken out of production builds.
 export const layoutsRenderers = [
-  verticalAndHorizontalRendererEntry,
-  categorizationRendererEntry,
-  groupRendererEntry,
-  listWithDetailRendererEntry,
+  rendererEntry(verticalAndHorizontalRendererEntry, VerticalAndHorizontalLayoutRenderer),
+  rendererEntry(categorizationRendererEntry, CategorizationLayoutRenderer),
+  rendererEntry(groupRendererEntry, GroupLayoutRenderer),
+  rendererEntry(listWithDetailRendererEntry, ListWithDetailRenderer),
 ]
