@@ -20,7 +20,7 @@ LATEST ?= true
 WATCH ?=
 YES ?=
 
-.PHONY: help install dev docs docs-build docs-preview build lint format test test-watch test-coverage test-regression test-perf release release-ci release-status ncu ncu-upgrade
+.PHONY: help install dev docs docs-build docs-preview stop build lint format test test-watch test-coverage test-regression test-perf release release-ci release-status ncu ncu-upgrade
 .DEFAULT_GOAL := help
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -40,6 +40,10 @@ docs-build: ## Build the documentation site (GitHub Pages)
 
 docs-preview: ## Preview the built documentation site
 	@yarn docs:preview
+
+stop: ## Stop Vite, VitePress and mock API (ports 5174/5173/4173/4000)
+	@node scripts/stop-dev.mjs
+
 
 build: ## Build the library (es + cjs + declarations)
 	@yarn build
