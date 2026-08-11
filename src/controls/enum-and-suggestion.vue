@@ -14,6 +14,7 @@
       :class="styles.control.input"
       :disabled="isDisabled"
       :placeholder="appliedOptions.placeholder"
+      :search-input="searchInput"
       :multiple="isArrayControl"
       :color="control.errors ? 'error' : undefined"
       value-key="value"
@@ -88,7 +89,10 @@ const controlRenderer = defineComponent({
       }))
     })
 
-    return { ...control, selectItems }
+    // Nuxt UI defaults to English "Search..."; keep UI copy in French like `#empty`.
+    const searchInput = { placeholder: 'Rechercher…', variant: 'none' as const }
+
+    return { ...control, selectItems, searchInput }
   },
 })
 
