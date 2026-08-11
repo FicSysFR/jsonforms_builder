@@ -83,3 +83,8 @@ jobs:
 
       - name: Build project
         run: yarn build
+
+      - name: Install and build MCP package
+        run: |
+          yarn --cwd mcp install --frozen-lockfile
+          yarn --cwd mcp build

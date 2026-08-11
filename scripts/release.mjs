@@ -2,7 +2,7 @@
 import { execFileSync, execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 
-const RELEASE_FILES = ['package.json', 'CHANGELOG.md']
+const RELEASE_FILES = ['package.json', 'mcp/package.json', 'CHANGELOG.md']
 const NOTES_FILE = 'RELEASE_NOTES.md'
 
 /** gh peut manquer du PATH de la session si l'IDE a démarré avant l'installation de GitHub CLI. */
@@ -75,10 +75,17 @@ function gitOutput(args) {
 
 function assertPackageVersion(version) {
   const current = JSON.parse(readFileSync('package.json', 'utf8')).version
-  if (current === version) return
-  console.error(`ERROR: package.json is at ${current}, not ${version}.`)
-  console.error('→ Lancez le skill github-release pour bumper la version et le CHANGELOG.')
-  process.exit(1)
+  if (current !== version) {
+    console.error(`ERROR: package.json is at ${current}, not ${version}.`)
+    console.error('→ Lancez le skill github-release pour bumper la version et le CHANGELOG.')
+    process.exit(1)
+  }
+  const mcpCurrent = JSON.parse(readFileSync('mcp/package.json', 'utf8')).version
+  if (mcpCurrent !== version) {
+    console.error(`ERROR: mcp/package.json is at ${mcpCurrent}, not ${version}.`)
+    console.error('→ Alignez mcp/package.json sur la version root avant make release.')
+    process.exit(1)
+  }
 }
 
 function hasStagedChanges() {
@@ -163,7 +170,7 @@ function main() {
   run(gh, ghArgs, { useShell: gh === 'gh' })
 
   console.log(
-    `Release ${tag} publiée (${releaseKind}). Le workflow Publish construit et pousse le paquet sur npm.`,
+    `Release ${tag} publiée (${releaseKind}). Le workflow Publish construit et pousse lib + MCP sur npm.`,
   )
 }
 

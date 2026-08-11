@@ -61,8 +61,20 @@ jobs:
             DIST_TAG="latest"
           fi
           if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
-            echo "${NAME}@${VERSION} is already on npm — skipping publish."
-            exit 0
+            echo "${NAME}@${VERSION} is already on npm — skipping library publish."
+          else
+            echo "Publishing ${NAME}@${VERSION} with dist-tag ${DIST_TAG}"
+            npm publish --access public --tag "${DIST_TAG}"
           fi
-          echo "Publishing ${NAME}@${VERSION} with dist-tag ${DIST_TAG}"
-          npm publish --access public --tag "${DIST_TAG}"
+
+      - name: Publish MCP package to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            DIST_TAG="next"
+          else
+            DIST_TAG="latest"
+          fi
+          node scripts/publish-mcp.mjs --tag "${DIST_TAG}"

@@ -51,7 +51,9 @@
     "test:coverage": "vitest run --coverage",
     "test:regression": "vitest run tests/regression",
     "test:perf": "vitest run tests/performance",
-    "coverage:renderers": "yarn build && tsx playground/examples/coverage.ts"
+    "coverage:renderers": "yarn build && tsx playground/examples/coverage.ts",
+    "mcp:build": "yarn --cwd mcp build",
+    "mcp:install": "yarn --cwd mcp install --frozen-lockfile"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.1",
@@ -84,6 +86,7 @@
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-pug": "^0.4.1",
     "vitepress": "^1.6.4",
+    "vitepress-plugin-llms": "^1.13.4",
     "vitest": "^3.2.4",
     "vue": "^3.5.1",
     "vue-router": "^4.5.0"

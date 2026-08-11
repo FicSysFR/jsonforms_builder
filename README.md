@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml/badge.svg)](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-00A86B)](https://tacxou.github.io/jsonforms_builder/)
+[![llms.txt](https://img.shields.io/badge/llms.txt-AI%20docs-111111)](https://tacxou.github.io/jsonforms_builder/llms.txt)
+[![MCP](https://img.shields.io/badge/MCP-jsonforms__builder--mcp-6B4EFF)](https://www.npmjs.com/package/@tacxou/jsonforms_builder-mcp)
 [![codecov](https://codecov.io/gh/tacxou/jsonforms_builder/branch/main/graph/badge.svg)](https://codecov.io/gh/tacxou/jsonforms_builder)
 ![NPM Version](https://img.shields.io/npm/v/@tacxou/jsonforms_builder)
 ![NPM Downloads](https://img.shields.io/npm/dm/@tacxou/jsonforms_builder)
@@ -280,6 +282,14 @@ In the playground sidebar:
 
 Enable Pages in the repository settings (**Settings → Pages → Source: GitHub Actions**).
 The workflow `.github/workflows/deploy-docs.yml` builds and deploys on every push to `main`.
+
+### AI agents
+
+Machine-readable docs and an MCP server for Cursor / Claude:
+
+- [llms.txt](https://tacxou.github.io/jsonforms_builder/llms.txt) · [llms-full.txt](https://tacxou.github.io/jsonforms_builder/llms-full.txt)
+- Guide: [AI agents](https://tacxou.github.io/jsonforms_builder/en/guide/ai) · [Agents IA](https://tacxou.github.io/jsonforms_builder/guide/ai)
+- MCP: `npx -y @tacxou/jsonforms_builder-mcp`
 
 Linting and formatting are handled by **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
 replacing ESLint and Prettier. Two limits come from the Vue + Pug stack:

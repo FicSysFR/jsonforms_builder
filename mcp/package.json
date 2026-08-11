@@ -1,0 +1,35 @@
+{
+  "name": "@tacxou/jsonforms_builder-mcp",
+  "version": "2.0.0",
+  "description": "MCP server for @tacxou/jsonforms_builder documentation (llms.txt)",
+  "repository": "https://github.com/tacxou/jsonforms_builder.git",
+  "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "bin": {
+    "jsonforms-builder-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "prepublishOnly": "yarn build"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.3"
+  }
+}

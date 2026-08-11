@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
+import llmstxt, { copyOrDownloadAsMarkdownButtons } from 'vitepress-plugin-llms'
 import {
   playgroundOptimizeExclude,
   playgroundResolveDedupe,
@@ -24,13 +25,34 @@ export default defineConfig({
 
   head: [['link', { rel: 'icon', href: `${base}favicon.svg`, type: 'image/svg+xml' }]],
 
+  markdown: {
+    config(md) {
+      // Plugin typings pull a different `@types/markdown-it` copy than VitePress.
+      md.use(copyOrDownloadAsMarkdownButtons as never)
+    },
+  },
+
   /**
    * Playground is compiled into the docs bundle (same Nuxt UI / Pug stack as
    * `playground/vite.config.ts`) so GitHub Pages serves one site — no iframe
    * to a separate `/play/` SPA.
    */
   vite: {
-    plugins: playgroundUiPlugins({ express: true }),
+    plugins: [
+      ...playgroundUiPlugins({ express: true }),
+      // English docs only (FR ignored). Domain is origin only — VitePress `base`
+      // (`/jsonforms_builder/`) is prepended by the plugin into absolute URLs.
+      // Cast: vitepress-plugin-llms resolves `vite` from the root; VitePress nests its own.
+      ...(llmstxt({
+        domain: 'https://tacxou.github.io',
+        title: 'JSONForms Builder',
+        description:
+          'JSONForms renderers for Vue 3 on Nuxt UI & Tailwind CSS, plus a visual form builder.',
+        details:
+          'Compose JSON Schema forms with Nuxt UI components, plus a visual builder that generates { schema, uischema }.',
+        ignoreFiles: ['index.md', 'playground.md', 'guide/**', 'en/index.md', 'en/playground.md'],
+      }) as never[]),
+    ],
     optimizeDeps: {
       // `playgroundOptimizeExclude()`: keep the whole ProseMirror graph unbundled,
       // on the same side of the boundary as the copy `@nuxt/ui` loads. See its
@@ -105,6 +127,7 @@ export default defineConfig({
               { text: 'Intégration', link: '/guide/integration' },
               { text: 'Builder visuel', link: '/guide/builder' },
               { text: 'Exemples playground', link: '/guide/playground-examples' },
+              { text: 'Agents IA', link: '/guide/ai' },
             ],
           },
           {
@@ -180,6 +203,7 @@ export default defineConfig({
               { text: 'Integration', link: '/en/guide/integration' },
               { text: 'Visual builder', link: '/en/guide/builder' },
               { text: 'Playground examples', link: '/en/guide/playground-examples' },
+              { text: 'AI agents', link: '/en/guide/ai' },
             ],
           },
           {

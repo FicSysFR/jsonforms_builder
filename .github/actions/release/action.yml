@@ -91,12 +91,25 @@ runs:
           node <<'NODE'
         const fs = require('fs')
         const version = process.env.NEW_VERSION
-        const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-        pkg.version = version
-        fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`)
-        console.log(`updated package.json → ${version}`)
+        for (const file of ['package.json', 'mcp/package.json']) {
+          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'))
+          pkg.version = version
+          fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
+          console.log(`updated ${file} → ${version}`)
+        }
         NODE
         fi
+        # Keep MCP version aligned even on 'none' (local skill may have bumped root only).
+        node <<'NODE'
+        const fs = require('fs')
+        const version = process.env.NEW_VERSION
+        const mcp = JSON.parse(fs.readFileSync('mcp/package.json', 'utf8'))
+        if (mcp.version !== version) {
+          mcp.version = version
+          fs.writeFileSync('mcp/package.json', `${JSON.stringify(mcp, null, 2)}\n`)
+          console.log(`synced mcp/package.json → ${version}`)
+        }
+        NODE
         echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
         # Tags nus (X.Y.Z, sans préfixe 'v') : convention déjà en place sur 1.0.0 → 1.0.3.
         echo "RELEASE_TAG=${NEW_VERSION}" >> "$GITHUB_ENV"
@@ -118,7 +131,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        git add package.json
+        git add package.json mcp/package.json
         if git diff --cached --quiet; then
           echo "No version changes to commit"
         else
@@ -219,11 +232,26 @@ runs:
         # Rejouable : un run relancé après un échec tardif ne doit pas casser sur un
         # 403 "cannot publish over the previously published version".
         if npm view "${NAME}@${NEW_VERSION}" version >/dev/null 2>&1; then
-          echo "${NAME}@${NEW_VERSION} is already on npm — skipping publish."
-          exit 0
+          echo "${NAME}@${NEW_VERSION} is already on npm — skipping library publish."
+        else
+          echo "Publishing ${NAME}@${NEW_VERSION} with dist-tag ${DIST_TAG}"
+          npm publish --access public --tag "${DIST_TAG}"
         fi
-        echo "Publishing ${NAME}@${NEW_VERSION} with dist-tag ${DIST_TAG}"
-        npm publish --access public --tag "${DIST_TAG}"
+
+    - name: Publish MCP package to npm
+      if: inputs.publish_npm == 'true'
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm_token }}
+        NEW_VERSION: ${{ env.NEW_VERSION }}
+      run: |
+        set -euo pipefail
+        if [ "${{ inputs.latest }}" = "true" ]; then
+          DIST_TAG="latest"
+        else
+          DIST_TAG="next"
+        fi
+        node scripts/publish-mcp.mjs --tag "${DIST_TAG}"
 
     - name: Summary
       shell: bash
@@ -232,6 +260,6 @@ runs:
           echo "### Release ${RELEASE_TAG}"
           echo ""
           echo "- Canal : ${{ inputs.latest == 'true' && 'stable (latest)' || 'prerelease (next)' }}"
-          echo "- npm : ${{ inputs.publish_npm == 'true' && 'publié' || 'ignoré' }}"
+          echo "- npm : ${{ inputs.publish_npm == 'true' && 'publié (lib + mcp)' || 'ignoré' }}"
           echo "- Release : ${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
         } >> "$GITHUB_STEP_SUMMARY"

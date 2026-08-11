@@ -18,7 +18,11 @@
       "!tests/prosemirror.html",
       // Dépôts de référence locaux (non versionnés) : leur propre biome.json est vu
       // comme une configuration racine imbriquée et fait échouer `yarn lint`.
-      "!samples"
+      "!samples",
+      // MCP package keeps its own yarn.lock / node_modules tree.
+      "!mcp/node_modules",
+      "!mcp/dist",
+      "!mcp/yarn.lock"
     ]
   },
 
