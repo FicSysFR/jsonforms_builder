@@ -42,7 +42,13 @@
       )
 
     //- ── Edit ────────────────────────────────────────────────────────────────
-    .grid.grid-cols-1.gap-3(v-show="view === 'edit'" class="lg:grid-cols-[16rem_1fr_20rem]")
+    //- The three panels use `v-if`, not `v-show`, on purpose: `v-show` hides by
+    //- writing an inline `display: none`, and a host running Tailwind in
+    //- `important` mode (`@import "tailwindcss" important`, which the docs embed
+    //- needs) emits `.grid { display: grid !important }` — that outranks the
+    //- inline style and every panel stays visible at once. None of them keeps
+    //- local state (the builder store lives in `setup`), so unmounting is free.
+    .grid.grid-cols-1.gap-3(v-if="view === 'edit'" class="lg:grid-cols-[16rem_1fr_20rem]")
       u-card(:ui="{ body: 'p-3' }")
         .space-y-4
           .space-y-2(v-for="group in fieldGroups" :key="group.name")
@@ -115,7 +121,7 @@
         )
 
     //- ── Preview ─────────────────────────────────────────────────────────────────
-    u-card(v-show="view === 'preview'")
+    u-card(v-if="view === 'preview'")
       json-forms(
         :key="previewKey"
         :data="previewData"
@@ -127,7 +133,7 @@
       )
 
     //- ── JSON ───────────────────────────────────────────────────────────────────
-    .grid.grid-cols-1.gap-3(v-show="view === 'json'" class="md:grid-cols-2 xl:grid-cols-3")
+    .grid.grid-cols-1.gap-3(v-if="view === 'json'" class="md:grid-cols-2 xl:grid-cols-3")
       u-card(:ui="{ body: 'p-0' }")
         template(#header)
           span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Data

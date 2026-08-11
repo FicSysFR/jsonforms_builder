@@ -13,7 +13,12 @@ u-app
       //- `flex-wrap` + `min-w-0`: in a narrow pane the toolbar wraps instead of
       //- pushing the page into horizontal overflow.
       .flex.flex-wrap.items-center.gap-2.px-4.py-3
+        //- Dropped under `forcedEmbed`: VitePress already prints `siteTitle`
+        //- ("JSONForms Builder") in its own navbar, right above this one. Kept
+        //- everywhere else — a bare iframe or the standalone SPA has no chrome
+        //- of its own to name the page.
         h1.min-w-0.truncate.text-sm.font-semibold.tracking-tight(
+          v-if="!forcedEmbed"
           :title="pageTitle"
         ) {{ pageTitle }}
         u-button(
@@ -43,7 +48,11 @@ u-app
           size="sm"
           class="w-28"
         )
+        //- Hidden under `forcedEmbed`: VitePress owns `html.dark` there and we only
+        //- mirror it, so the button would be a dead control. The builder route keeps
+        //- this header even when embedded, which is how it used to show up.
         u-button(
+          v-if="!forcedEmbed"
           :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
           :aria-pressed="isDark"
           color="neutral"

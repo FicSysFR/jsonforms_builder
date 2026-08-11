@@ -89,10 +89,67 @@
   display: none !important;
 }
 
-/* Match VitePress nav bg to Nuxt UI so the seam disappears in dark/light. */
+/* ── Palette bridge: Nuxt UI tokens ← VitePress palette ───────────────────
+   Nuxt UI ships a slate-tinted neutral ramp, and `playground/assets/main.css`
+   pins a cobalt primary in dark. Against VitePress' warm `#1b1b1f` chrome that
+   read as a seam under the navbar plus a second brand colour. Re-point the
+   Nuxt UI semantic tokens at `--vp-c-*` so the embed inherits the docs palette.
+
+   `body:has(.playground-page)`, not `.playground-page`: Nuxt UI teleports its
+   overlays (select menus, popovers, tooltips) straight to `body`, so they sit
+   *outside* the page element and would keep the un-remapped slate/cobalt values.
+   Declaring on `body` covers the page and its portals in one go, and `:has()`
+   keeps it off every other docs page.
+
+   The extra `body` also buys specificity: `main.css` sets the primary ramp under
+   `.dark` (0,1,0) and is injected later (style tag 70 of 73), so a bare
+   `.playground-page` would lose on source order. This is (0,1,1).
+
+   Scoped to the docs on purpose: the standalone SPA has no `--vp-c-*` and keeps
+   its own palette. Both themes come free — VitePress redefines every `--vp-c-*`
+   under `html.dark`. */
+body:has(.playground-page) {
+  /* Surfaces */
+  --ui-bg: var(--vp-c-bg);
+  --ui-bg-muted: var(--vp-c-bg-alt);
+  --ui-bg-elevated: var(--vp-c-bg-soft);
+  --ui-bg-accented: var(--vp-c-gray-3);
+  --ui-bg-inverted: var(--vp-c-neutral);
+
+  /* Borders */
+  --ui-border: var(--vp-c-divider);
+  --ui-border-muted: var(--vp-c-divider);
+  --ui-border-accented: var(--vp-c-border);
+  --ui-border-inverted: var(--vp-c-neutral);
+
+  /* Text */
+  --ui-text-dimmed: var(--vp-c-text-3);
+  --ui-text-muted: var(--vp-c-text-2);
+  --ui-text-toned: var(--vp-c-text-2);
+  --ui-text: var(--vp-c-text-1);
+  --ui-text-highlighted: var(--vp-c-neutral);
+  --ui-text-inverted: var(--vp-c-bg);
+
+  /* Primary. VitePress owns three brand shades: they anchor 400/500/600, so an
+     accent in the playground is byte-identical to a link in the docs. The rest
+     extends that ramp in OKLCH at the brand hue (158.8°, from `#00a86b`). */
+  --ui-color-primary-50: oklch(96.5% 0.028 158.8);
+  --ui-color-primary-100: oklch(93.2% 0.058 158.8);
+  --ui-color-primary-200: oklch(87.6% 0.099 158.8);
+  --ui-color-primary-300: oklch(80.2% 0.14 158.8);
+  --ui-color-primary-400: var(--vp-c-brand-2);
+  --ui-color-primary-500: var(--vp-c-brand-1);
+  --ui-color-primary-600: var(--vp-c-brand-3);
+  --ui-color-primary-700: oklch(50.5% 0.116 158.8);
+  --ui-color-primary-800: oklch(43% 0.094 158.8);
+  --ui-color-primary-900: oklch(37.5% 0.077 158.8);
+  --ui-color-primary-950: oklch(25.8% 0.053 158.8);
+  --ui-primary: var(--vp-c-brand-1);
+}
+
+/* One canvas from the nav down to the form. */
 .playground-page {
-  /* biome-ignore lint/complexity/noImportantStyles: unify page canvas with embed */
-  background-color: var(--ui-bg, var(--vp-c-bg)) !important;
+  background-color: var(--vp-c-bg);
 }
 
 /* API tables — denser, Quasar/Vuetify-like */
