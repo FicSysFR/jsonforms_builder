@@ -1,4 +1,4 @@
-# Dates & calendrier
+﻿# Dates & calendrier
 
 Contrôles segmentés (`UInputDate` / `UInputTime`) ou calendrier déplié (`UCalendar`).
 
@@ -144,6 +144,6 @@ Plage avec contraintes :
 
 ## Playground
 
-- [Date & Time](/play/index.html?section=docs&example=nuxt-dates)
-- [Calendar](/play/index.html?section=docs&example=nuxt-calendar)
-- [Date ranges & constraints](/play/index.html?section=docs&example=nuxt-date-ranges)
+- [Date & Time](/playground#/?section=docs&example=nuxt-dates)
+- [Calendar](/playground#/?section=docs&example=nuxt-calendar)
+- [Date ranges & constraints](/playground#/?section=docs&example=nuxt-date-ranges)

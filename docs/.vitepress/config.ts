@@ -1,7 +1,16 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
+import {
+  playgroundResolveDedupe,
+  playgroundUiPlugins,
+} from '../../playground/vite.shared'
 
 const repo = 'https://github.com/tacxou/jsonforms_builder'
-const base = '/jsonforms_builder/'
+/** GitHub Pages path in production; `/` for local `docs:dev`. */
+const base = process.env.NODE_ENV === 'production' ? '/jsonforms_builder/' : '/'
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
+const playgroundRoot = path.resolve(repoRoot, 'playground')
 
 export default defineConfig({
   title: 'JSONForms Builder',
@@ -14,6 +23,32 @@ export default defineConfig({
   ignoreDeadLinks: true,
 
   head: [['link', { rel: 'icon', href: `${base}favicon.svg`, type: 'image/svg+xml' }]],
+
+  /**
+   * Playground is compiled into the docs bundle (same Nuxt UI / Pug stack as
+   * `playground/vite.config.ts`) so GitHub Pages serves one site — no iframe
+   * to a separate `/play/` SPA.
+   */
+  vite: {
+    plugins: playgroundUiPlugins({ express: true }),
+    optimizeDeps: {
+      exclude: ['@nuxt/ui', '@nuxt/icon'],
+      // Ensure the playground entry is pre-bundled with the docs server.
+      include: ['vue-router', '@vueuse/core'],
+    },
+    resolve: {
+      alias: {
+        // Avoid `#…` (Node package imports). Stable path into the playground app.
+        '@playground': playgroundRoot,
+      },
+      dedupe: [...playgroundResolveDedupe],
+    },
+    server: {
+      fs: {
+        allow: [repoRoot, playgroundRoot],
+      },
+    },
+  },
 
   themeConfig: {
     logo: { src: '/logo.svg', alt: 'JSONForms Builder' },
@@ -83,12 +118,6 @@ export default defineConfig({
         items: [
           { text: 'Galerie interactive', link: '/playground' },
           { text: 'Exemples Nuxt UI', link: '/guide/playground-examples' },
-          {
-            text: 'Ouvrir en plein écran',
-            link: '/play/index.html',
-            target: '_blank',
-            rel: 'noopener',
-          },
         ],
       },
     ],

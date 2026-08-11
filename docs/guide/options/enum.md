@@ -1,4 +1,4 @@
-# Enumérations
+﻿# Enumérations
 
 ---
 
@@ -148,5 +148,5 @@
 
 ## Playground
 
-- [Select](/play/index.html?section=docs&example=nuxt-select)
-- [Radio & Multi-enum](/play/index.html?section=docs&example=nuxt-radio)
+- [Select](/playground#/?section=docs&example=nuxt-select)
+- [Radio & Multi-enum](/playground#/?section=docs&example=nuxt-radio)

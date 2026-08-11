@@ -8,44 +8,58 @@
 .playground-shell {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
-  min-height: calc(100vh - var(--vp-nav-height));
+  width: 100%;
+  min-width: 0;
+  /* Fill under the VitePress nav; use Nuxt UI tokens so chrome + form match. */
+  min-height: calc(100dvh - var(--vp-nav-height, 64px));
+  height: calc(100dvh - var(--vp-nav-height, 64px));
+  background: var(--ui-bg, var(--vp-c-bg));
+  color: var(--ui-text, var(--vp-c-text-1));
 }
 
-.playground-toolbar {
+.playground-embed-host {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background: var(--ui-bg, var(--vp-c-bg));
 }
 
-.playground-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
+.playground-embed-host > * {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
 }
 
-.playground-lead {
-  margin: 0.25rem 0 0;
+.playground-loading {
+  margin: 2rem;
   font-size: 0.875rem;
   opacity: 0.7;
 }
 
-.playground-frame {
-  flex: 1;
-  width: 100%;
-  height: calc(100vh - var(--vp-nav-height) - 7rem);
-  min-height: 36rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+/* Full-bleed playground: strip VitePress chrome that offsets / clips the embed. */
+.playground-page .VPContent {
+  /* biome-ignore lint/complexity/noImportantStyles: override VitePress content width */
+  padding: 0 !important;
+  /* biome-ignore lint/complexity/noImportantStyles: fill viewport under nav */
+  min-height: calc(100dvh - var(--vp-nav-height, 64px)) !important;
 }
 
-/* VitePress theme defaults need !important to yield full-bleed playground layout. */
+.playground-page .VPPage {
+  /* biome-ignore lint/complexity/noImportantStyles: override VitePress page padding */
+  padding: 0 !important;
+  /* biome-ignore lint/complexity/noImportantStyles: full width for embedded SPA */
+  max-width: 100% !important;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100dvh - var(--vp-nav-height, 64px));
+}
+
 .playground-page .VPDoc {
   /* biome-ignore lint/complexity/noImportantStyles: override VitePress padding */
   padding: 0 !important;
@@ -54,10 +68,14 @@
 .playground-page .content-container {
   /* biome-ignore lint/complexity/noImportantStyles: override VitePress max-width */
   max-width: 100% !important;
+  width: 100%;
+  min-width: 0;
 }
 
-.playground-page .aside {
-  /* biome-ignore lint/complexity/noImportantStyles: hide VitePress aside on playground */
+.playground-page .aside,
+.playground-page .VPLocalNav,
+.playground-page .VPSkipLink {
+  /* biome-ignore lint/complexity/noImportantStyles: hide nav chrome that shifts the embed down */
   display: none !important;
 }
 
@@ -66,10 +84,10 @@
   display: none !important;
 }
 
-.playground-foot {
-  margin: 0;
-  font-size: 0.875rem;
-  opacity: 0.75;
+/* Match VitePress nav bg to Nuxt UI so the seam disappears in dark/light. */
+.playground-page {
+  /* biome-ignore lint/complexity/noImportantStyles: unify page canvas with embed */
+  background-color: var(--ui-bg, var(--vp-c-bg)) !important;
 }
 
 /* API tables — denser, Quasar/Vuetify-like */

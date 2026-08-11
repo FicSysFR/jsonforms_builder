@@ -1,4 +1,4 @@
-# Nombres
+﻿# Nombres
 
 ---
 
@@ -95,9 +95,9 @@ Avec props Nuxt UI + pas décimal :
 
 ## Playground
 
-- [Number](/play/index.html?section=docs&example=nuxt-number)
-- [Slider](/play/index.html?section=docs&example=nuxt-slider)
-- [Rating](/play/index.html?section=docs&example=nuxt-rating)
+- [Number](/playground#/?section=docs&example=nuxt-number)
+- [Slider](/playground#/?section=docs&example=nuxt-slider)
+- [Rating](/playground#/?section=docs&example=nuxt-rating)
 
 ---
 

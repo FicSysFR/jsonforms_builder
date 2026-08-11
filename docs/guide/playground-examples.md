@@ -1,4 +1,4 @@
-# Exemples playground Nuxt UI
+﻿# Exemples playground Nuxt UI
 
 Le playground sépare deux galeries :
 
@@ -7,7 +7,7 @@ Le playground sépare deux galeries :
 | **Documentation** | Vitrines Nuxt UI + tableaux API (Name / Type / Default / Description) |
 | **Examples** | Démos JSONForms, compositions et cas limites |
 
-Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans **Documentation**. Ouvrir le [playground](/playground) ou la [version plein écran](/play/index.html).
+Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans **Documentation**. Ouvrir le [playground](/playground).
 
 ## Catalogue Documentation
 
@@ -23,44 +23,44 @@ Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans *
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [String & Textarea](/play/index.html?section=docs&example=nuxt-string) | `UInput`, `UTextarea`, password | `restrict`, `multi`, `input`, `format: password` |
-| [Pin Input](/play/index.html?section=docs&example=nuxt-pin-input) | `UPinInput` | `format: pin`, `otp`, `mask`, `length` |
-| [Color Picker](/play/index.html?section=docs&example=nuxt-color) | `UColorPicker` | `colorFormat`, `showInput` |
-| [File Upload](/play/index.html?section=docs&example=nuxt-file-upload) | `UFileUpload` | `accept`, `layout`, multi via `array` |
-| [Autocomplete API](/play/index.html?section=docs&example=nuxt-autocomplete) | `UInputMenu` | `api.*`, `minLength`, `suggestion` |
-| [WYSIWYG](/play/index.html?section=docs&example=nuxt-wysiwyg) | `UEditor` | `wysiwyg`, `contentType` (`json` \| `html`) |
+| [String & Textarea](/playground#/?section=docs&example=nuxt-string) | `UInput`, `UTextarea`, password | `restrict`, `multi`, `input`, `format: password` |
+| [Pin Input](/playground#/?section=docs&example=nuxt-pin-input) | `UPinInput` | `format: pin`, `otp`, `mask`, `length` |
+| [Color Picker](/playground#/?section=docs&example=nuxt-color) | `UColorPicker` | `colorFormat`, `showInput` |
+| [File Upload](/playground#/?section=docs&example=nuxt-file-upload) | `UFileUpload` | `accept`, `layout`, multi via `array` |
+| [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete) | `UInputMenu` | `api.*`, `minLength`, `suggestion` |
+| [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg) | `UEditor` | `wysiwyg`, `contentType` (`json` \| `html`) |
 
 ### Nombres & booléens
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [Number](/play/index.html?section=docs&example=nuxt-number) | `UInputNumber` | `step`, `inputNumber` |
-| [Slider](/play/index.html?section=docs&example=nuxt-slider) | `USlider` | `slider`, `step`, `hideValue` |
-| [Rating](/play/index.html?section=docs&example=nuxt-rating) | `UInputRating` | `format: rating`, `icon`, `hideValue` |
-| [Boolean](/play/index.html?section=docs&example=nuxt-boolean) | `UCheckbox`, `USwitch` | `toggle`, `checkbox`, `switch` |
+| [Number](/playground#/?section=docs&example=nuxt-number) | `UInputNumber` | `step`, `inputNumber` |
+| [Slider](/playground#/?section=docs&example=nuxt-slider) | `USlider` | `slider`, `step`, `hideValue` |
+| [Rating](/playground#/?section=docs&example=nuxt-rating) | `UInputRating` | `format: rating`, `icon`, `hideValue` |
+| [Boolean](/playground#/?section=docs&example=nuxt-boolean) | `UCheckbox`, `USwitch` | `toggle`, `checkbox`, `switch` |
 
 ### Enumérations
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [Select](/play/index.html?section=docs&example=nuxt-select) | `USelect`, `USelectMenu` | `format: select` vs défaut (recherche) |
-| [Radio & Multi-enum](/play/index.html?section=docs&example=nuxt-radio) | `URadioGroup`, `UCheckboxGroup` | `format: radio`, `vertical`, `radioGroup` |
+| [Select](/playground#/?section=docs&example=nuxt-select) | `USelect`, `USelectMenu` | `format: select` vs défaut (recherche) |
+| [Radio & Multi-enum](/playground#/?section=docs&example=nuxt-radio) | `URadioGroup`, `UCheckboxGroup` | `format: radio`, `vertical`, `radioGroup` |
 
 ### Dates
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [Date & Time](/play/index.html?section=docs&example=nuxt-dates) | `UInputDate`, `UInputTime` | `pattern`, précision mois / année |
-| [Calendar](/play/index.html?section=docs&example=nuxt-calendar) | `UCalendar` | `format: calendar` |
-| [Date ranges](/play/index.html?section=docs&example=nuxt-date-ranges) | Calendar / InputDate | `range`, `minDate`, `disabled*` |
+| [Date & Time](/playground#/?section=docs&example=nuxt-dates) | `UInputDate`, `UInputTime` | `pattern`, précision mois / année |
+| [Calendar](/playground#/?section=docs&example=nuxt-calendar) | `UCalendar` | `format: calendar` |
+| [Date ranges](/playground#/?section=docs&example=nuxt-date-ranges) | Calendar / InputDate | `range`, `minDate`, `disabled*` |
 
 ### Structure
 
 | Exemple | Composants | Options clés |
 |---|---|---|
-| [Tags](/play/index.html?section=docs&example=nuxt-tags) | `UInputTags` | `format: tags`, `delimiter` |
-| [Array](/play/index.html?section=docs&example=nuxt-array) | Cartes répétables | `showSortButtons`, `elementLabelProp`, `detail` |
-| [Layouts](/play/index.html?section=docs&example=nuxt-layouts) | `UCard`, `UTabs`, Label | `card`, `queryKey`, `level`, `separator` |
+| [Tags](/playground#/?section=docs&example=nuxt-tags) | `UInputTags` | `format: tags`, `delimiter` |
+| [Array](/playground#/?section=docs&example=nuxt-array) | Cartes répétables | `showSortButtons`, `elementLabelProp`, `detail` |
+| [Layouts](/playground#/?section=docs&example=nuxt-layouts) | `UCard`, `UTabs`, Label | `card`, `queryKey`, `level`, `separator` |
 
 ## Ajouter une vitrine
 

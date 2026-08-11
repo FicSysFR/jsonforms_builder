@@ -1,7 +1,9 @@
 <template lang="pug">
 //- Single column by default, sidebar from `lg`: a fixed width from mobile
 //- would overflow the page horizontally.
-.flex.flex-col.items-stretch.gap-4.p-4(class="lg:flex-row lg:items-start")
+.flex.flex-col.items-stretch.gap-4.p-4.min-h-full(
+  class="lg:flex-row lg:items-stretch"
+)
   //- Sticky + max-height under the header: the example list scrolls
   //- independently of the form when it exceeds the viewport.
   //- The search bar stays outside the scroll area so it remains reachable.
@@ -12,6 +14,7 @@
       v-model="gallerySection"
       :items="sectionTabs"
       value-key="value"
+      :content="false"
       size="sm"
       class="w-full"
       :ui="{ list: 'w-full' }"
@@ -68,9 +71,10 @@
         v-model="inspectTab"
         :items="inspectTabs"
         value-key="value"
+        :content="false"
         size="sm"
-        class="min-w-0 flex-1"
-        :ui="{ list: 'w-full sm:w-auto' }"
+        class="min-w-0"
+        :ui="{ list: 'inline-flex' }"
       )
       u-button(
         v-if="inspectTab === 'data' || inspectTab === 'schema' || inspectTab === 'uischema'"
@@ -198,6 +202,10 @@ const syncGalleryParams = () => {
   }
   if (inspectTab.value === 'api') {
     query.tab = 'api'
+  }
+  // Keep VitePress / iframe embed mode across gallery navigations.
+  if (route.query.embed === '1' || route.query.embed === 'true') {
+    query.embed = '1'
   }
   void router.replace({ query })
 }

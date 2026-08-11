@@ -1,7 +1,7 @@
 <template lang="pug">
 u-app
-  //- In VitePress iframe (`?embed=1`), fill the frame instead of forcing 100vh.
-  .bg-default.text-default(
+  //- In VitePress embed (`provide` / `?embed=1`), fill the host instead of forcing 100vh.
+  .bg-default.text-default.min-w-0.w-full(
     :class="isEmbedded ? 'flex h-full min-h-0 flex-col' : 'min-h-screen'"
   )
     //- `bg-default/75` goes in an attribute: Pug cannot parse `/` in the class
@@ -81,9 +81,10 @@ u-app
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useDark, useToggle } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
+import { playgroundEmbedKey } from './embed'
 import { resolveReturnLocation } from './returnUrl'
 
 const route = useRoute()
@@ -91,8 +92,13 @@ const router = useRouter()
 
 const locale = ref<'fr' | 'en'>('fr')
 
-/** True when shown inside the VitePress docs iframe (`?embed=1` or nested frame). */
+const forcedEmbed = inject(playgroundEmbedKey, false)
+
+/** True when hosted inside VitePress / iframe (`provide` or `?embed=1`). */
 const isEmbedded = computed(() => {
+  if (forcedEmbed) {
+    return true
+  }
   if (route.query.embed === '1' || route.query.embed === 'true') {
     return true
   }
@@ -110,16 +116,42 @@ const localeItems = [
   { label: 'English', value: 'en' },
 ]
 
-// Outside Nuxt, `useColorMode` does not exist: Nuxt UI's color-mode plugin simply
-// relies on VueUse's `useDark`, which sets the `.dark` class on <html>.
-//
-// Call with parentheses (`toggleDark()`): `useToggle` checks `arguments.length`
-// and, if it receives anything — the `MouseEvent` from `@click="toggleDark"` —
-// *assigns* it instead of toggling.
-const isDark = useDark()
-const toggleDark = useToggle(isDark)
+/**
+ * Standalone: VueUse owns `html.dark`.
+ * Embedded in VitePress: follow the docs theme (same `html.dark` class) — do not
+ * keep a second preference under `vueuse-color-scheme` (that caused the shade /
+ * light-dark mismatch with the VitePress nav).
+ */
+const isDark = forcedEmbed
+  ? ref(
+      typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+    )
+  : useDark()
+
+const toggleDark = forcedEmbed ? () => undefined : useToggle(isDark)
+
+/** Mirror VitePress appearance → Nuxt UI tokens (`html.dark`). */
+const syncEmbedThemeFromVitePress = () => {
+  if (typeof document === 'undefined') {
+    return
+  }
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
+let embedThemeObserver: MutationObserver | undefined
 
 onMounted(() => {
+  if (forcedEmbed) {
+    syncEmbedThemeFromVitePress()
+    embedThemeObserver = new MutationObserver(syncEmbedThemeFromVitePress)
+    embedThemeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    return
+  }
+
+  // Full-document sizing only when alone in an iframe; VitePress already sizes the host.
   if (!isEmbedded.value) {
     return
   }
@@ -131,6 +163,11 @@ onMounted(() => {
   if (app) {
     app.style.height = '100%'
   }
+})
+
+onBeforeUnmount(() => {
+  embedThemeObserver?.disconnect()
+  embedThemeObserver = undefined
 })
 
 /** Opens the builder and remembers the current gallery URL for the back button. */

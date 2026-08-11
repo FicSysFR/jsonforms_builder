@@ -1,4 +1,4 @@
-# Texte & médias
+﻿# Texte & médias
 
 Contrôles basés sur `string` (et `object` pour le WYSIWYG).
 
@@ -315,9 +315,9 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
 
 ## Playground
 
-- [String & Textarea](/play/index.html?section=docs&example=nuxt-string)
-- [Pin Input](/play/index.html?section=docs&example=nuxt-pin-input)
-- [Color](/play/index.html?section=docs&example=nuxt-color)
-- [File Upload](/play/index.html?section=docs&example=nuxt-file-upload)
-- [Autocomplete API](/play/index.html?section=docs&example=nuxt-autocomplete)
-- [WYSIWYG](/play/index.html?section=docs&example=nuxt-wysiwyg)
+- [String & Textarea](/playground#/?section=docs&example=nuxt-string)
+- [Pin Input](/playground#/?section=docs&example=nuxt-pin-input)
+- [Color](/playground#/?section=docs&example=nuxt-color)
+- [File Upload](/playground#/?section=docs&example=nuxt-file-upload)
+- [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete)
+- [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg)

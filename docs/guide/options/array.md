@@ -1,4 +1,4 @@
-# Tableaux & objets
+﻿# Tableaux & objets
 
 ---
 
@@ -153,5 +153,5 @@ Sélecteur de variante + sous-formulaire. Pas d’options métier dédiées au-d
 
 ## Playground
 
-- [Tags](/play/index.html?section=docs&example=nuxt-tags)
-- [Array](/play/index.html?section=docs&example=nuxt-array)
+- [Tags](/playground#/?section=docs&example=nuxt-tags)
+- [Array](/playground#/?section=docs&example=nuxt-array)

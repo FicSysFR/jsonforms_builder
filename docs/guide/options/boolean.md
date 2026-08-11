@@ -1,4 +1,4 @@
-# Booléen
+﻿# Booléen
 
 **Activation :** schema `type: "boolean"`.  
 Composant par défaut : `UCheckbox`. Avec `toggle` : `USwitch`.
@@ -47,4 +47,4 @@ Composant par défaut : `UCheckbox`. Avec `toggle` : `USwitch`.
 
 ## Playground
 
-→ [Boolean](/play/index.html?section=docs&example=nuxt-boolean)
+→ [Boolean](/playground#/?section=docs&example=nuxt-boolean)

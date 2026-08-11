@@ -1,16 +1,26 @@
-@import "tailwindcss";
+/*
+ * `important` is required when this sheet is loaded inside VitePress: the theme
+ * ships *unlayered* resets (`button { padding: 0; background: transparent }`,
+ * `svg { display: block }`, …) which always beat Tailwind v4 `@layer utilities`.
+ * That collapsed Nuxt UI tabs (Form/API/Data stacked on one spot).
+ *
+ * Standalone `yarn start:dev` is fine with `important` too — the playground owns
+ * the page.
+ */
+@import "tailwindcss" important;
 @import "@nuxt/ui";
 
 /*
  * Tailwind 4 discovers its classes by scanning project sources, and ignores
- * anything outside its root. Without this line, utilities used by the renderers
- * (`border-primary`, `bg-primary/5`, `text-dimmed`…) are never generated: the
- * classes appear in the DOM, but match no CSS rule.
+ * anything outside its root. Without these lines, utilities used by the
+ * renderers / playground (`lg:flex-row`, `border-primary`, …) are never
+ * generated when this CSS is loaded from VitePress (`docs/` as Vite root).
  *
  * An app that consumes the published package should target its `dist`:
  *   @source "../node_modules/@tacxou/jsonforms_builder/dist";
  */
 @source "../../src";
+@source "../**/*.{vue,ts}";
 
 /*
  * Demo palette: the playground checks that renderers inherit the consumer's

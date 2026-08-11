@@ -1,4 +1,4 @@
-# Layouts
+﻿# Layouts
 
 ---
 
@@ -161,4 +161,4 @@ Pas d’options métier dédiées. Le thème Tailwind se surcharge via `options.
 
 ## Playground
 
-→ [Layouts](/play/index.html?section=docs&example=nuxt-layouts)
+→ [Layouts](/playground#/?section=docs&example=nuxt-layouts)
