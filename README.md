@@ -243,6 +243,29 @@ yarn lint             # Biome: lint + format check
 yarn lint:fix         # apply safe fixes and reformat
 ```
 
+`make help` lists the equivalent Make targets (`make dev`, `make build`, `make test`…).
+
+### Release
+
+Releases are driven by GitHub Actions. `CHANGELOG.md` is the source of the release notes,
+and git tags are bare (`2.0.0`, no `v` prefix).
+
+```bash
+make release-ci INCREMENT=none WATCH=1              # publish the version in package.json
+make release-ci INCREMENT=minor WATCH=1             # let the CI bump the version first
+make release-ci INCREMENT=none LATEST=false         # prerelease → npm dist-tag `next`
+make release-ci INCREMENT=none NPM=false            # GitHub Release only, no npm publish
+```
+
+The `release.yml` workflow runs the full CI, bumps and tags the version, publishes the GitHub
+Release (body taken from the matching `CHANGELOG.md` section) and pushes the package to npm —
+dist-tag `latest` for a stable release, `next` for a prerelease. It requires the `NPM_TOKEN`
+repository secret.
+
+`make release VERSION=X.Y.Z [PRERELEASE=1]` is the local alternative: it commits the bump and
+`CHANGELOG.md`, pushes, and creates the Release from `RELEASE_NOTES.md` with `gh`. The
+`publish.yml` workflow then publishes to npm.
+
 ### Documentation site (GitHub Pages)
 
 The VitePress site in `docs/` is published to

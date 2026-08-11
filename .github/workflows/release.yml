@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_increment:
+        description: "La version a incrémenter ('none' publie celle de package.json)"
+        required: true
+        default: 'none'
+        type: choice
+        options:
+          - 'none'
+          - 'major'
+          - 'minor'
+          - 'patch'
+      publish_npm:
+        description: 'Publier le paquet sur npm ?'
+        required: true
+        default: true
+        type: boolean
+      latest:
+        description: "Release stable (dist-tag npm 'latest') ? Sinon prerelease ('next')"
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  release:
+    name: Publish release
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Release
+        uses: ./.github/actions/release
+        with:
+          version_increment: ${{ github.event.inputs.version_increment }}
+          publish_npm: ${{ github.event.inputs.publish_npm }}
+          latest: ${{ github.event.inputs.latest }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          npm_token: ${{ secrets.NPM_TOKEN }}

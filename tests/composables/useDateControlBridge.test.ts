@@ -156,7 +156,11 @@ describe('fromDateValue', () => {
       '0002-06-15',
     )
     expect(
-      fromDateValue(new CalendarDateTime(99, 12, 31, 23, 59, 58), DEFAULT_DATETIME_FORMAT, 'date-time'),
+      fromDateValue(
+        new CalendarDateTime(99, 12, 31, 23, 59, 58),
+        DEFAULT_DATETIME_FORMAT,
+        'date-time',
+      ),
     ).toBe('0099-12-31T23:59:58')
   })
 

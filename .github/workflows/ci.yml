@@ -11,6 +11,9 @@ on:
       - 'feature*'
   pull_request:
     branches: [main]
+  # Appelé par release.yml : une release ne part que si lint + tests + build sont verts.
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   lint:

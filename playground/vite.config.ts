@@ -18,10 +18,7 @@ const playgroundBase = process.env.PLAYGROUND_BASE ?? '/'
 
 export default defineConfig({
   base: playgroundBase,
-  plugins: [
-    ...playgroundUiPlugins(),
-    vue(),
-  ],
+  plugins: [...playgroundUiPlugins(), vue()],
 
   build: {
     outDir: path.resolve(__dirname, '../docs/public/play'),

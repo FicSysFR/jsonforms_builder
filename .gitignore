@@ -18,3 +18,7 @@ docs/public/play/**
 yarn-debug.log*
 yarn-error.log*
 .env
+
+# Notes de release temporaires (chemin `make release`, et extraction CI depuis CHANGELOG.md)
+RELEASE_NOTES.md
+.release-notes.md

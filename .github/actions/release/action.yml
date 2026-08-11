@@ -1,0 +1,237 @@
+name: 'Release'
+description: 'Bump la version du paquet, publie la Release GitHub et pousse le paquet sur npm'
+inputs:
+  version_increment:
+    description: "La version a incrémenter (none, major, minor, patch). 'none' publie la version déjà présente dans package.json"
+    required: true
+    default: 'none'
+
+  publish_npm:
+    description: 'Publier le paquet sur npm ?'
+    required: true
+    default: 'true'
+
+  latest:
+    description: "Release stable (dist-tag npm 'latest') ? Sinon prerelease (dist-tag 'next')"
+    required: true
+    default: 'true'
+
+  github_token:
+    description: 'Token GitHub (push du commit de bump, du tag et création de la Release)'
+    required: true
+
+  npm_token:
+    description: 'Token npm (requis si publish_npm vaut true)'
+    required: false
+    default: ''
+
+  node_version:
+    description: 'Version de Node.js utilisée pour le build et la publication'
+    required: false
+    default: '22'
+
+  is_branch_protected:
+    description: 'Pousser sur une branche protégée ? (nécessite github_token)'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.github_token }}
+
+    - name: Validate inputs
+      shell: bash
+      # Le token passe par l'environnement, jamais par interpolation dans le script.
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      run: |
+        set -euo pipefail
+        case "${{ inputs.version_increment }}" in
+          none|major|minor|patch) ;;
+          *)
+            echo "Unsupported version_increment: ${{ inputs.version_increment }}" >&2
+            exit 1
+            ;;
+        esac
+        if [ "${{ inputs.publish_npm }}" = "true" ] && [ -z "${NPM_TOKEN}" ]; then
+          echo "npm_token is required when publish_npm is true (secrets.NPM_TOKEN)" >&2
+          exit 1
+        fi
+
+    - name: Set up Git
+      shell: bash
+      run: |
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
+
+    - name: Resolve version
+      shell: bash
+      run: |
+        set -euo pipefail
+        CURRENT=$(node -p "require('./package.json').version")
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+        case "${{ inputs.version_increment }}" in
+          # 'none' publie la version déjà committée dans package.json (bump préparé
+          # en local par le skill github-release, avec le CHANGELOG correspondant).
+          none)  NEW_VERSION="$CURRENT" ;;
+          major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
+          minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+          patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+        esac
+        export NEW_VERSION
+        if [ "$NEW_VERSION" = "$CURRENT" ]; then
+          echo "Releasing ${CURRENT} (no bump)"
+        else
+          echo "Bumping ${CURRENT} → ${NEW_VERSION} (${{ inputs.version_increment }})"
+          node <<'NODE'
+        const fs = require('fs')
+        const version = process.env.NEW_VERSION
+        const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+        pkg.version = version
+        fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`)
+        console.log(`updated package.json → ${version}`)
+        NODE
+        fi
+        echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
+        # Tags nus (X.Y.Z, sans préfixe 'v') : convention déjà en place sur 1.0.0 → 1.0.3.
+        echo "RELEASE_TAG=${NEW_VERSION}" >> "$GITHUB_ENV"
+
+    - name: Ensure tag is free
+      shell: bash
+      run: |
+        set -euo pipefail
+        if git rev-parse "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+          echo "Tag ${RELEASE_TAG} already exists locally — bump the version or delete the tag." >&2
+          exit 1
+        fi
+        if [ -n "$(git ls-remote --tags origin "refs/tags/${RELEASE_TAG}")" ]; then
+          echo "Tag ${RELEASE_TAG} already exists on origin — bump the version first." >&2
+          exit 1
+        fi
+
+    - name: Commit version bump
+      shell: bash
+      run: |
+        set -euo pipefail
+        git add package.json
+        if git diff --cached --quiet; then
+          echo "No version changes to commit"
+        else
+          git commit -m "chore(release): ${RELEASE_TAG}"
+        fi
+
+    - name: Create git tag
+      shell: bash
+      run: git tag -a "${RELEASE_TAG}" -m "Release ${RELEASE_TAG}"
+
+    - name: Push to unprotected branch
+      if: inputs.is_branch_protected == 'false'
+      shell: bash
+      run: |
+        set -euo pipefail
+        git push origin HEAD
+        git push origin "${RELEASE_TAG}"
+
+    - name: Push to protected branch
+      if: inputs.is_branch_protected == 'true'
+      uses: CasperWA/push-protected@v2
+      with:
+        token: ${{ inputs.github_token }}
+        branch: main
+        unprotect_reviews: true
+        tags: true
+
+    # Les notes rédigées à la main dans CHANGELOG.md (skill github-release) priment ;
+    # `generateReleaseNotes` y ajoute de toute façon la liste des commits.
+    - name: Extract release notes from CHANGELOG.md
+      id: notes
+      shell: bash
+      run: |
+        set -euo pipefail
+        FILE=".release-notes.md"
+        if [ ! -f CHANGELOG.md ]; then
+          echo "No CHANGELOG.md — falling back to generated notes."
+          echo "file=" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        # Section = de l'entête "## [X.Y.Z]" jusqu'au "##" suivant.
+        awk -v version="${NEW_VERSION}" '
+          $0 ~ "^## \\[" version "\\]" { capture = 1; next }
+          capture && /^## / { exit }
+          capture { print }
+        ' CHANGELOG.md > "$FILE"
+        if [ -s "$FILE" ]; then
+          echo "file=${FILE}" >> "$GITHUB_OUTPUT"
+        else
+          echo "No CHANGELOG.md section for ${NEW_VERSION} — falling back to generated notes."
+          rm -f "$FILE"
+          echo "file=" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Publish release
+      uses: ncipollo/release-action@v1
+      with:
+        name: ${{ env.RELEASE_TAG }}
+        draft: false
+        prerelease: ${{ inputs.latest != 'true' }}
+        generateReleaseNotes: true
+        bodyFile: ${{ steps.notes.outputs.file }}
+        token: ${{ inputs.github_token }}
+        makeLatest: ${{ inputs.latest }}
+        tag: ${{ env.RELEASE_TAG }}
+
+    - name: Setup Node.js
+      if: inputs.publish_npm == 'true'
+      uses: actions/setup-node@v5
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: 'yarn'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install dependencies
+      if: inputs.publish_npm == 'true'
+      shell: bash
+      run: yarn install --frozen-lockfile
+
+    - name: Build package
+      if: inputs.publish_npm == 'true'
+      shell: bash
+      run: yarn build
+
+    - name: Publish to npm
+      if: inputs.publish_npm == 'true'
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm_token }}
+      run: |
+        set -euo pipefail
+        NAME=$(node -p "require('./package.json').name")
+        if [ "${{ inputs.latest }}" = "true" ]; then
+          DIST_TAG="latest"
+        else
+          DIST_TAG="next"
+        fi
+        # Rejouable : un run relancé après un échec tardif ne doit pas casser sur un
+        # 403 "cannot publish over the previously published version".
+        if npm view "${NAME}@${NEW_VERSION}" version >/dev/null 2>&1; then
+          echo "${NAME}@${NEW_VERSION} is already on npm — skipping publish."
+          exit 0
+        fi
+        echo "Publishing ${NAME}@${NEW_VERSION} with dist-tag ${DIST_TAG}"
+        npm publish --access public --tag "${DIST_TAG}"
+
+    - name: Summary
+      shell: bash
+      run: |
+        {
+          echo "### Release ${RELEASE_TAG}"
+          echo ""
+          echo "- Canal : ${{ inputs.latest == 'true' && 'stable (latest)' || 'prerelease (next)' }}"
+          echo "- npm : ${{ inputs.publish_npm == 'true' && 'publié' || 'ignoré' }}"
+          echo "- Release : ${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+        } >> "$GITHUB_STEP_SUMMARY"

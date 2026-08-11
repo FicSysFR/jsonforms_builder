@@ -123,9 +123,7 @@ const localeItems = [
  * light-dark mismatch with the VitePress nav).
  */
 const isDark = forcedEmbed
-  ? ref(
-      typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
-    )
+  ? ref(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'))
   : useDark()
 
 const toggleDark = forcedEmbed ? () => undefined : useToggle(isDark)

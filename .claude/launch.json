@@ -6,6 +6,12 @@
       "runtimeExecutable": "yarn",
       "runtimeArgs": ["start:dev"],
       "port": 5173
+    },
+    {
+      "name": "docs",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["docs:dev"],
+      "port": 5173
     }
   ]
 }

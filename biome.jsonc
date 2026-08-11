@@ -15,7 +15,10 @@
       "!playground/components.d.ts",
       // Standalone Tiptap converter playground, unrelated to the library code:
       // reformatting it would add nothing.
-      "!tests/prosemirror.html"
+      "!tests/prosemirror.html",
+      // Dépôts de référence locaux (non versionnés) : leur propre biome.json est vu
+      // comme une configuration racine imbriquée et fait échouer `yarn lint`.
+      "!samples"
     ]
   },
 
