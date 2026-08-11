@@ -1,7 +1,11 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
-import { playgroundResolveDedupe, playgroundUiPlugins } from '../../playground/vite.shared'
+import {
+  playgroundOptimizeExclude,
+  playgroundResolveDedupe,
+  playgroundUiPlugins,
+} from '../../playground/vite.shared'
 
 const repo = 'https://github.com/tacxou/jsonforms_builder'
 /** GitHub Pages path in production; `/` for local `docs:dev`. */
@@ -28,7 +32,10 @@ export default defineConfig({
   vite: {
     plugins: playgroundUiPlugins({ express: true }),
     optimizeDeps: {
-      exclude: ['@nuxt/ui', '@nuxt/icon'],
+      // `playgroundOptimizeExclude()`: keep the whole ProseMirror graph unbundled,
+      // on the same side of the boundary as the copy `@nuxt/ui` loads. See its
+      // definition — without it `UEditor` throws and the WYSIWYG renders empty.
+      exclude: ['@nuxt/ui', '@nuxt/icon', ...playgroundOptimizeExclude()],
       // Ensure the playground entry is pre-bundled with the docs server.
       include: ['vue-router', '@vueuse/core'],
     },

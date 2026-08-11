@@ -53,8 +53,12 @@ u-app
         )
 
     //- Compact bar when embedded in docs: keep locale + builder, drop duplicate title/theme.
+    //- `lg:h-12` pins the height the gallery's `--pg-sticky-max` subtracts. It only
+    //- needs to hold from `lg` up (where the sidebar turns sticky); below that the
+    //- bar may wrap freely and `py-2` sizes it.
     .flex.flex-wrap.items-center.gap-2.border-b.border-default.px-4.py-2(
       v-if="isEmbedded && !isBuilder"
+      class="lg:h-12 lg:py-0"
     )
       u-button(
         label="Open builder"
@@ -73,7 +77,15 @@ u-app
         class="w-28"
       )
 
-    .min-h-0.flex-1.overflow-auto(v-if="isEmbedded")
+    //- This div — not the document — is the scroll container in the docs, and it
+    //- already starts below every bit of chrome. Retarget the gallery's sticky
+    //- sidebar at it: offset 0, and a height budget of the viewport minus the
+    //- VitePress fixed nav, the compact bar above (`lg:h-12`) and the gallery's
+    //- own `p-4` top padding.
+    .min-h-0.flex-1.overflow-auto(
+      v-if="isEmbedded"
+      class="[--pg-sticky-top:0px] [--pg-sticky-max:calc(100dvh-var(--vp-nav-height,4rem)-4rem)]"
+    )
       router-view(v-slot="{ Component }")
         component(:is="Component" v-bind="viewProps")
     router-view(v-else v-slot="{ Component }")

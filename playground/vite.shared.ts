@@ -1,3 +1,6 @@
+import { readdirSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { Plugin, PluginOption } from 'vite'
 import ui from '@nuxt/ui/vite'
 import pugPlugin from 'vite-plugin-pug'
@@ -97,3 +100,36 @@ export const playgroundResolveDedupe = [
   'prosemirror-keymap',
   'prosemirror-commands',
 ] as const
+
+/**
+ * Every installed `@tiptap/*` + `prosemirror-*` package, to hand to
+ * `optimizeDeps.exclude`.
+ *
+ * `dedupe` alone is not enough. `@nuxt/ui` must stay excluded from pre-bundling
+ * (its runtime imports `#imports`, which esbuild cannot resolve), and Vite never
+ * scans inside an excluded dep — so the packages Nuxt UI's `Editor.vue` pulls in
+ * (`@tiptap/starter-kit`, `@tiptap/markdown`, `extension-code`…) stay raw source
+ * while the ones our own `src/advanced/*` imports (`@tiptap/core`, `@tiptap/vue-3`)
+ * get pre-bundled. Two copies of `prosemirror-state`, and `new Editor()` throws
+ * « Adding different instances of a keyed plugin (plugin$) » — the editor never
+ * renders. `dedupe` cannot fix it: the pre-bundle boundary already copied the code.
+ *
+ * Keeping the whole graph on the source side is the robust direction: a package
+ * missed here merely stays source like the rest, whereas the mirror fix
+ * (`optimizeDeps.include`) breaks again the moment one is forgotten.
+ */
+export const playgroundOptimizeExclude = (): string[] => {
+  const modules = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../node_modules')
+  const list = (dir: string) => {
+    try {
+      return readdirSync(dir)
+    } catch {
+      return []
+    }
+  }
+
+  return [
+    ...list(modules).filter((name) => name.startsWith('prosemirror-')),
+    ...list(path.join(modules, '@tiptap')).map((name) => `@tiptap/${name}`),
+  ]
+}

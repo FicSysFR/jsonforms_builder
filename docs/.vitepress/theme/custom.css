@@ -42,12 +42,17 @@
   opacity: 0.7;
 }
 
-/* Full-bleed playground: strip VitePress chrome that offsets / clips the embed. */
+/* Full-bleed playground: strip VitePress chrome that offsets / clips the embed.
+   Inline/bottom padding only — `padding-top` must survive: VitePress sets it to
+   `var(--vp-nav-height)` from 960px up, where `.VPNav` turns `position: fixed`.
+   Zeroing it slid the whole embed under the navbar. Below 960px the nav is in
+   flow and that padding is already 0, so this stays correct at every width.
+   Height is left to `.VPPage` / `.playground-shell` (`.VPContent` flex-grows). */
 .playground-page .VPContent {
   /* biome-ignore lint/complexity/noImportantStyles: override VitePress content width */
-  padding: 0 !important;
-  /* biome-ignore lint/complexity/noImportantStyles: fill viewport under nav */
-  min-height: calc(100dvh - var(--vp-nav-height, 64px)) !important;
+  padding-inline: 0 !important;
+  /* biome-ignore lint/complexity/noImportantStyles: no gutter under the embed */
+  padding-bottom: 0 !important;
 }
 
 .playground-page .VPPage {

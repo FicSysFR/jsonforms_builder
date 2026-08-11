@@ -7,8 +7,12 @@
   //- Sticky + max-height under the header: the example list scrolls
   //- independently of the form when it exceeds the viewport.
   //- The search bar stays outside the scroll area so it remains reachable.
+  //- The `var()` fallbacks describe the standalone SPA (4rem sticky header above
+  //- us, 1rem of `p-4`). They stay fallbacks — declaring them on this root would
+  //- shadow the host's values, since the VitePress scroll container is an
+  //- ancestor and sets `--pg-sticky-*` for its own chrome.
   .flex.flex-col.gap-2(
-    class="max-h-72 lg:sticky lg:top-16 lg:max-h-[calc(100dvh-5rem)] lg:w-64 lg:shrink-0"
+    class="max-h-72 lg:sticky lg:w-64 lg:shrink-0 lg:top-[var(--pg-sticky-top,4rem)] lg:max-h-[var(--pg-sticky-max,calc(100dvh-5rem))]"
   )
     u-tabs(
       v-model="gallerySection"
