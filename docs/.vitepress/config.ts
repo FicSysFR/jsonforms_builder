@@ -112,7 +112,7 @@ export default defineConfig({
           { text: 'Playground', link: '/playground' },
           {
             text: 'npm',
-            link: 'https://www.npmjs.com/package/@tacxou/jsonforms_builder',
+            link: 'https://www.npmjs.com/package/@ficsysfr/jsonforms_builder',
           },
         ],
 
@@ -188,7 +188,7 @@ export default defineConfig({
           { text: 'Playground', link: '/en/playground' },
           {
             text: 'npm',
-            link: 'https://www.npmjs.com/package/@tacxou/jsonforms_builder',
+            link: 'https://www.npmjs.com/package/@ficsysfr/jsonforms_builder',
           },
         ],
 

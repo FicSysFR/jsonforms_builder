@@ -17,7 +17,7 @@
  * generated when this CSS is loaded from VitePress (`docs/` as Vite root).
  *
  * An app that consumes the published package should target its `dist`:
- *   @source "../node_modules/@tacxou/jsonforms_builder/dist";
+ *   @source "../node_modules/@ficsysfr/jsonforms_builder/dist";
  */
 @source "../../src";
 @source "../**/*.{vue,ts}";

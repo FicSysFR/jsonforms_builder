@@ -1,4 +1,4 @@
-# `@tacxou/jsonforms_builder-mcp`
+# `@ficsysfr/jsonforms_builder-mcp`
 
 MCP (stdio) server that exposes the published [JSONForms Builder](https://ficsysfr.github.io/jsonforms_builder/) documentation to coding agents.
 
@@ -17,7 +17,7 @@ MCP (stdio) server that exposes the published [JSONForms Builder](https://ficsys
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"]
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"]
     }
   }
 }

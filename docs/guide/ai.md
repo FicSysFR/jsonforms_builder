@@ -1,6 +1,6 @@
 # Agents IA
 
-Cette page décrit comment les assistants de code (Cursor, Claude, etc.) peuvent consommer la documentation de `@tacxou/jsonforms_builder`.
+Cette page décrit comment les assistants de code (Cursor, Claude, etc.) peuvent consommer la documentation de `@ficsysfr/jsonforms_builder`.
 
 ## Fichiers `llms.txt`
 
@@ -15,7 +15,7 @@ Chaque page guide a aussi une variante `.md` (ex. `/en/guide/installation.md`) p
 
 ## Serveur MCP
 
-Le paquet [`@tacxou/jsonforms_builder-mcp`](https://www.npmjs.com/package/@tacxou/jsonforms_builder-mcp) expose la doc via le [Model Context Protocol](https://modelcontextprotocol.io/) (transport **stdio**).
+Le paquet [`@ficsysfr/jsonforms_builder-mcp`](https://www.npmjs.com/package/@ficsysfr/jsonforms_builder-mcp) expose la doc via le [Model Context Protocol](https://modelcontextprotocol.io/) (transport **stdio**).
 
 ### Outils
 
@@ -34,7 +34,7 @@ Dans `~/.cursor/mcp.json` (ou la config MCP du projet) :
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"]
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"]
     }
   }
 }
@@ -49,7 +49,7 @@ Dans `claude_desktop_config.json` :
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"]
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"]
     }
   }
 }
@@ -58,7 +58,7 @@ Dans `claude_desktop_config.json` :
 ### Claude Code
 
 ```bash
-claude mcp add-json jsonforms-builder '{"type":"stdio","command":"npx","args":["-y","@tacxou/jsonforms_builder-mcp"]}' -s local
+claude mcp add-json jsonforms-builder '{"type":"stdio","command":"npx","args":["-y","@ficsysfr/jsonforms_builder-mcp"]}' -s local
 ```
 
 ### Variable d’environnement
@@ -74,7 +74,7 @@ Exemple local :
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"],
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"],
       "env": {
         "DOCS_BASE_URL": "http://127.0.0.1:4173"
       }
@@ -90,7 +90,7 @@ Exemple local :
 À ajouter dans les User Rules / règles projet :
 
 ```text
-Pour toute question sur @tacxou/jsonforms_builder (renderers Nuxt UI, options uischema, FormBuilder, intégration Tailwind/Vite) :
+Pour toute question sur @ficsysfr/jsonforms_builder (renderers Nuxt UI, options uischema, FormBuilder, intégration Tailwind/Vite) :
 1. appeler list_doc_sources
 2. appeler search_docs avec la question
 3. appeler fetch_docs sur les URLs pertinentes

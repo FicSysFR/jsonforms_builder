@@ -17,7 +17,7 @@ export function registerDocsTools(server: McpServer): void {
     'list_doc_sources',
     {
       description:
-        'List @tacxou/jsonforms_builder documentation sources by fetching the published llms.txt index.',
+        'List @ficsysfr/jsonforms_builder documentation sources by fetching the published llms.txt index.',
     },
     async () => {
       const base = getDocsBaseUrl()

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { execFileSync, execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
+import { createInterface } from 'node:readline/promises'
+import { validateReleaseRequest } from './release-state.mjs'
 
-const RELEASE_FILES = ['package.json', 'mcp/package.json', 'CHANGELOG.md']
-const NOTES_FILE = 'RELEASE_NOTES.md'
+const WORKFLOW = 'release.yml'
 
-/** gh peut manquer du PATH de la session si l'IDE a démarré avant l'installation de GitHub CLI. */
 function resolveGh() {
-  const fromEnv = process.env.GH?.trim()
-  if (fromEnv) return fromEnv
+  const configured = process.env.GH?.trim()
+  if (configured) return configured
 
   const candidates = []
   if (process.platform === 'win32') {
@@ -20,7 +20,6 @@ function resolveGh() {
       candidates.push(`${process.env.LOCALAPPDATA}/Programs/GitHub CLI/gh.exe`)
     }
   }
-
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate
   }
@@ -29,149 +28,123 @@ function resolveGh() {
     execSync('gh --version', { stdio: 'ignore', shell: true })
     return 'gh'
   } catch {
-    console.error(
-      `'gh' introuvable dans le PATH de cette session.\n` +
-        `→ Redémarrez le terminal après l'installation de GitHub CLI.\n` +
-        `→ Ou forcez le binaire : GH="C:/Program Files/GitHub CLI/gh.exe" make release VERSION=X.Y.Z`,
+    throw new Error(
+      `'gh' is unavailable. Restart the terminal or set GH to the GitHub CLI executable.`,
     )
-    process.exit(1)
   }
 }
 
 function parseArgs(argv) {
-  let version = ''
-  let branch = 'main'
-  let prerelease = false
-
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg === '--version' || arg === '-v') {
-      version = argv[++i] ?? ''
-    } else if (arg === '--branch' || arg === '-b') {
-      branch = argv[++i] ?? 'main'
-    } else if (arg === '--prerelease' || arg === '-p') {
-      prerelease = true
-    } else if (arg === '--help' || arg === '-h') {
-      console.log('Usage: node scripts/release.mjs --version X.Y.Z [--prerelease] [--branch main]')
+  const options = { version: '', channel: 'latest', watch: false, yes: false }
+  for (let index = 0; index < argv.length; index++) {
+    const argument = argv[index]
+    if (argument === '--version' || argument === '-v') options.version = argv[++index] ?? ''
+    else if (argument === '--channel' || argument === '-c') {
+      options.channel = argv[++index] ?? ''
+    } else if (argument === '--watch' || argument === '-w') options.watch = true
+    else if (argument === '--yes' || argument === '-y') options.yes = true
+    else if (argument === '--help' || argument === '-h') {
+      console.log(
+        'Usage: node scripts/release.mjs --version X.Y.Z [--channel latest|next] [--watch] [--yes]',
+      )
       process.exit(0)
-    }
+    } else throw new Error(`unknown argument: ${argument}`)
   }
-
-  return { version: version.trim(), branch: branch.trim() || 'main', prerelease }
+  if (!options.version) throw new Error('--version is required')
+  return options
 }
 
-function run(cmd, args, { useShell = false } = {}) {
-  try {
-    execFileSync(cmd, args, { stdio: 'inherit', shell: useShell })
-  } catch (error) {
-    console.error(`\nERROR: command failed: ${[cmd, ...args].join(' ')}`)
-    process.exit(error.status ?? 1)
-  }
+function ghOutput(gh, args) {
+  return execFileSync(gh, args, { encoding: 'utf8', shell: gh === 'gh' }).trim()
+}
+
+function run(gh, args) {
+  execFileSync(gh, args, { stdio: 'inherit', shell: gh === 'gh' })
 }
 
 function gitOutput(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim()
 }
 
-function assertPackageVersion(version) {
+async function confirm(question) {
+  const prompt = createInterface({ input: process.stdin, output: process.stdout })
+  const answer = (await prompt.question(`${question} [y/N] `)).trim().toLowerCase()
+  prompt.close()
+  return ['y', 'yes', 'o', 'oui'].includes(answer)
+}
+
+async function findRun(gh, since) {
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const runs = JSON.parse(
+      ghOutput(gh, [
+        'run',
+        'list',
+        '--workflow',
+        WORKFLOW,
+        '--branch',
+        'main',
+        '--event',
+        'workflow_dispatch',
+        '--limit',
+        '5',
+        '--json',
+        'databaseId,createdAt,url',
+      ]),
+    ).filter((entry) => new Date(entry.createdAt).getTime() >= since)
+    if (runs.length > 0) return runs[0]
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 2000))
+  }
+  return null
+}
+
+async function main() {
+  const { version, channel, watch, yes } = parseArgs(process.argv.slice(2))
   const current = JSON.parse(readFileSync('package.json', 'utf8')).version
-  if (current !== version) {
-    console.error(`ERROR: package.json is at ${current}, not ${version}.`)
-    console.error('→ Lancez le skill github-release pour bumper la version et le CHANGELOG.')
-    process.exit(1)
-  }
-  const mcpCurrent = JSON.parse(readFileSync('mcp/package.json', 'utf8')).version
-  if (mcpCurrent !== version) {
-    console.error(`ERROR: mcp/package.json is at ${mcpCurrent}, not ${version}.`)
-    console.error('→ Alignez mcp/package.json sur la version root avant make release.')
-    process.exit(1)
-  }
-}
-
-function hasStagedChanges() {
-  return gitOutput(['diff', '--cached', '--name-only']).length > 0
-}
-
-function tagExists(tag) {
-  try {
-    execFileSync('git', ['rev-parse', '--verify', `refs/tags/${tag}`], { stdio: 'ignore' })
-    return true
-  } catch {
-    return false
-  }
-}
-
-function warnUnrelatedChanges() {
-  const releaseSet = new Set(RELEASE_FILES)
-  const lines = gitOutput(['status', '--porcelain']).split('\n').filter(Boolean)
-  const unrelated = lines.filter((line) => {
-    const file = line.slice(3).trim().replace(/\\/g, '/')
-    return !releaseSet.has(file) && file !== NOTES_FILE
-  })
-
-  if (unrelated.length > 0) {
-    console.warn('WARNING: unrelated local changes (not included in the release commit):')
-    for (const line of unrelated) console.warn(`  ${line}`)
-  }
-}
-
-function main() {
-  const { version, branch, prerelease } = parseArgs(process.argv.slice(2))
-
-  if (!version) {
-    console.error('ERROR: VERSION is required, e.g. make release VERSION=2.0.0 [PRERELEASE=1]')
-    process.exit(1)
+  validateReleaseRequest(current, version, channel)
+  if (!existsSync(`changelog/${version}.md`)) {
+    throw new Error(`changelog/${version}.md is required before dispatch`)
   }
 
-  if (!existsSync(NOTES_FILE)) {
-    console.error(
-      `ERROR: ${NOTES_FILE} not found at repo root (the github-release skill writes it)`,
-    )
-    process.exit(1)
+  const local = gitOutput(['rev-parse', 'main'])
+  const remote = gitOutput(['rev-parse', 'origin/main'])
+  if (local !== remote)
+    throw new Error('main and origin/main differ; push or pull before releasing')
+  if (gitOutput(['status', '--porcelain'])) throw new Error('the working tree must be clean')
+
+  console.log(`Workflow : ${WORKFLOW}`)
+  console.log(`Version  : ${current} → ${version}`)
+  console.log(`Channel  : ${channel}`)
+  console.log('Packages : @ficsysfr/jsonforms_builder + @ficsysfr/jsonforms_builder-mcp')
+
+  if (!yes && !(await confirm('Dispatch this public npm release?'))) {
+    console.log('Cancelled.')
+    return
   }
-
-  // Tags nus (X.Y.Z) : convention déjà en place sur les releases 1.0.0 → 1.0.3.
-  const tag = version
-  if (tagExists(tag)) {
-    console.error(`ERROR: tag ${tag} already exists locally.`)
-    process.exit(1)
-  }
-
-  assertPackageVersion(version)
-  warnUnrelatedChanges()
-
-  const releaseKind = prerelease ? 'prerelease (npm dist-tag next)' : 'stable (npm dist-tag latest)'
-  const ghArgs = [
-    'release',
-    'create',
-    tag,
-    '--target',
-    branch,
-    '--title',
-    tag,
-    '--notes-file',
-    NOTES_FILE,
-  ]
-  ghArgs.push(prerelease ? '--prerelease' : '--latest')
-
-  console.log(`Releasing ${tag} — ${releaseKind} — on branch ${branch}...`)
-
-  run('git', ['add', ...RELEASE_FILES.filter((file) => existsSync(file))])
-
-  if (hasStagedChanges()) {
-    run('git', ['commit', '-m', `chore(release): ${tag}`])
-  } else {
-    console.log('Release files already committed — skipping commit step.')
-  }
-
-  run('git', ['push', 'origin', branch])
 
   const gh = resolveGh()
-  run(gh, ghArgs, { useShell: gh === 'gh' })
+  const since = Date.now() - 5000
+  run(gh, [
+    'workflow',
+    'run',
+    WORKFLOW,
+    '--ref',
+    'main',
+    '-f',
+    `version=${version}`,
+    '-f',
+    `channel=${channel}`,
+  ])
 
-  console.log(
-    `Release ${tag} publiée (${releaseKind}). Le workflow Publish construit et pousse lib + MCP sur npm.`,
-  )
+  const workflowRun = await findRun(gh, since)
+  if (!workflowRun) {
+    console.log('Release dispatched. Follow it with: gh run list --workflow release.yml')
+    return
+  }
+  console.log(`Run: ${workflowRun.url}`)
+  if (watch) run(gh, ['run', 'watch', String(workflowRun.databaseId), '--exit-status'])
 }
 
-main()
+main().catch((error) => {
+  console.error(`ERROR: ${error.message}`)
+  process.exit(1)
+})

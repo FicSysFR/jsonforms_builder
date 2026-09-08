@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { JsonForms } from '@jsonforms/vue'
-import { nuxtUiRenderers } from '@tacxou/jsonforms_builder'
+import { nuxtUiRenderers } from '@ficsysfr/jsonforms_builder'
 
 const renderers = Object.freeze(nuxtUiRenderers)
 </script>

@@ -1,6 +1,6 @@
 # AI agents
 
-How coding assistants (Cursor, Claude, and similar) can consume `@tacxou/jsonforms_builder` documentation.
+How coding assistants (Cursor, Claude, and similar) can consume `@ficsysfr/jsonforms_builder` documentation.
 
 ## `llms.txt` files
 
@@ -15,7 +15,7 @@ Each guide page also has a `.md` variant (e.g. `/en/guide/installation.md`) for 
 
 ## MCP server
 
-The [`@tacxou/jsonforms_builder-mcp`](https://www.npmjs.com/package/@tacxou/jsonforms_builder-mcp) package exposes the docs over the [Model Context Protocol](https://modelcontextprotocol.io/) (**stdio** transport).
+The [`@ficsysfr/jsonforms_builder-mcp`](https://www.npmjs.com/package/@ficsysfr/jsonforms_builder-mcp) package exposes the docs over the [Model Context Protocol](https://modelcontextprotocol.io/) (**stdio** transport).
 
 ### Tools
 
@@ -34,7 +34,7 @@ In `~/.cursor/mcp.json` (or project MCP config):
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"]
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"]
     }
   }
 }
@@ -49,7 +49,7 @@ In `claude_desktop_config.json`:
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"]
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"]
     }
   }
 }
@@ -58,7 +58,7 @@ In `claude_desktop_config.json`:
 ### Claude Code
 
 ```bash
-claude mcp add-json jsonforms-builder '{"type":"stdio","command":"npx","args":["-y","@tacxou/jsonforms_builder-mcp"]}' -s local
+claude mcp add-json jsonforms-builder '{"type":"stdio","command":"npx","args":["-y","@ficsysfr/jsonforms_builder-mcp"]}' -s local
 ```
 
 ### Environment variable
@@ -74,7 +74,7 @@ Local example:
   "mcpServers": {
     "jsonforms-builder": {
       "command": "npx",
-      "args": ["-y", "@tacxou/jsonforms_builder-mcp"],
+      "args": ["-y", "@ficsysfr/jsonforms_builder-mcp"],
       "env": {
         "DOCS_BASE_URL": "http://127.0.0.1:4173"
       }
@@ -90,7 +90,7 @@ Local example:
 Add to User Rules / project rules:
 
 ```text
-For any question about @tacxou/jsonforms_builder (Nuxt UI renderers, uischema options, FormBuilder, Tailwind/Vite integration):
+For any question about @ficsysfr/jsonforms_builder (Nuxt UI renderers, uischema options, FormBuilder, Tailwind/Vite integration):
 1. call list_doc_sources
 2. call search_docs with the question
 3. call fetch_docs on relevant URLs

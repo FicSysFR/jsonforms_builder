@@ -15,11 +15,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "noLib": false,
-    "incremental": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

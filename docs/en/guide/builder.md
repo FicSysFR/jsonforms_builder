@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormBuilder, type FormDefinition } from '@tacxou/jsonforms_builder'
+import { FormBuilder, type FormDefinition } from '@ficsysfr/jsonforms_builder'
 
 const definition = ref<Partial<FormDefinition>>({})
 </script>

@@ -1,8 +1,12 @@
 {
-  "name": "@tacxou/jsonforms_builder",
+  "name": "@ficsysfr/jsonforms_builder",
   "version": "2.0.1",
   "description": "JSONForms renderers for Vue 3 built on Nuxt UI & Tailwind CSS",
   "repository": "https://github.com/FicSysFR/jsonforms_builder.git",
+  "homepage": "https://ficsysfr.github.io/jsonforms_builder/",
+  "bugs": {
+    "url": "https://github.com/FicSysFR/jsonforms_builder/issues"
+  },
   "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
   "contributors": [
     {
@@ -16,6 +20,14 @@
     }
   ],
   "license": "BSD-3-Clause",
+  "keywords": [
+    "jsonforms",
+    "vue",
+    "nuxt-ui",
+    "tailwindcss",
+    "form-builder",
+    "json-schema"
+  ],
   "type": "module",
   "main": "./dist/json-formbuilder.cjs.js",
   "module": "./dist/json-formbuilder.es.js",
@@ -37,7 +49,6 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "yarn typecheck && vite build --config vite.config.ts",
-    "postbuild": "cpr README.md dist/README.md && cpr LICENSE dist/LICENSE && cpr package.json dist/package.json",
     "start:dev": "cd playground && vite --host --port 5174",
     "build:playground": "cd playground && cross-env PLAYGROUND_BASE=/jsonforms_builder/play/ vite build",
     "docs:dev": "vitepress dev docs --port 5173",
@@ -52,6 +63,12 @@
     "test:coverage": "vitest run --coverage",
     "test:regression": "vitest run tests/regression",
     "test:perf": "vitest run tests/performance",
+    "test:scripts": "node --test scripts/tests/*.test.mjs",
+    "changelog:build": "node scripts/build-changelog.mjs",
+    "changelog:check": "node scripts/build-changelog.mjs --check",
+    "package": "node scripts/package.mjs",
+    "package:check": "node scripts/package.mjs --check",
+    "release": "node scripts/release.mjs",
     "coverage:renderers": "yarn build && tsx playground/examples/coverage.ts",
     "mcp:build": "yarn --cwd mcp build",
     "mcp:install": "yarn --cwd mcp install --frozen-lockfile"
@@ -74,7 +91,6 @@
     "@vitest/coverage-v8": "^3.2.4",
     "@vue/language-plugin-pug": "^3.0.5",
     "@vueuse/core": "^14.3.0",
-    "cpr": "^3.0.1",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.13",
     "express": "^5.2.1",
@@ -99,6 +115,11 @@
     "@nuxt/ui": "^4.8",
     "typescript": "^5",
     "vue": "^3.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
   "engines": {
     "node": ">=22.0.0",

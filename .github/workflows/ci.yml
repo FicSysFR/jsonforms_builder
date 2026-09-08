@@ -35,6 +35,11 @@ jobs:
       - name: Lint and check formatting
         run: yarn lint
 
+      - name: Check release tooling and changelog
+        run: |
+          yarn test:scripts
+          yarn changelog:check
+
   test:
     runs-on: ubuntu-latest
 
@@ -88,3 +93,9 @@ jobs:
         run: |
           yarn --cwd mcp install --frozen-lockfile
           yarn --cwd mcp build
+
+      - name: Build documentation
+        run: yarn docs:build
+
+      - name: Build and audit npm tarballs
+        run: yarn package:check

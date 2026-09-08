@@ -6,21 +6,14 @@ ifneq (,$(wildcard ./.env))
 endif
 
 # --- Release -----------------------------------------------------------------
-# `make release`     : chemin local — commit + push + gh release create (le workflow
-#                      Publish prend le relais pour npm).
-# `make release-ci`  : chemin CI — déclenche le workflow Release (bump + tag + Release
-#                      + publication npm), tout se passe sur GitHub Actions.
+# `make release` déclenche l'unique workflow Release : validation, bump, tag,
+# publication des deux tarballs npm et création de la Release GitHub.
 VERSION ?=
-PRERELEASE ?=
-RELEASE_BRANCH ?= main
-
-INCREMENT ?= none
-NPM ?= true
-LATEST ?= true
+CHANNEL ?= latest
 WATCH ?=
 YES ?=
 
-.PHONY: help install dev docs docs-build docs-preview mcp-build stop build lint typecheck format test test-watch test-coverage test-regression test-perf release release-ci release-status ncu ncu-upgrade
+.PHONY: help install dev docs docs-build docs-preview mcp-build stop build package lint typecheck format test test-watch test-coverage test-regression test-perf test-scripts changelog-build changelog-check release release-status ncu ncu-upgrade
 .DEFAULT_GOAL := help
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -41,7 +34,7 @@ docs-build: ## Build the documentation site (GitHub Pages)
 docs-preview: ## Preview the built documentation site
 	@yarn docs:preview
 
-mcp-build: ## Build the @tacxou/jsonforms_builder-mcp package
+mcp-build: ## Build the @ficsysfr/jsonforms_builder-mcp package
 	@yarn mcp:install && yarn mcp:build
 
 stop: ## Stop Vite, VitePress and mock API (ports 5174/5173/4173/4000)
@@ -50,6 +43,9 @@ stop: ## Stop Vite, VitePress and mock API (ports 5174/5173/4173/4000)
 
 build: ## Build the library (es + cjs + declarations)
 	@yarn build
+
+package: ## Build and audit both npm tarballs -> .artifacts/npm
+	@yarn package
 
 lint: ## Lint and check formatting (Biome)
 	@yarn lint
@@ -75,11 +71,17 @@ test-regression: ## Run the regression suite only
 test-perf: ## Run the performance suite only
 	@yarn test:perf
 
-release: ## Publish from local: commit bump + CHANGELOG, push, create the GitHub Release (VERSION=X.Y.Z [PRERELEASE=1])
-	@node scripts/release.mjs --version "$(VERSION)" --branch "$(RELEASE_BRANCH)" $(if $(strip $(PRERELEASE)),--prerelease,)
+test-scripts: ## Test release, changelog and package tooling
+	@yarn test:scripts
 
-release-ci: ## Run the GitHub Release workflow (INCREMENT=none|patch|minor|major NPM=true|false LATEST=true|false [WATCH=1] [YES=1])
-	@node scripts/release-workflow.mjs --increment "$(INCREMENT)" --npm "$(NPM)" --latest "$(LATEST)" --branch "$(RELEASE_BRANCH)" $(if $(strip $(WATCH)),--watch,) $(if $(strip $(YES)),--yes,)
+changelog-build: ## Generate CHANGELOG.md from changelog/X.Y.Z.md sources
+	@yarn changelog:build
+
+changelog-check: ## Verify generated changelog is synchronized
+	@yarn changelog:check
+
+release: ## Dispatch the single release workflow (VERSION=X.Y.Z [CHANNEL=latest|next] [WATCH=1] [YES=1])
+	@node scripts/release.mjs --version "$(VERSION)" --channel "$(CHANNEL)" $(if $(strip $(WATCH)),--watch,) $(if $(strip $(YES)),--yes,)
 
 release-status: ## Show the latest Release workflow runs
 	@gh run list --workflow release.yml --limit 5

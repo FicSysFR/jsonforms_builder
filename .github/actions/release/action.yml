@@ -1,265 +1,248 @@
-name: 'Release'
-description: 'Bump la version du paquet, publie la Release GitHub et pousse le paquet sur npm'
+name: Release
+description: Build audited npm tarballs, publish them and create the GitHub Release
+
 inputs:
-  version_increment:
-    description: "La version a incrémenter (none, major, minor, patch). 'none' publie la version déjà présente dans package.json"
+  version:
+    description: Exact SemVer to publish
     required: true
-    default: 'none'
-
-  publish_npm:
-    description: 'Publier le paquet sur npm ?'
+  channel:
+    description: npm dist-tag (latest or next)
     required: true
-    default: 'true'
-
-  latest:
-    description: "Release stable (dist-tag npm 'latest') ? Sinon prerelease (dist-tag 'next')"
-    required: true
-    default: 'true'
-
   github_token:
-    description: 'Token GitHub (push du commit de bump, du tag et création de la Release)'
+    description: GitHub token used for the release commit, tag and Release
     required: true
-
-  npm_token:
-    description: 'Token npm (requis si publish_npm vaut true)'
+  bootstrap_npm_token:
+    description: One-use npm token; empty after Trusted Publishing is configured
     required: false
     default: ''
-
   node_version:
-    description: 'Version de Node.js utilisée pour le build et la publication'
+    description: Node.js version used to build and publish
     required: false
-    default: '22'
-
-  is_branch_protected:
-    description: 'Pousser sur une branche protégée ? (nécessite github_token)'
-    required: false
-    default: 'false'
+    default: '24'
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         token: ${{ inputs.github_token }}
 
-    - name: Validate inputs
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node_version }}
+        registry-url: https://registry.npmjs.org
+        package-manager-cache: false
+
+    - name: Validate release inputs and npm CLI
       shell: bash
-      # Le token passe par l'environnement, jamais par interpolation dans le script.
       env:
-        NPM_TOKEN: ${{ inputs.npm_token }}
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_CHANNEL: ${{ inputs.channel }}
       run: |
         set -euo pipefail
-        case "${{ inputs.version_increment }}" in
-          none|major|minor|patch) ;;
-          *)
-            echo "Unsupported version_increment: ${{ inputs.version_increment }}" >&2
-            exit 1
-            ;;
-        esac
-        if [ "${{ inputs.publish_npm }}" = "true" ] && [ -z "${NPM_TOKEN}" ]; then
-          echo "npm_token is required when publish_npm is true (secrets.NPM_TOKEN)" >&2
+        node scripts/release-state.mjs prepare \
+          --version "${RELEASE_VERSION}" --channel "${RELEASE_CHANNEL}" --root . \
+          >/dev/null
+        git restore package.json mcp/package.json
+        NPM_VERSION=$(npm --version)
+        MINIMUM=11.5.1
+        if [ "$(printf '%s\n' "${MINIMUM}" "${NPM_VERSION}" | sort -V | head -n1)" != "${MINIMUM}" ]; then
+          echo "npm ${MINIMUM}+ is required for Trusted Publishing (found ${NPM_VERSION})" >&2
           exit 1
         fi
 
-    - name: Set up Git
+    - name: Configure Git
       shell: bash
       run: |
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git config user.name "github-actions[bot]"
 
-    - name: Resolve version
+    - name: Resolve release state
+      id: state
       shell: bash
+      env:
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_CHANNEL: ${{ inputs.channel }}
       run: |
         set -euo pipefail
-        CURRENT=$(node -p "require('./package.json').version")
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-        case "${{ inputs.version_increment }}" in
-          # 'none' publie la version déjà committée dans package.json (bump préparé
-          # en local par le skill github-release, avec le CHANGELOG correspondant).
-          none)  NEW_VERSION="$CURRENT" ;;
-          major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
-          minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
-          patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
-        esac
-        export NEW_VERSION
-        if [ "$NEW_VERSION" = "$CURRENT" ]; then
-          echo "Releasing ${CURRENT} (no bump)"
+        git fetch origin --tags --force
+        if git show-ref --verify --quiet "refs/tags/${RELEASE_VERSION}"; then
+          git checkout --detach "refs/tags/${RELEASE_VERSION}"
+          node scripts/release-state.mjs verify \
+            --version "${RELEASE_VERSION}" --channel "${RELEASE_CHANNEL}"
+          echo "reuse=true" >> "${GITHUB_OUTPUT}"
+          echo "Reusing existing tag ${RELEASE_VERSION} at $(git rev-parse HEAD)"
         else
-          echo "Bumping ${CURRENT} → ${NEW_VERSION} (${{ inputs.version_increment }})"
-          node <<'NODE'
-        const fs = require('fs')
-        const version = process.env.NEW_VERSION
-        for (const file of ['package.json', 'mcp/package.json']) {
-          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'))
-          pkg.version = version
-          fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`)
-          console.log(`updated ${file} → ${version}`)
-        }
-        NODE
+          node scripts/release-state.mjs prepare \
+            --version "${RELEASE_VERSION}" --channel "${RELEASE_CHANNEL}"
+          git add package.json mcp/package.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): ${RELEASE_VERSION}"
+          fi
+          echo "reuse=false" >> "${GITHUB_OUTPUT}"
         fi
-        # Keep MCP version aligned even on 'none' (local skill may have bumped root only).
-        node <<'NODE'
-        const fs = require('fs')
-        const version = process.env.NEW_VERSION
-        const mcp = JSON.parse(fs.readFileSync('mcp/package.json', 'utf8'))
-        if (mcp.version !== version) {
-          mcp.version = version
-          fs.writeFileSync('mcp/package.json', `${JSON.stringify(mcp, null, 2)}\n`)
-          console.log(`synced mcp/package.json → ${version}`)
-        }
-        NODE
-        echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
-        # Tags nus (X.Y.Z, sans préfixe 'v') : convention déjà en place sur 1.0.0 → 1.0.3.
-        echo "RELEASE_TAG=${NEW_VERSION}" >> "$GITHUB_ENV"
-
-    - name: Ensure tag is free
-      shell: bash
-      run: |
-        set -euo pipefail
-        if git rev-parse "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
-          echo "Tag ${RELEASE_TAG} already exists locally — bump the version or delete the tag." >&2
-          exit 1
-        fi
-        if [ -n "$(git ls-remote --tags origin "refs/tags/${RELEASE_TAG}")" ]; then
-          echo "Tag ${RELEASE_TAG} already exists on origin — bump the version first." >&2
-          exit 1
-        fi
-
-    - name: Commit version bump
-      shell: bash
-      run: |
-        set -euo pipefail
-        git add package.json mcp/package.json
-        if git diff --cached --quiet; then
-          echo "No version changes to commit"
-        else
-          git commit -m "chore(release): ${RELEASE_TAG}"
-        fi
-
-    - name: Create git tag
-      shell: bash
-      run: git tag -a "${RELEASE_TAG}" -m "Release ${RELEASE_TAG}"
-
-    - name: Push to unprotected branch
-      if: inputs.is_branch_protected == 'false'
-      shell: bash
-      run: |
-        set -euo pipefail
-        git push origin HEAD
-        git push origin "${RELEASE_TAG}"
-
-    - name: Push to protected branch
-      if: inputs.is_branch_protected == 'true'
-      uses: CasperWA/push-protected@v2
-      with:
-        token: ${{ inputs.github_token }}
-        branch: main
-        unprotect_reviews: true
-        tags: true
-
-    # Les notes rédigées à la main dans CHANGELOG.md (skill github-release) priment ;
-    # `generateReleaseNotes` y ajoute de toute façon la liste des commits.
-    - name: Extract release notes from CHANGELOG.md
-      id: notes
-      shell: bash
-      run: |
-        set -euo pipefail
-        FILE=".release-notes.md"
-        if [ ! -f CHANGELOG.md ]; then
-          echo "No CHANGELOG.md — falling back to generated notes."
-          echo "file=" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-        # Section = de l'entête "## [X.Y.Z]" jusqu'au "##" suivant.
-        awk -v version="${NEW_VERSION}" '
-          $0 ~ "^## \\[" version "\\]" { capture = 1; next }
-          capture && /^## / { exit }
-          capture { print }
-        ' CHANGELOG.md > "$FILE"
-        if [ -s "$FILE" ]; then
-          echo "file=${FILE}" >> "$GITHUB_OUTPUT"
-        else
-          echo "No CHANGELOG.md section for ${NEW_VERSION} — falling back to generated notes."
-          rm -f "$FILE"
-          echo "file=" >> "$GITHUB_OUTPUT"
-        fi
-
-    - name: Publish release
-      uses: ncipollo/release-action@v1
-      with:
-        name: ${{ env.RELEASE_TAG }}
-        draft: false
-        prerelease: ${{ inputs.latest != 'true' }}
-        generateReleaseNotes: true
-        bodyFile: ${{ steps.notes.outputs.file }}
-        token: ${{ inputs.github_token }}
-        makeLatest: ${{ inputs.latest }}
-        tag: ${{ env.RELEASE_TAG }}
-
-    - name: Setup Node.js
-      if: inputs.publish_npm == 'true'
-      uses: actions/setup-node@v5
-      with:
-        node-version: ${{ inputs.node_version }}
-        cache: 'yarn'
-        registry-url: 'https://registry.npmjs.org'
 
     - name: Install dependencies
-      if: inputs.publish_npm == 'true'
       shell: bash
       run: yarn install --frozen-lockfile
 
-    - name: Build package
-      if: inputs.publish_npm == 'true'
-      shell: bash
-      run: yarn build
-
-    - name: Publish to npm
-      if: inputs.publish_npm == 'true'
+    - name: Validate release and build tarballs
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.npm_token }}
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_CHANNEL: ${{ inputs.channel }}
       run: |
         set -euo pipefail
-        NAME=$(node -p "require('./package.json').name")
-        if [ "${{ inputs.latest }}" = "true" ]; then
-          DIST_TAG="latest"
-        else
-          DIST_TAG="next"
-        fi
-        # Rejouable : un run relancé après un échec tardif ne doit pas casser sur un
-        # 403 "cannot publish over the previously published version".
-        if npm view "${NAME}@${NEW_VERSION}" version >/dev/null 2>&1; then
-          echo "${NAME}@${NEW_VERSION} is already on npm — skipping library publish."
-        else
-          echo "Publishing ${NAME}@${NEW_VERSION} with dist-tag ${DIST_TAG}"
-          npm publish --access public --tag "${DIST_TAG}"
-        fi
+        node scripts/release-state.mjs verify \
+          --version "${RELEASE_VERSION}" --channel "${RELEASE_CHANNEL}"
+        yarn lint
+        yarn typecheck
+        yarn test:coverage
+        yarn test:scripts
+        yarn docs:build
+        yarn changelog:check
+        yarn package:check
+        echo "VALIDATED_HEAD=$(git rev-parse HEAD)" >> "${GITHUB_ENV}"
 
-    - name: Publish MCP package to npm
-      if: inputs.publish_npm == 'true'
+    - name: Push release commit and tag
+      if: steps.state.outputs.reuse != 'true'
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.npm_token }}
-        NEW_VERSION: ${{ env.NEW_VERSION }}
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_CHANNEL: ${{ inputs.channel }}
       run: |
         set -euo pipefail
-        if [ "${{ inputs.latest }}" = "true" ]; then
-          DIST_TAG="latest"
-        else
-          DIST_TAG="next"
-        fi
-        node scripts/publish-mcp.mjs --tag "${DIST_TAG}"
+        for attempt in 1 2 3; do
+          git fetch origin main
+          git rebase origin/main
 
-    - name: Summary
+          if [ "$(git rev-parse HEAD)" != "${VALIDATED_HEAD}" ]; then
+            echo "main advanced; validating the rebased release (${attempt}/3)"
+            yarn install --frozen-lockfile
+            node scripts/release-state.mjs verify \
+              --version "${RELEASE_VERSION}" --channel "${RELEASE_CHANNEL}"
+            yarn lint
+            yarn typecheck
+            yarn test:coverage
+            yarn test:scripts
+            yarn docs:build
+            yarn changelog:check
+            yarn package:check
+            VALIDATED_HEAD=$(git rev-parse HEAD)
+          fi
+
+          git tag -d "${RELEASE_VERSION}" >/dev/null 2>&1 || true
+          git tag -a "${RELEASE_VERSION}" -m "Release ${RELEASE_VERSION}"
+          if git push --atomic origin HEAD:refs/heads/main "refs/tags/${RELEASE_VERSION}"; then
+            exit 0
+          fi
+
+          git tag -d "${RELEASE_VERSION}" >/dev/null 2>&1 || true
+          if [ "${attempt}" -lt 3 ]; then
+            echo "push raced with main; rebasing and retrying (${attempt}/3)"
+          fi
+        done
+        echo "release push failed after three validated attempts" >&2
+        exit 1
+
+    - name: Publish or verify npm packages
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.bootstrap_npm_token }}
+        RELEASE_VERSION: ${{ inputs.version }}
+        RELEASE_CHANNEL: ${{ inputs.channel }}
+      run: |
+        set -euo pipefail
+
+        local_integrity() {
+          node -e "const fs=require('node:fs');const c=require('node:crypto');const b=fs.readFileSync(process.argv[1]);process.stdout.write('sha512-'+c.createHash('sha512').update(b).digest('base64'))" "$1"
+        }
+
+        publish_or_verify() {
+          PACKAGE_NAME="$1"
+          TARBALL="$2"
+          LOCAL_INTEGRITY=$(local_integrity "${TARBALL}")
+
+          if REGISTRY_INTEGRITY=$(npm view "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity 2>/dev/null); then
+            if [ "${REGISTRY_INTEGRITY}" != "${LOCAL_INTEGRITY}" ]; then
+              echo "${PACKAGE_NAME}@${RELEASE_VERSION} exists with different contents" >&2
+              exit 1
+            fi
+            echo "${PACKAGE_NAME}@${RELEASE_VERSION} already matches the audited tarball"
+          else
+            npm publish "${TARBALL}" \
+              --access public --tag "${RELEASE_CHANNEL}" --provenance
+          fi
+
+          REGISTRY_INTEGRITY=$(npm view "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity)
+          if [ "${REGISTRY_INTEGRITY}" != "${LOCAL_INTEGRITY}" ]; then
+            echo "registry integrity mismatch for ${PACKAGE_NAME}@${RELEASE_VERSION}" >&2
+            exit 1
+          fi
+          TAG_VERSION=$(npm view "${PACKAGE_NAME}@${RELEASE_CHANNEL}" version)
+          if [ "${TAG_VERSION}" != "${RELEASE_VERSION}" ]; then
+            echo "${PACKAGE_NAME}@${RELEASE_CHANNEL} points to ${TAG_VERSION}" >&2
+            exit 1
+          fi
+        }
+
+        LIB_TARBALL=".artifacts/npm/ficsysfr-jsonforms_builder-${RELEASE_VERSION}.tgz"
+        MCP_TARBALL=".artifacts/npm/ficsysfr-jsonforms_builder-mcp-${RELEASE_VERSION}.tgz"
+        test -f "${LIB_TARBALL}"
+        test -f "${MCP_TARBALL}"
+        publish_or_verify '@ficsysfr/jsonforms_builder' "${LIB_TARBALL}"
+        publish_or_verify '@ficsysfr/jsonforms_builder-mcp' "${MCP_TARBALL}"
+
+    - name: Deprecate legacy npm packages after bootstrap
+      if: inputs.bootstrap_npm_token != ''
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.bootstrap_npm_token }}
+      run: |
+        set -euo pipefail
+        npm deprecate '@tacxou/jsonforms_builder@>=2.0.0' \
+          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.'
+        npm deprecate '@tacxou/jsonforms_builder-mcp@*' \
+          'This package moved to @ficsysfr/jsonforms_builder-mcp.'
+        test "$(npm view '@tacxou/jsonforms_builder@2.0.1' deprecated)" = \
+          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.'
+        test "$(npm view '@tacxou/jsonforms_builder-mcp@2.0.1' deprecated)" = \
+          'This package moved to @ficsysfr/jsonforms_builder-mcp.'
+
+    - name: Generate GitHub Release notes
+      shell: bash
+      env:
+        RELEASE_VERSION: ${{ inputs.version }}
+      run: |
+        node scripts/build-changelog.mjs --release-notes "${RELEASE_VERSION}" \
+          --out "${RUNNER_TEMP}/release-notes.md"
+
+    - name: Create or update GitHub Release
+      uses: ncipollo/release-action@v1
+      with:
+        name: ${{ inputs.version }}
+        tag: ${{ inputs.version }}
+        bodyFile: ${{ runner.temp }}/release-notes.md
+        prerelease: ${{ inputs.channel == 'next' }}
+        makeLatest: ${{ inputs.channel == 'latest' }}
+        generateReleaseNotes: false
+        artifacts: .artifacts/npm/*.tgz,.artifacts/npm/SHA256SUMS.txt
+        artifactErrorsFailBuild: true
+        allowUpdates: true
+        replacesArtifacts: true
+        token: ${{ inputs.github_token }}
+
+    - name: Release summary
       shell: bash
       run: |
         {
-          echo "### Release ${RELEASE_TAG}"
-          echo ""
-          echo "- Canal : ${{ inputs.latest == 'true' && 'stable (latest)' || 'prerelease (next)' }}"
-          echo "- npm : ${{ inputs.publish_npm == 'true' && 'publié (lib + mcp)' || 'ignoré' }}"
-          echo "- Release : ${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
-        } >> "$GITHUB_STEP_SUMMARY"
+          echo "### Release ${{ inputs.version }}"
+          echo
+          echo "- npm channel: ${{ inputs.channel }}"
+          echo "- packages: @ficsysfr/jsonforms_builder + @ficsysfr/jsonforms_builder-mcp"
+          echo "- authentication: ${{ inputs.bootstrap_npm_token != '' && 'temporary bootstrap token' || 'npm Trusted Publishing (OIDC)' }}"
+          echo "- assets: two audited tarballs + SHA256SUMS.txt"
+        } >> "${GITHUB_STEP_SUMMARY}"

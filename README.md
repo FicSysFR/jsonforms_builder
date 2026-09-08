@@ -3,10 +3,10 @@
 [![CI](https://github.com/FicSysFR/jsonforms_builder/actions/workflows/ci.yml/badge.svg)](https://github.com/FicSysFR/jsonforms_builder/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-00A86B)](https://ficsysfr.github.io/jsonforms_builder/)
 [![llms.txt](https://img.shields.io/badge/llms.txt-AI%20docs-111111)](https://ficsysfr.github.io/jsonforms_builder/llms.txt)
-[![MCP](https://img.shields.io/badge/MCP-jsonforms__builder--mcp-6B4EFF)](https://www.npmjs.com/package/@tacxou/jsonforms_builder-mcp)
+[![MCP](https://img.shields.io/badge/MCP-jsonforms__builder--mcp-6B4EFF)](https://www.npmjs.com/package/@ficsysfr/jsonforms_builder-mcp)
 [![codecov](https://codecov.io/gh/FicSysFR/jsonforms_builder/branch/main/graph/badge.svg)](https://codecov.io/gh/FicSysFR/jsonforms_builder)
-![NPM Version](https://img.shields.io/npm/v/@tacxou/jsonforms_builder)
-![NPM Downloads](https://img.shields.io/npm/dm/@tacxou/jsonforms_builder)
+![NPM Version](https://img.shields.io/npm/v/@ficsysfr/jsonforms_builder)
+![NPM Downloads](https://img.shields.io/npm/dm/@ficsysfr/jsonforms_builder)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ![JSONForms Builder banner](static/banner.jpg)
@@ -15,10 +15,13 @@
 
 > **v2 — stack change.** v1 was based on Quasar. v2 renders with Nuxt UI `U*` components and therefore inherits the host app theme automatically. The `v1-quasar` branch keeps the old implementation; `@tacxou/jsonforms_builder@1.x` remains installable.
 
+> **npm scope.** Starting with 2.0.2, the maintained packages live under `@ficsysfr`. The former
+> `@tacxou` v2 packages remain installable but are frozen.
+
 ## Installation
 
 ```bash
-yarn add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
+yarn add @ficsysfr/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 ```
 
 `@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue`, and `vue` are **peerDependencies**: the library does not ship any Nuxt UI components; it imports them from the host app installation.
@@ -39,7 +42,7 @@ yarn add @tacxou/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 
 <script setup lang="ts">
 import { JsonForms } from '@jsonforms/vue'
-import { nuxtUiRenderers } from '@tacxou/jsonforms_builder'
+import { nuxtUiRenderers } from '@ficsysfr/jsonforms_builder'
 
 const renderers = Object.freeze(nuxtUiRenderers)
 </script>
@@ -56,7 +59,7 @@ const renderers = Object.freeze(nuxtUiRenderers)
 </template>
 
 <script setup lang="ts">
-import { FormBuilder, type FormDefinition } from '@tacxou/jsonforms_builder'
+import { FormBuilder, type FormDefinition } from '@ficsysfr/jsonforms_builder'
 
 const definition = ref<Partial<FormDefinition>>({})
 </script>
@@ -149,7 +152,7 @@ disappear, and spacing shifts.
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-@source "../node_modules/@tacxou/jsonforms_builder/dist";
+@source "../node_modules/@ficsysfr/jsonforms_builder/dist";
 ```
 
 > If your brand theme is declared in an `@theme` block, use **`@theme static`**.
@@ -166,7 +169,7 @@ export default defineNuxtConfig({
     optimizeDeps: {
       // The library keeps imports into `@nuxt/ui` SFCs: esbuild's pre-bundler
       // cannot compile them, so exclude it.
-      exclude: ['@tacxou/jsonforms_builder'],
+      exclude: ['@ficsysfr/jsonforms_builder'],
       // `ajv` is CommonJS. Without pre-bundling, its default export is not exposed
       // and `@jsonforms/core` fails on import.
       include: ['ajv', 'ajv-formats', '@jsonforms/core', '@jsonforms/vue'],
@@ -238,11 +241,14 @@ yarn docs:dev         # VitePress + playground (http://localhost:5173/playground
 yarn docs:build       # site docs unique pour GitHub Pages
 yarn docs:preview     # prévisualiser le build docs
 yarn build            # library build (es + cjs + declarations)
+yarn package          # audited library + MCP tarballs → .artifacts/npm
 yarn test             # Vitest suite
 yarn test:watch       # same, watch mode
 yarn test:coverage    # v8 coverage → ./coverage/lcov.info
 yarn lint             # Biome: lint + format check
 yarn typecheck        # TypeScript validation without emitting files
+yarn test:scripts     # release/changelog/package tooling
+yarn changelog:check  # CHANGELOG.md matches changelog/X.Y.Z.md
 yarn lint:fix         # apply safe fixes and reformat
 ```
 
@@ -250,24 +256,23 @@ yarn lint:fix         # apply safe fixes and reformat
 
 ### Release
 
-Releases are driven by GitHub Actions. `CHANGELOG.md` is the source of the release notes,
-and git tags are bare (`2.0.0`, no `v` prefix).
+Releases use one manually dispatched GitHub Actions workflow. Versioned
+`changelog/X.Y.Z.md` files generate `CHANGELOG.md` and the exact GitHub Release body;
+git tags stay bare (`2.0.2`, no `v` prefix).
 
 ```bash
-make release-ci INCREMENT=none WATCH=1              # publish the version in package.json
-make release-ci INCREMENT=minor WATCH=1             # let the CI bump the version first
-make release-ci INCREMENT=none LATEST=false         # prerelease → npm dist-tag `next`
-make release-ci INCREMENT=none NPM=false            # GitHub Release only, no npm publish
+make release VERSION=2.0.2 CHANNEL=latest WATCH=1
+make release VERSION=2.1.0-rc.1 CHANNEL=next WATCH=1
 ```
 
-The `release.yml` workflow runs the full CI, bumps and tags the version, publishes the GitHub
-Release (body taken from the matching `CHANGELOG.md` section) and pushes the package to npm —
-dist-tag `latest` for a stable release, `next` for a prerelease. It requires the `NPM_TOKEN`
-repository secret.
+The explicit version makes retries idempotent. The workflow runs the full CI, synchronizes both
+package manifests, validates and publishes the exact `.tgz` files, verifies registry integrity,
+pushes the release commit and tag, then creates the GitHub Release with both tarballs and
+`SHA256SUMS.txt` attached.
 
-`make release VERSION=X.Y.Z [PRERELEASE=1]` is the local alternative: it commits the bump and
-`CHANGELOG.md`, pushes, and creates the Release from `RELEASE_NOTES.md` with `gh`. The
-`publish.yml` workflow then publishes to npm.
+Publishing uses npm Trusted Publishing (OIDC) from the `npm` GitHub environment. No permanent npm
+write token is required; `NPM_BOOTSTRAP_TOKEN` is accepted only while creating the packages for the
+first time and must then be removed.
 
 ### Documentation site (GitHub Pages)
 
@@ -290,7 +295,7 @@ Machine-readable docs and an MCP server for Cursor / Claude:
 
 - [llms.txt](https://ficsysfr.github.io/jsonforms_builder/llms.txt) · [llms-full.txt](https://ficsysfr.github.io/jsonforms_builder/llms-full.txt)
 - Guide: [AI agents](https://ficsysfr.github.io/jsonforms_builder/en/guide/ai) · [Agents IA](https://ficsysfr.github.io/jsonforms_builder/guide/ai)
-- MCP: `npx -y @tacxou/jsonforms_builder-mcp`
+- MCP: `npx -y @ficsysfr/jsonforms_builder-mcp`
 
 Linting and formatting are handled by **[Biome](https://biomejs.dev/)** (`biome.jsonc`),
 replacing ESLint and Prettier. Two limits come from the Vue + Pug stack:

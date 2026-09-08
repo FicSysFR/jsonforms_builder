@@ -3,26 +3,18 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      version_increment:
-        description: "La version a incrémenter ('none' publie celle de package.json)"
+      version:
+        description: Exact SemVer to publish (for example 2.0.2)
         required: true
-        default: 'none'
+        type: string
+      channel:
+        description: npm dist-tag and GitHub Release channel
+        required: true
+        default: latest
         type: choice
         options:
-          - 'none'
-          - 'major'
-          - 'minor'
-          - 'patch'
-      publish_npm:
-        description: 'Publier le paquet sur npm ?'
-        required: true
-        default: true
-        type: boolean
-      latest:
-        description: "Release stable (dist-tag npm 'latest') ? Sinon prerelease ('next')"
-        required: true
-        default: true
-        type: boolean
+          - latest
+          - next
 
 concurrency:
   group: release
@@ -32,26 +24,31 @@ jobs:
   ci:
     name: CI
     uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
     secrets: inherit
 
   release:
-    name: Publish release
+    name: Publish npm and GitHub Release
     needs: ci
     runs-on: ubuntu-latest
+    environment: npm
     permissions:
       contents: write
+      id-token: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Release
         uses: ./.github/actions/release
         with:
-          version_increment: ${{ github.event.inputs.version_increment }}
-          publish_npm: ${{ github.event.inputs.publish_npm }}
-          latest: ${{ github.event.inputs.latest }}
+          version: ${{ inputs.version }}
+          channel: ${{ inputs.channel }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          npm_token: ${{ secrets.NPM_TOKEN }}
+          # Needed only to create the packages. Remove this environment secret after
+          # configuring release.yml as the npm Trusted Publisher for both packages.
+          bootstrap_npm_token: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}

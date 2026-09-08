@@ -8,7 +8,7 @@ Tailwind 4 generates utilities by scanning the project sources and **ignores any
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-@source "../node_modules/@tacxou/jsonforms_builder/dist";
+@source "../node_modules/@ficsysfr/jsonforms_builder/dist";
 ```
 
 > If your brand theme is declared in a `@theme` block, use **`@theme static`**.
@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     optimizeDeps: {
       // The library imports `@nuxt/ui` SFCs: the esbuild pre-bundler
       // cannot compile them, so it has to be excluded.
-      exclude: ['@tacxou/jsonforms_builder'],
+      exclude: ['@ficsysfr/jsonforms_builder'],
       // `ajv` is CommonJS. Without pre-bundling its default export is not exposed
       // and `@jsonforms/core` fails on import.
       include: ['ajv', 'ajv-formats', '@jsonforms/core', '@jsonforms/vue'],
