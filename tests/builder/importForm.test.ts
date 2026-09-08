@@ -36,6 +36,21 @@ describe('parseFormImport', () => {
     expect(JSON.stringify(result.uischema)).toContain('#/properties/age')
   })
 
+  it('regenerates a uischema when the provided value has no type', () => {
+    const result = parseFormImport(
+      JSON.stringify({
+        schema: {
+          type: 'object',
+          properties: { name: { type: 'string' } },
+        },
+        uischema: { elements: [] },
+      }),
+    )
+
+    expect(result.uischema.type).toBe('VerticalLayout')
+    expect(JSON.stringify(result.uischema)).toContain('#/properties/name')
+  })
+
   it('accepts a bare JSON Schema', () => {
     const result = parseFormImport(
       JSON.stringify({

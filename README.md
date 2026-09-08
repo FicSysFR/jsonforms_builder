@@ -242,6 +242,7 @@ yarn test             # Vitest suite
 yarn test:watch       # same, watch mode
 yarn test:coverage    # v8 coverage → ./coverage/lcov.info
 yarn lint             # Biome: lint + format check
+yarn typecheck        # TypeScript validation without emitting files
 yarn lint:fix         # apply safe fixes and reformat
 ```
 

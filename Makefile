@@ -20,7 +20,7 @@ LATEST ?= true
 WATCH ?=
 YES ?=
 
-.PHONY: help install dev docs docs-build docs-preview mcp-build stop build lint format test test-watch test-coverage test-regression test-perf release release-ci release-status ncu ncu-upgrade
+.PHONY: help install dev docs docs-build docs-preview mcp-build stop build lint typecheck format test test-watch test-coverage test-regression test-perf release release-ci release-status ncu ncu-upgrade
 .DEFAULT_GOAL := help
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -53,6 +53,9 @@ build: ## Build the library (es + cjs + declarations)
 
 lint: ## Lint and check formatting (Biome)
 	@yarn lint
+
+typecheck: ## Type-check the library without emitting build artifacts
+	@yarn typecheck
 
 format: ## Apply safe fixes and reformat (Biome)
 	@yarn lint:fix

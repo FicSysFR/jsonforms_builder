@@ -80,6 +80,9 @@ describe('form draft storage', () => {
 
     storage.setItem('partial', JSON.stringify({ schema }))
     expect(readFormDraft(storage, 'partial')).toBeUndefined()
+
+    storage.setItem('invalid-uischema', JSON.stringify({ schema, uischema: { elements: [] } }))
+    expect(readFormDraft(storage, 'invalid-uischema')).toBeUndefined()
   })
 
   it('clears a stored draft', () => {

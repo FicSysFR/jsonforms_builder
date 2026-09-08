@@ -1,13 +1,55 @@
 import { describe, expect, it } from 'vitest'
+import { computed, createApp, effectScope } from 'vue'
 import {
   countPatternDigits,
   normalizeDateValue,
   resolveDateInputType,
   detectDateUnitFromPosition,
+  useDateControl,
   DEFAULT_DATE_FORMAT,
   DEFAULT_TIME_FORMAT,
   DEFAULT_DATETIME_FORMAT,
 } from '../../src/composables/useDateControl'
+
+describe('useDateControl', () => {
+  it('falls back to the schema default when options.pattern is not a string', () => {
+    const app = createApp({})
+    const scope = effectScope()
+    let control: ReturnType<typeof useDateControl> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        control = useDateControl({
+          jsonFormsControl: {
+            control: computed(() => ({
+              schema: { type: 'string', format: 'date' },
+              uischema: {
+                type: 'Control',
+                scope: '#/properties/date',
+                options: { pattern: 42 },
+              },
+              path: 'date',
+              config: {},
+              label: 'Date',
+              description: '',
+              required: false,
+              enabled: true,
+              errors: '',
+              data: '2026-09-08',
+              id: '#/properties/date',
+              visible: true,
+            })),
+            handleChange: () => undefined,
+          } as never,
+          clearValue: undefined,
+        })
+      })
+    })
+
+    expect(control?.optionPattern.value).toBe(DEFAULT_DATE_FORMAT)
+    scope.stop()
+  })
+})
 
 describe('countPatternDigits', () => {
   it('counts date pattern tokens', () => {

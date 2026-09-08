@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "vite build --config vite.config.ts",
+    "build": "yarn typecheck && vite build --config vite.config.ts",
     "postbuild": "cpr README.md dist/README.md && cpr LICENSE dist/LICENSE && cpr package.json dist/package.json",
     "start:dev": "cd playground && vite --host --port 5174",
     "build:playground": "cd playground && cross-env PLAYGROUND_BASE=/jsonforms_builder/play/ vite build",
@@ -44,6 +44,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "lint": "biome check",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "test": "vitest run",
@@ -89,6 +90,7 @@
     "vitepress-plugin-llms": "^1.13.4",
     "vitest": "^3.2.4",
     "vue": "^3.5.1",
+    "vue-tsc": "^3.3.11",
     "vue-router": "^4.5.0"
   },
   "peerDependencies": {

@@ -11,6 +11,9 @@ export class FormImportError extends Error {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
+const isUiSchemaElement = (value: unknown): value is UISchemaElement =>
+  isPlainObject(value) && typeof value.type === 'string'
+
 const UI_SCHEMA_TYPES = new Set([
   'Control',
   'VerticalLayout',
@@ -79,8 +82,8 @@ export const parseFormImport = (raw: string): FormImportResult => {
 
   if (isPlainObject(parsed.schema)) {
     const schema = parsed.schema as JsonSchema
-    const uischema = isPlainObject(parsed.uischema)
-      ? (parsed.uischema as UISchemaElement)
+    const uischema = isUiSchemaElement(parsed.uischema)
+      ? parsed.uischema
       : Generate.uiSchema(schema, 'VerticalLayout')
 
     return { schema, uischema: uischema ?? empty.uischema, data }

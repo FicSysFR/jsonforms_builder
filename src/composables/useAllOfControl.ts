@@ -48,25 +48,20 @@ export const flattenAllOfSchema = (
 
   seen.add(current)
 
-  const merged: JsonSchema & {
-    type: 'object'
-    properties: Record<string, JsonSchema>
-    required: string[]
-  } = {
-    type: 'object',
-    properties: { ...(current.properties ?? {}) },
-    required: [...(current.required ?? [])],
-  }
+  const properties = { ...(current.properties ?? {}) }
+  const required = [...(current.required ?? [])]
 
   for (const branch of current.allOf ?? []) {
     const nested = flattenAllOfSchema(branch, rootSchema, seen)
-    Object.assign(merged.properties, nested.properties ?? {})
-    merged.required.push(...(nested.required ?? []))
+    Object.assign(properties, nested.properties ?? {})
+    required.push(...(nested.required ?? []))
   }
 
-  merged.required = [...new Set(merged.required)]
-
-  return merged
+  return {
+    type: 'object',
+    properties,
+    required: [...new Set(required)],
+  } as JsonSchema
 }
 
 export const useAllOfControl = ({ jsonFormsControl }: UseAllOfControlOptions) => {

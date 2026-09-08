@@ -447,9 +447,10 @@ export const useDateControl = ({
     return DEFAULT_DATE_FORMAT
   })
 
-  const optionPattern = computed(
-    () => control.appliedOptions.value?.pattern || patternDefault.value,
-  )
+  const optionPattern = computed<string>(() => {
+    const pattern = control.appliedOptions.value?.pattern
+    return typeof pattern === 'string' && pattern ? pattern : patternDefault.value
+  })
 
   const controlData = computed(() => {
     const date = dayjs(control.control.value.data, optionPattern.value, true)

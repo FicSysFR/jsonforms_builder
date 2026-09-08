@@ -1,5 +1,5 @@
 import Image from '@tiptap/extension-image'
-import type { NodeView, NodeViewRenderer, NodeViewRendererProps } from '@tiptap/core'
+import type { NodeViewRenderer, NodeViewRendererProps } from '@tiptap/core'
 
 export type WysiwygImageResizeOptions = {
   enabled: boolean
@@ -37,7 +37,7 @@ export const WysiwygResizableImage = Image.extend({
     if (!createParentView) return null
 
     return (props: NodeViewRendererProps) => {
-      const view = createParentView(props) as NodeView
+      const view = createParentView(props)
       const dom = view.dom
       if (!(dom instanceof HTMLElement)) return view
 

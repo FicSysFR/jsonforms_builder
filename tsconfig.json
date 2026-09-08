@@ -18,6 +18,7 @@
     "incremental": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo"
   },
   "include": ["src/**/*"],

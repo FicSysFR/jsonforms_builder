@@ -19,6 +19,9 @@ export interface FormDraftStorage {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
+const isUiSchemaElement = (value: unknown): value is UISchemaElement =>
+  isPlainObject(value) && typeof value.type === 'string'
+
 /**
  * True when the definition already carries fields or layout elements —
  * used to prefer an explicit `v-model` over a stored draft.
@@ -52,14 +55,14 @@ export const readFormDraft = (
     if (
       !isPlainObject(parsed) ||
       !isPlainObject(parsed.schema) ||
-      !isPlainObject(parsed.uischema)
+      !isUiSchemaElement(parsed.uischema)
     ) {
       return undefined
     }
 
     return {
       schema: parsed.schema as JsonSchema,
-      uischema: parsed.uischema as UISchemaElement,
+      uischema: parsed.uischema,
       data: 'data' in parsed ? parsed.data : undefined,
     }
   } catch {
