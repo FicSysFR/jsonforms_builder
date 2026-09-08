@@ -1,6 +1,6 @@
 {
   "name": "@ficsysfr/jsonforms_builder",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "JSONForms renderers for Vue 3 built on Nuxt UI & Tailwind CSS",
   "repository": "https://github.com/FicSysFR/jsonforms_builder.git",
   "homepage": "https://ficsysfr.github.io/jsonforms_builder/",

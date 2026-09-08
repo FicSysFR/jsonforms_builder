@@ -1,6 +1,6 @@
 {
   "name": "@ficsysfr/jsonforms_builder-mcp",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "MCP server for @ficsysfr/jsonforms_builder documentation (llms.txt)",
   "repository": "https://github.com/FicSysFR/jsonforms_builder.git",
   "homepage": "https://ficsysfr.github.io/jsonforms_builder/guide/ai",
