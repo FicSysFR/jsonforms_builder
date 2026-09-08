@@ -8,7 +8,7 @@ import {
   playgroundUiPlugins,
 } from '../../playground/vite.shared'
 
-const repo = 'https://github.com/tacxou/jsonforms_builder'
+const repo = 'https://github.com/FicSysFR/jsonforms_builder'
 /** GitHub Pages path in production; `/` for local `docs:dev`. */
 const base = process.env.NODE_ENV === 'production' ? '/jsonforms_builder/' : '/'
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -44,7 +44,7 @@ export default defineConfig({
       // (`/jsonforms_builder/`) is prepended by the plugin into absolute URLs.
       // Cast: vitepress-plugin-llms resolves `vite` from the root; VitePress nests its own.
       ...(llmstxt({
-        domain: 'https://tacxou.github.io',
+        domain: 'https://ficsysfr.github.io',
         title: 'JSONForms Builder',
         description:
           'JSONForms renderers for Vue 3 on Nuxt UI & Tailwind CSS, plus a visual form builder.',

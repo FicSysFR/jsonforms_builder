@@ -1,7 +1,7 @@
 /** Default published docs origin (no trailing slash). */
-export const DEFAULT_DOCS_BASE_URL = 'https://tacxou.github.io/jsonforms_builder'
+export const DEFAULT_DOCS_BASE_URL = 'https://ficsysfr.github.io/jsonforms_builder'
 
-const ALLOWED_HOSTS = new Set(['tacxou.github.io', '127.0.0.1', 'localhost'])
+const ALLOWED_HOSTS = new Set(['ficsysfr.github.io', '127.0.0.1', 'localhost'])
 
 export type DocLink = {
   title: string
@@ -31,7 +31,7 @@ export function assertAllowedDocsUrl(urlString: string, baseUrl = getDocsBaseUrl
   }
 
   // Production Pages docs live under /jsonforms_builder/; local preview may use /
-  if (url.hostname === 'tacxou.github.io') {
+  if (url.hostname === 'ficsysfr.github.io') {
     const basePath = new URL(baseUrl).pathname.replace(/\/+$/, '') || '/jsonforms_builder'
     if (!url.pathname.startsWith(`${basePath}/`) && url.pathname !== basePath) {
       throw new Error(`Path outside docs base (${basePath}): ${url.pathname}`)

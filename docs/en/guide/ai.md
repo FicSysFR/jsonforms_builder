@@ -8,8 +8,8 @@ On docs build, VitePress emits machine-readable indexes (**English** docs only):
 
 | File | Role |
 |---|---|
-| [llms.txt](https://tacxou.github.io/jsonforms_builder/llms.txt) | Short index: sections + links to Markdown pages |
-| [llms-full.txt](https://tacxou.github.io/jsonforms_builder/llms-full.txt) | Full Markdown bundle |
+| [llms.txt](https://ficsysfr.github.io/jsonforms_builder/llms.txt) | Short index: sections + links to Markdown pages |
+| [llms-full.txt](https://ficsysfr.github.io/jsonforms_builder/llms-full.txt) | Full Markdown bundle |
 
 Each guide page also has a `.md` variant (e.g. `/en/guide/installation.md`) for targeted fetches.
 
@@ -65,7 +65,7 @@ claude mcp add-json jsonforms-builder '{"type":"stdio","command":"npx","args":["
 
 | Variable | Default | Role |
 |---|---|---|
-| `DOCS_BASE_URL` | `https://tacxou.github.io/jsonforms_builder` | Docs origin (no trailing slash). Point at a local `docs:preview` when needed. |
+| `DOCS_BASE_URL` | `https://ficsysfr.github.io/jsonforms_builder` | Docs origin (no trailing slash). Point at a local `docs:preview` when needed. |
 
 Local example:
 
@@ -83,7 +83,7 @@ Local example:
 }
 ```
 
-> Locally, the host must stay on the MCP whitelist (`tacxou.github.io`, `127.0.0.1`, `localhost`).
+> Locally, the host must stay on the MCP whitelist (`ficsysfr.github.io`, `127.0.0.1`, `localhost`).
 
 ## Suggested agent rule
 

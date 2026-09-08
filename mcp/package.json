@@ -2,7 +2,7 @@
   "name": "@tacxou/jsonforms_builder-mcp",
   "version": "2.0.1",
   "description": "MCP server for @tacxou/jsonforms_builder documentation (llms.txt)",
-  "repository": "https://github.com/tacxou/jsonforms_builder.git",
+  "repository": "https://github.com/FicSysFR/jsonforms_builder.git",
   "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
   "license": "BSD-3-Clause",
   "type": "module",

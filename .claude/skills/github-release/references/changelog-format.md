@@ -58,5 +58,5 @@ Ordre des catégories (n'inclure que les catégories non vides) :
   `> ⚠️ Version instable (prerelease) — publiée sur npm sous le dist-tag `next`.`
 - Date au format ISO `YYYY-MM-DD` (jour de préparation de la release).
 - Lien de comparaison optionnel dans le titre :
-  `## [X.Y.Z](https://github.com/tacxou/jsonforms_builder/compare/<prev>...<X.Y.Z>) - DATE`
+  `## [X.Y.Z](https://github.com/FicSysFR/jsonforms_builder/compare/<prev>...<X.Y.Z>) - DATE`
   (tags nus, sans préfixe `v`).

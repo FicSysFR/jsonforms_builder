@@ -48,7 +48,7 @@ Vérifier et signaler tout problème **avant** de modifier quoi que ce soit :
 - Branche de release = `main` (sauf indication contraire). La branche `v1-quasar` porte la v1 Quasar
   et ne doit pas servir de base à une release v2.
 - `gh auth status` OK — sinon prévenir que la commande finale échouera.
-- Repo : `tacxou/jsonforms_builder` · paquet npm : `@tacxou/jsonforms_builder`.
+- Repo : `FicSysFR/jsonforms_builder` · paquet npm : `@tacxou/jsonforms_builder`.
 - Workflows présents : `ls .github/workflows/` doit montrer `release.yml` et `publish.yml`, qui
   honorent `references/workflow-contract.md`. S'ils manquent, **avertir** que rien ne sera publié
   sur npm.

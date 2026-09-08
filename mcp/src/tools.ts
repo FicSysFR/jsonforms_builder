@@ -75,7 +75,7 @@ export function registerDocsTools(server: McpServer): void {
     'fetch_docs',
     {
       description:
-        'Fetch a documentation URL from the JSONForms Builder docs site (tacxou.github.io/jsonforms_builder or local DOCS_BASE_URL). Prefer .md / llms.txt URLs.',
+        'Fetch a documentation URL from the JSONForms Builder docs site (ficsysfr.github.io/jsonforms_builder or local DOCS_BASE_URL). Prefer .md / llms.txt URLs.',
       inputSchema: {
         url: z.string().url().describe('Absolute docs URL (must be on the allowed host)'),
       },

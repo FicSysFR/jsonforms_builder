@@ -16,7 +16,7 @@ hero:
       link: /en/playground
     - theme: alt
       text: GitHub
-      link: https://github.com/tacxou/jsonforms_builder
+      link: https://github.com/FicSysFR/jsonforms_builder
 features:
   - title: Nuxt UI renderers
     details: Controls, layouts and additional elements mapped onto the U* components — the host app’s theme applies automatically.

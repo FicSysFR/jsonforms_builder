@@ -1,10 +1,10 @@
 # JSON Forms Builder
 
-[![CI](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml/badge.svg)](https://github.com/tacxou/jsonforms_builder/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-00A86B)](https://tacxou.github.io/jsonforms_builder/)
-[![llms.txt](https://img.shields.io/badge/llms.txt-AI%20docs-111111)](https://tacxou.github.io/jsonforms_builder/llms.txt)
+[![CI](https://github.com/FicSysFR/jsonforms_builder/actions/workflows/ci.yml/badge.svg)](https://github.com/FicSysFR/jsonforms_builder/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-00A86B)](https://ficsysfr.github.io/jsonforms_builder/)
+[![llms.txt](https://img.shields.io/badge/llms.txt-AI%20docs-111111)](https://ficsysfr.github.io/jsonforms_builder/llms.txt)
 [![MCP](https://img.shields.io/badge/MCP-jsonforms__builder--mcp-6B4EFF)](https://www.npmjs.com/package/@tacxou/jsonforms_builder-mcp)
-[![codecov](https://codecov.io/gh/tacxou/jsonforms_builder/branch/main/graph/badge.svg)](https://codecov.io/gh/tacxou/jsonforms_builder)
+[![codecov](https://codecov.io/gh/FicSysFR/jsonforms_builder/branch/main/graph/badge.svg)](https://codecov.io/gh/FicSysFR/jsonforms_builder)
 ![NPM Version](https://img.shields.io/npm/v/@tacxou/jsonforms_builder)
 ![NPM Downloads](https://img.shields.io/npm/dm/@tacxou/jsonforms_builder)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -272,7 +272,7 @@ repository secret.
 ### Documentation site (GitHub Pages)
 
 The VitePress site in `docs/` is published to
-[GitHub Pages](https://tacxou.github.io/jsonforms_builder/). The interactive
+[GitHub Pages](https://ficsysfr.github.io/jsonforms_builder/). The interactive
 playground is **compiled into the same site** (mounted on `/playground`, hash
 routes `#/?example=…` / `#/builder`) — no separate iframe or `/play/` SPA.
 
@@ -288,8 +288,8 @@ The workflow `.github/workflows/deploy-docs.yml` builds and deploys on every pus
 
 Machine-readable docs and an MCP server for Cursor / Claude:
 
-- [llms.txt](https://tacxou.github.io/jsonforms_builder/llms.txt) · [llms-full.txt](https://tacxou.github.io/jsonforms_builder/llms-full.txt)
-- Guide: [AI agents](https://tacxou.github.io/jsonforms_builder/en/guide/ai) · [Agents IA](https://tacxou.github.io/jsonforms_builder/guide/ai)
+- [llms.txt](https://ficsysfr.github.io/jsonforms_builder/llms.txt) · [llms-full.txt](https://ficsysfr.github.io/jsonforms_builder/llms-full.txt)
+- Guide: [AI agents](https://ficsysfr.github.io/jsonforms_builder/en/guide/ai) · [Agents IA](https://ficsysfr.github.io/jsonforms_builder/guide/ai)
 - MCP: `npx -y @tacxou/jsonforms_builder-mcp`
 
 Linting and formatting are handled by **[Biome](https://biomejs.dev/)** (`biome.jsonc`),

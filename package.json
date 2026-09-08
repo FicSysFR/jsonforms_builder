@@ -2,7 +2,7 @@
   "name": "@tacxou/jsonforms_builder",
   "version": "2.0.1",
   "description": "JSONForms renderers for Vue 3 built on Nuxt UI & Tailwind CSS",
-  "repository": "https://github.com/tacxou/jsonforms_builder.git",
+  "repository": "https://github.com/FicSysFR/jsonforms_builder.git",
   "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
   "contributors": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "Contributors",
-      "url": "https://github.com/tacxou/jsonforms_builder/graphs/contributors"
+      "url": "https://github.com/FicSysFR/jsonforms_builder/graphs/contributors"
     }
   ],
   "license": "BSD-3-Clause",

@@ -4,7 +4,7 @@ All notable changes to `@tacxou/jsonforms_builder` are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/),
 versioning follows [SemVer](https://semver.org/).
 
-## [2.0.0](https://github.com/tacxou/jsonforms_builder/compare/1.0.3...2.0.0) - 2026-08-11
+## [2.0.0](https://github.com/FicSysFR/jsonforms_builder/compare/1.0.3...2.0.0) - 2026-08-11
 
 Complete stack change: the renderers no longer build on Quasar but on
 **Nuxt UI 4 + Tailwind CSS 4**, and therefore inherit the host application's theme automatically.

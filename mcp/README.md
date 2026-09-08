@@ -1,6 +1,6 @@
 # `@tacxou/jsonforms_builder-mcp`
 
-MCP (stdio) server that exposes the published [JSONForms Builder](https://tacxou.github.io/jsonforms_builder/) documentation to coding agents.
+MCP (stdio) server that exposes the published [JSONForms Builder](https://ficsysfr.github.io/jsonforms_builder/) documentation to coding agents.
 
 ## Tools
 
@@ -27,9 +27,9 @@ MCP (stdio) server that exposes the published [JSONForms Builder](https://tacxou
 
 | Variable | Default |
 |---|---|
-| `DOCS_BASE_URL` | `https://tacxou.github.io/jsonforms_builder` |
+| `DOCS_BASE_URL` | `https://ficsysfr.github.io/jsonforms_builder` |
 
-Allowed hosts: `tacxou.github.io`, `127.0.0.1`, `localhost`.
+Allowed hosts: `ficsysfr.github.io`, `127.0.0.1`, `localhost`.
 
 ## Develop
 
@@ -39,4 +39,4 @@ yarn build
 node dist/index.js
 ```
 
-Docs: [AI agents guide](https://tacxou.github.io/jsonforms_builder/en/guide/ai)
+Docs: [AI agents guide](https://ficsysfr.github.io/jsonforms_builder/en/guide/ai)
