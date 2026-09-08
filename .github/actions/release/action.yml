@@ -161,20 +161,41 @@ runs:
           node -e "const fs=require('node:fs');const c=require('node:crypto');const b=fs.readFileSync(process.argv[1]);process.stdout.write('sha512-'+c.createHash('sha512').update(b).digest('base64'))" "$1"
         }
 
-        npm_view_retry() {
-          SPEC="$1"
-          FIELD="$2"
+        npm_registry_value() {
+          PACKAGE_NAME="$1"
+          SELECTOR="$2"
+          FIELD="$3"
+          ENCODED_NAME=$(node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "${PACKAGE_NAME}")
+          URL="https://registry.npmjs.org/${ENCODED_NAME}/${SELECTOR}"
+          node -e '
+            const [url, field] = process.argv.slice(1)
+            fetch(url, { headers: { accept: "application/json" } })
+              .then(async response => {
+                if (!response.ok) process.exit(1)
+                const document = await response.json()
+                const value = field.split(".").reduce((current, key) => current?.[key], document)
+                if (typeof value !== "string" || value.length === 0) process.exit(1)
+                process.stdout.write(value)
+              })
+              .catch(() => process.exit(1))
+          ' "${URL}" "${FIELD}"
+        }
+
+        npm_registry_value_retry() {
+          PACKAGE_NAME="$1"
+          SELECTOR="$2"
+          FIELD="$3"
           for ATTEMPT in $(seq 1 12); do
-            if VALUE=$(npm view "${SPEC}" "${FIELD}" 2>/dev/null) && [ -n "${VALUE}" ]; then
+            if VALUE=$(npm_registry_value "${PACKAGE_NAME}" "${SELECTOR}" "${FIELD}" 2>/dev/null); then
               printf '%s' "${VALUE}"
               return 0
             fi
             if [ "${ATTEMPT}" -lt 12 ]; then
-              echo "waiting for npm registry propagation (${ATTEMPT}/12): ${SPEC}" >&2
+              echo "waiting for npm registry propagation (${ATTEMPT}/12): ${PACKAGE_NAME}@${SELECTOR}" >&2
               sleep 5
             fi
           done
-          echo "npm registry did not expose ${SPEC} after 12 attempts" >&2
+          echo "npm registry did not expose ${PACKAGE_NAME}@${SELECTOR} after 12 attempts" >&2
           return 1
         }
 
@@ -183,7 +204,7 @@ runs:
           TARBALL="$2"
           LOCAL_INTEGRITY=$(local_integrity "${TARBALL}")
 
-          if REGISTRY_INTEGRITY=$(npm view "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity 2>/dev/null); then
+          if REGISTRY_INTEGRITY=$(npm_registry_value "${PACKAGE_NAME}" "${RELEASE_VERSION}" dist.integrity 2>/dev/null); then
             if [ "${REGISTRY_INTEGRITY}" != "${LOCAL_INTEGRITY}" ]; then
               echo "${PACKAGE_NAME}@${RELEASE_VERSION} exists with different contents" >&2
               exit 1
@@ -196,12 +217,12 @@ runs:
             fi
           fi
 
-          REGISTRY_INTEGRITY=$(npm_view_retry "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity)
+          REGISTRY_INTEGRITY=$(npm_registry_value_retry "${PACKAGE_NAME}" "${RELEASE_VERSION}" dist.integrity)
           if [ "${REGISTRY_INTEGRITY}" != "${LOCAL_INTEGRITY}" ]; then
             echo "registry integrity mismatch for ${PACKAGE_NAME}@${RELEASE_VERSION}" >&2
             exit 1
           fi
-          TAG_VERSION=$(npm_view_retry "${PACKAGE_NAME}@${RELEASE_CHANNEL}" version)
+          TAG_VERSION=$(npm_registry_value_retry "${PACKAGE_NAME}" "${RELEASE_CHANNEL}" version)
           if [ "${TAG_VERSION}" != "${RELEASE_VERSION}" ]; then
             echo "${PACKAGE_NAME}@${RELEASE_CHANNEL} points to ${TAG_VERSION}" >&2
             exit 1
