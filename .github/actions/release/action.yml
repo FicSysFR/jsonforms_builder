@@ -161,6 +161,23 @@ runs:
           node -e "const fs=require('node:fs');const c=require('node:crypto');const b=fs.readFileSync(process.argv[1]);process.stdout.write('sha512-'+c.createHash('sha512').update(b).digest('base64'))" "$1"
         }
 
+        npm_view_retry() {
+          SPEC="$1"
+          FIELD="$2"
+          for ATTEMPT in $(seq 1 12); do
+            if VALUE=$(npm view "${SPEC}" "${FIELD}" 2>/dev/null) && [ -n "${VALUE}" ]; then
+              printf '%s' "${VALUE}"
+              return 0
+            fi
+            if [ "${ATTEMPT}" -lt 12 ]; then
+              echo "waiting for npm registry propagation (${ATTEMPT}/12): ${SPEC}" >&2
+              sleep 5
+            fi
+          done
+          echo "npm registry did not expose ${SPEC} after 12 attempts" >&2
+          return 1
+        }
+
         publish_or_verify() {
           PACKAGE_NAME="$1"
           TARBALL="$2"
@@ -173,16 +190,18 @@ runs:
             fi
             echo "${PACKAGE_NAME}@${RELEASE_VERSION} already matches the audited tarball"
           else
-            npm publish "${TARBALL}" \
-              --access public --tag "${RELEASE_CHANNEL}" --provenance
+            if ! npm publish "${TARBALL}" \
+              --access public --tag "${RELEASE_CHANNEL}" --provenance; then
+              echo "publish returned an error; checking whether npm accepted it before failing" >&2
+            fi
           fi
 
-          REGISTRY_INTEGRITY=$(npm view "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity)
+          REGISTRY_INTEGRITY=$(npm_view_retry "${PACKAGE_NAME}@${RELEASE_VERSION}" dist.integrity)
           if [ "${REGISTRY_INTEGRITY}" != "${LOCAL_INTEGRITY}" ]; then
             echo "registry integrity mismatch for ${PACKAGE_NAME}@${RELEASE_VERSION}" >&2
             exit 1
           fi
-          TAG_VERSION=$(npm view "${PACKAGE_NAME}@${RELEASE_CHANNEL}" version)
+          TAG_VERSION=$(npm_view_retry "${PACKAGE_NAME}@${RELEASE_CHANNEL}" version)
           if [ "${TAG_VERSION}" != "${RELEASE_VERSION}" ]; then
             echo "${PACKAGE_NAME}@${RELEASE_CHANNEL} points to ${TAG_VERSION}" >&2
             exit 1
