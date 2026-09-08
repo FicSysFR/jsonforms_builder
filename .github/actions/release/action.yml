@@ -244,9 +244,11 @@ runs:
       run: |
         set -euo pipefail
         npm deprecate '@tacxou/jsonforms_builder@>=2.0.0' \
-          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.'
+          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.' \
+          || echo 'npm returned an update error; verifying the resulting registry state'
         npm deprecate '@tacxou/jsonforms_builder-mcp@*' \
-          'This package moved to @ficsysfr/jsonforms_builder-mcp.'
+          'This package moved to @ficsysfr/jsonforms_builder-mcp.' \
+          || echo 'npm returned an update error; verifying the resulting registry state'
         test "$(npm view '@tacxou/jsonforms_builder@2.0.1' deprecated)" = \
           'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.'
         test "$(npm view '@tacxou/jsonforms_builder-mcp@2.0.1' deprecated)" = \
