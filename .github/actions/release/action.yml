@@ -11,27 +11,9 @@ inputs:
   github_token:
     description: GitHub token used for the release commit, tag and Release
     required: true
-  node_version:
-    description: Node.js version used to build and publish
-    required: false
-    default: '24'
-
 runs:
   using: composite
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-        token: ${{ inputs.github_token }}
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ inputs.node_version }}
-        registry-url: https://registry.npmjs.org
-        package-manager-cache: false
-
     - name: Validate release inputs and npm CLI
       shell: bash
       env:
