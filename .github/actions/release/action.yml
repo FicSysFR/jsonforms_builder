@@ -11,10 +11,6 @@ inputs:
   github_token:
     description: GitHub token used for the release commit, tag and Release
     required: true
-  bootstrap_npm_token:
-    description: One-use npm token; empty after Trusted Publishing is configured
-    required: false
-    default: ''
   node_version:
     description: Node.js version used to build and publish
     required: false
@@ -151,7 +147,6 @@ runs:
     - name: Publish or verify npm packages
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.bootstrap_npm_token }}
         RELEASE_VERSION: ${{ inputs.version }}
         RELEASE_CHANNEL: ${{ inputs.channel }}
       run: |
@@ -236,24 +231,6 @@ runs:
         publish_or_verify '@ficsysfr/jsonforms_builder' "${LIB_TARBALL}"
         publish_or_verify '@ficsysfr/jsonforms_builder-mcp' "${MCP_TARBALL}"
 
-    - name: Deprecate legacy npm packages after bootstrap
-      if: inputs.bootstrap_npm_token != ''
-      shell: bash
-      env:
-        NODE_AUTH_TOKEN: ${{ inputs.bootstrap_npm_token }}
-      run: |
-        set -euo pipefail
-        npm deprecate '@tacxou/jsonforms_builder@>=2.0.0' \
-          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.' \
-          || echo 'npm returned an update error; verifying the resulting registry state'
-        npm deprecate '@tacxou/jsonforms_builder-mcp@*' \
-          'This package moved to @ficsysfr/jsonforms_builder-mcp.' \
-          || echo 'npm returned an update error; verifying the resulting registry state'
-        test "$(npm view '@tacxou/jsonforms_builder@2.0.1' deprecated)" = \
-          'This v2 package is frozen. Use @ficsysfr/jsonforms_builder. Quasar 1.x remains available.'
-        test "$(npm view '@tacxou/jsonforms_builder-mcp@2.0.1' deprecated)" = \
-          'This package moved to @ficsysfr/jsonforms_builder-mcp.'
-
     - name: Generate GitHub Release notes
       shell: bash
       env:
@@ -285,6 +262,6 @@ runs:
           echo
           echo "- npm channel: ${{ inputs.channel }}"
           echo "- packages: @ficsysfr/jsonforms_builder + @ficsysfr/jsonforms_builder-mcp"
-          echo "- authentication: ${{ inputs.bootstrap_npm_token != '' && 'temporary bootstrap token' || 'npm Trusted Publishing (OIDC)' }}"
+          echo "- authentication: npm Trusted Publishing (OIDC)"
           echo "- assets: two audited tarballs + SHA256SUMS.txt"
         } >> "${GITHUB_STEP_SUMMARY}"

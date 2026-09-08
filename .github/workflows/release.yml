@@ -49,6 +49,3 @@ jobs:
           version: ${{ inputs.version }}
           channel: ${{ inputs.channel }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Needed only to create the packages. Remove this environment secret after
-          # configuring release.yml as the npm Trusted Publisher for both packages.
-          bootstrap_npm_token: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}

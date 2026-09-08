@@ -270,9 +270,9 @@ package manifests, validates and publishes the exact `.tgz` files, verifies regi
 pushes the release commit and tag, then creates the GitHub Release with both tarballs and
 `SHA256SUMS.txt` attached.
 
-Publishing uses npm Trusted Publishing (OIDC) from the `npm` GitHub environment. No permanent npm
-write token is required; `NPM_BOOTSTRAP_TOKEN` is accepted only while creating the packages for the
-first time and must then be removed.
+Publishing uses npm Trusted Publishing (OIDC) from the `npm` GitHub environment. Both packages
+trust `FicSysFR/jsonforms_builder`, `.github/workflows/release.yml`, and the `npm` environment, so no
+npm write token is accepted or required.
 
 ### Documentation site (GitHub Pages)
 
