@@ -154,6 +154,10 @@ export const moveElement = (
     return root
   }
 
+  if (!isContainer(getElementAt(root, toParent))) {
+    return root
+  }
+
   const fromParent = from.slice(0, -1)
   const fromIndex = from[from.length - 1]
 

@@ -65,6 +65,15 @@ describe('parseFormImport', () => {
     expect(result.uischema.type).toBe('VerticalLayout')
   })
 
+  it.each([
+    { $ref: '#/$defs/person' },
+    { allOf: [{ type: 'string' }] },
+    { anyOf: [{ type: 'string' }, { type: 'null' }] },
+    { oneOf: [{ const: 'a' }, { const: 'b' }] },
+  ])('recognizes schema keywords without a top-level type', (schema) => {
+    expect(parseFormImport(JSON.stringify(schema)).schema).toEqual(schema)
+  })
+
   it('rejects empty input', () => {
     expect(() => parseFormImport('   ')).toThrow(FormImportError)
   })
@@ -82,5 +91,13 @@ describe('parseFormImport', () => {
         }),
       ),
     ).toThrow(/UI Schema/i)
+  })
+
+  it.each(['null', '[]', '"texte"', '42'])('rejects a non-object JSON document: %s', (raw) => {
+    expect(() => parseFormImport(raw)).toThrow(/objet JSON/i)
+  })
+
+  it('rejects an object that is neither a schema nor a UI schema', () => {
+    expect(() => parseFormImport('{"unexpected":true}')).toThrow(/Format non reconnu/i)
   })
 })

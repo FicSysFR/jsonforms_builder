@@ -1,12 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import {
   clearFormDraft,
+  getBrowserFormDraftStorage,
   isMeaningfulDefinition,
   readFormDraft,
   writeFormDraft,
   type FormDraftStorage,
 } from '../../src/builder/persistForm'
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 const memoryStorage = (): FormDraftStorage & { store: Map<string, string> } => {
   const store = new Map<string, string>()
@@ -102,5 +107,48 @@ describe('form draft storage', () => {
     }
 
     expect(() => writeFormDraft(storage, 'draft', { schema, uischema })).not.toThrow()
+  })
+
+  it('swallows read and clear failures', () => {
+    const storage: FormDraftStorage = {
+      getItem: () => {
+        throw new Error('SecurityError')
+      },
+      setItem: () => undefined,
+      removeItem: () => {
+        throw new Error('SecurityError')
+      },
+    }
+
+    expect(readFormDraft(storage, 'draft')).toBeUndefined()
+    expect(() => clearFormDraft(storage, 'draft')).not.toThrow()
+  })
+
+  it('returns browser storage when available', () => {
+    const storage = memoryStorage()
+    vi.stubGlobal('localStorage', storage)
+
+    expect(getBrowserFormDraftStorage()).toBe(storage)
+  })
+
+  it('returns undefined when browser storage is unavailable or restricted', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    try {
+      Reflect.deleteProperty(globalThis, 'localStorage')
+      expect(getBrowserFormDraftStorage()).toBeUndefined()
+
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get: () => {
+          throw new Error('SecurityError')
+        },
+      })
+      expect(getBrowserFormDraftStorage()).toBeUndefined()
+    } finally {
+      Reflect.deleteProperty(globalThis, 'localStorage')
+      if (descriptor) {
+        Object.defineProperty(globalThis, 'localStorage', descriptor)
+      }
+    }
   })
 })

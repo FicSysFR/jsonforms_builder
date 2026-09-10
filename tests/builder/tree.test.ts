@@ -3,12 +3,14 @@ import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import {
   addSchemaProperty,
   adjustPathAfterRemoval,
+  formatPropertyPathInput,
   getElementAt,
   getSchemaPropertyAtPath,
   insertElementAt,
   isAncestorPath,
   isContainer,
   isSamePath,
+  isSamePropertyPath,
   isSchemaPropertyRequiredAtPath,
   moveElement,
   moveSchemaPropertyPath,
@@ -17,9 +19,11 @@ import {
   propertyPathFromScope,
   removeElementAt,
   removeSchemaProperty,
+  removeSchemaPropertyAtPath,
   scopeFromPropertyPath,
   setSchemaPropertyRequired,
   setSchemaPropertyRequiredAtPath,
+  setSchemaPropertyAtPath,
   shiftElement,
   slugifyPropertyName,
   updateElementAt,
@@ -187,6 +191,13 @@ describe('moveElement', () => {
 
     expect(moveElement(root, [], [1], 0)).toBe(root)
   })
+
+  it('is a no-op when the source or destination does not exist', () => {
+    const root = tree()
+
+    expect(moveElement(root, [9], [], 0)).toBe(root)
+    expect(scopesOf(moveElement(root, [0], [9], 0))).toBe(scopesOf(root))
+  })
 })
 
 describe('shiftElement', () => {
@@ -229,6 +240,8 @@ describe('propertyFromScope / propertyPathFromScope', () => {
     expect(propertyFromScope('#')).toBeUndefined()
     expect(propertyFromScope(undefined)).toBeUndefined()
     expect(propertyPathFromScope('#/properties')).toBeUndefined()
+    expect(propertyPathFromScope('#/properties/a/items/b')).toBeUndefined()
+    expect(propertyPathFromScope('#/properties/a/properties')).toBeUndefined()
   })
 })
 
@@ -244,6 +257,14 @@ describe('parsePropertyPathInput', () => {
   it('rejects empty input', () => {
     expect(parsePropertyPathInput('')).toBeUndefined()
     expect(parsePropertyPathInput('properties/')).toBeUndefined()
+    expect(parsePropertyPathInput('properties/properties/name')).toBeUndefined()
+  })
+
+  it('formats and compares property paths', () => {
+    expect(formatPropertyPathInput(['address', 'city'])).toBe('properties/address/properties/city')
+    expect(isSamePropertyPath(['address', 'city'], ['address', 'city'])).toBe(true)
+    expect(isSamePropertyPath(['address'], ['address', 'city'])).toBe(false)
+    expect(isSamePropertyPath(['address', 'city'], ['address', 'zip'])).toBe(false)
   })
 })
 
@@ -282,6 +303,67 @@ describe('nested schema property helpers', () => {
 
     expect(isSchemaPropertyRequiredAtPath(schema, ['address', 'city'])).toBe(true)
     expect((schema.properties!.address as JsonSchema).required).toEqual(['city'])
+  })
+
+  it('creates missing object parents and replaces scalar parents safely', () => {
+    const created = setSchemaPropertyAtPath({ type: 'string' }, ['address', 'city'], {
+      type: 'string',
+    })
+
+    expect(created).toMatchObject({
+      type: 'object',
+      properties: {
+        address: {
+          type: 'object',
+          properties: { city: { type: 'string' } },
+        },
+      },
+    })
+    expect(setSchemaPropertyAtPath(created, [], { type: 'number' })).toBe(created)
+  })
+
+  it('handles missing nested paths without corrupting the schema', () => {
+    const schema: JsonSchema = { type: 'object', properties: {} }
+
+    expect(getSchemaPropertyAtPath(schema, [])).toBeUndefined()
+    expect(getSchemaPropertyAtPath(schema, ['missing', 'child'])).toBeUndefined()
+    expect(removeSchemaPropertyAtPath(schema, [])).toBe(schema)
+    expect(removeSchemaPropertyAtPath(schema, ['missing', 'child'])).toBe(schema)
+    expect(setSchemaPropertyRequiredAtPath(schema, [], true)).toBe(schema)
+    expect(setSchemaPropertyRequiredAtPath(schema, ['missing', 'child'], true)).toBe(schema)
+    expect(isSchemaPropertyRequiredAtPath(schema, [])).toBe(false)
+    expect(isSchemaPropertyRequiredAtPath(schema, ['missing', 'child'])).toBe(false)
+  })
+
+  it('removes nested properties from required and supports both required states', () => {
+    const schema: JsonSchema = {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'object',
+          properties: { city: { type: 'string' }, zip: { type: 'string' } },
+          required: ['city', 'zip'],
+        },
+      },
+    }
+
+    const optional = setSchemaPropertyRequiredAtPath(schema, ['address', 'city'], false)
+    expect(isSchemaPropertyRequiredAtPath(optional, ['address', 'city'])).toBe(false)
+    expect(isSchemaPropertyRequiredAtPath(optional, ['address', 'zip'])).toBe(true)
+
+    const removed = removeSchemaPropertyAtPath(optional, ['address', 'zip'])
+    expect(getSchemaPropertyAtPath(removed, ['address', 'zip'])).toBeUndefined()
+    expect((removed.properties?.address as JsonSchema | undefined)?.required).toEqual([])
+  })
+
+  it('uses a safe string schema when moving an absent property', () => {
+    const schema: JsonSchema = { type: 'object', properties: {} }
+    const moved = moveSchemaPropertyPath(schema, ['missing'], ['fallback'])
+
+    expect(moved.properties?.fallback).toEqual({ type: 'string' })
+    expect(moveSchemaPropertyPath(schema, [], ['fallback'])).toBe(schema)
+    expect(moveSchemaPropertyPath(schema, ['missing'], [])).toBe(schema)
+    expect(moveSchemaPropertyPath(schema, ['missing'], ['missing'])).toBe(schema)
   })
 })
 

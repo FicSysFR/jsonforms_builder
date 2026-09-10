@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { JsonSchema } from '@jsonforms/core'
-import { resolveControlKind } from '../../src/builder/controlKind'
+import { isDateLikeKind, isEnumLikeKind, resolveControlKind } from '../../src/builder/controlKind'
 
 describe('resolveControlKind', () => {
   it('detects option-driven renderers first', () => {
@@ -47,6 +47,11 @@ describe('resolveControlKind', () => {
       }),
     ).toBe('array')
     expect(resolveControlKind({ type: 'array', items: { type: 'string' } })).toBe('tags')
+    expect(resolveControlKind({ type: 'array' })).toBe('array')
+    expect(resolveControlKind({ type: 'array', items: [{ type: 'string' }] })).toBe('array')
+    expect(resolveControlKind({ type: 'array', items: { oneOf: [{ const: 'a' }] } })).toBe(
+      'multi-enum',
+    )
     expect(resolveControlKind(undefined, {}, 'ListWithDetail')).toBe('array')
   })
 
@@ -56,5 +61,12 @@ describe('resolveControlKind', () => {
     expect(resolveControlKind({ type: 'string' })).toBe('string')
     expect(resolveControlKind({ type: 'object' })).toBe('object')
     expect(resolveControlKind(undefined)).toBe('unknown')
+  })
+
+  it('recognizes date-like and enum-like families', () => {
+    expect(['date', 'datetime', 'time', 'calendar'].every(isDateLikeKind)).toBe(true)
+    expect(isDateLikeKind('string')).toBe(false)
+    expect(['enum', 'radio', 'select', 'multi-enum'].every(isEnumLikeKind)).toBe(true)
+    expect(isEnumLikeKind('tags')).toBe(false)
   })
 })

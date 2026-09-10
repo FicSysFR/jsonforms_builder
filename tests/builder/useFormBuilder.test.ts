@@ -107,6 +107,24 @@ describe('useFormBuilder', () => {
     stop()
   })
 
+  it('keeps history and schema stable for invalid commands', () => {
+    const { api, stop } = mountBuilder()
+    const empty = api.definition.value
+
+    api.undo()
+    api.redo()
+    api.remove([9])
+    api.move([9], [], 0)
+    api.updateProperty(['missing'], { title: 'Ignored' })
+    api.updateControl([9], ['missing'], { label: 'Ignored' }, { type: 'number' })
+    api.updateScope([9], 'renamed')
+    api.updateScope([], 'properties/properties/renamed')
+
+    expect(api.definition.value).toBe(empty)
+    expect(api.canUndo.value).toBe(false)
+    stop()
+  })
+
   it('adds a container without touching the schema', () => {
     const { api, stop } = mountBuilder()
 
@@ -257,6 +275,35 @@ describe('useFormBuilder', () => {
       (api.definition.value.uischema as { elements: Array<{ scope?: string }> }).elements[0].scope,
     ).toBe('#/properties/adresse/properties/rue')
 
+    stop()
+  })
+
+  it('does not commit an unchanged scope', () => {
+    const { api, stop } = mountBuilder()
+    api.addField('text', [], 0)
+    const withField = api.definition.value
+
+    api.updateScope([0], 'properties/texte')
+
+    expect(api.definition.value).toBe(withField)
+    stop()
+  })
+
+  it('creates a safe property when repairing a malformed control scope', () => {
+    const { api, stop } = mountBuilder({
+      schema: { type: 'object', properties: {} },
+      uischema: {
+        type: 'VerticalLayout',
+        elements: [{ type: 'Control', scope: '#/invalid/value' }],
+      } as UISchemaElement,
+    })
+
+    api.updateScope([0], 'properties/repaired')
+
+    expect(api.definition.value.schema.properties?.repaired).toEqual({ type: 'string' })
+    expect(
+      (api.definition.value.uischema as { elements: Array<{ scope?: string }> }).elements[0].scope,
+    ).toBe('#/properties/repaired')
     stop()
   })
 
