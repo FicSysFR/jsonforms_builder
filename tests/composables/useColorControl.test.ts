@@ -5,7 +5,9 @@ import {
   isHexColor,
   resolveColorFormat,
   toSwatch,
+  useColorControl,
 } from '../../src/composables/useColorControl'
+import { mountControl } from '../helpers/controlHarness'
 
 describe('resolveColorFormat', () => {
   it('accepts the formats supported by UColorPicker', () => {
@@ -67,5 +69,32 @@ describe('createColorAdaptTarget', () => {
     expect(adapt('')).toBeNull()
     expect(adapt('   ')).toBeNull()
     expect(adapt(undefined)).toBeNull()
+  })
+})
+
+describe('useColorControl', () => {
+  it('exposes picker options, model and safe swatch behavior', () => {
+    const mounted = mountControl(
+      (jsonFormsControl) =>
+        useColorControl({ jsonFormsControl, clearValue: null, debounceWait: undefined }),
+      {
+        schema: { type: 'string', default: '#ffffff' },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/value',
+          options: { colorFormat: 'rgb', showInput: false },
+        },
+        data: '#bad-value',
+      },
+    )
+
+    expect(mounted.result.colorFormat.value).toBe('rgb')
+    expect(mounted.result.modelValue.value).toBe('#bad-value')
+    expect(mounted.result.swatch.value).toBe('#ffffff')
+    expect(mounted.result.showInput.value).toBe(false)
+
+    mounted.result.onChange(' #abc ')
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', '#abc')
+    mounted.stop()
   })
 })

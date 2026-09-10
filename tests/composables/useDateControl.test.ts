@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { computed, createApp, effectScope } from 'vue'
 import {
   countPatternDigits,
@@ -10,6 +10,11 @@ import {
   DEFAULT_TIME_FORMAT,
   DEFAULT_DATETIME_FORMAT,
 } from '../../src/composables/useDateControl'
+import { mountControl } from '../helpers/controlHarness'
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 describe('useDateControl', () => {
   it('falls back to the schema default when options.pattern is not a string', () => {
@@ -48,6 +53,36 @@ describe('useDateControl', () => {
 
     expect(control?.optionPattern.value).toBe(DEFAULT_DATE_FORMAT)
     scope.stop()
+  })
+
+  it('emits only complete valid values and clears invalid input on blur', () => {
+    vi.useFakeTimers()
+    const mounted = mountControl(
+      (jsonFormsControl) => useDateControl({ jsonFormsControl, clearValue: null, debounceWait: 0 }),
+      {
+        schema: { type: 'string', format: 'date' },
+        data: '2026-09-08',
+      },
+    )
+
+    expect(mounted.result.inputType.value).toBe('date')
+    expect(mounted.result.maskPattern.value).toBe('####-##-##')
+    expect(mounted.result.dateValue.value?.toString()).toBe('2026-09-08')
+
+    mounted.result.onChangeDate('2026-09')
+    vi.runAllTimers()
+    expect(mounted.handleChange).not.toHaveBeenCalled()
+
+    mounted.result.onChangeDate('2026-09-10')
+    vi.runAllTimers()
+    expect(mounted.handleChange).toHaveBeenLastCalledWith('value', '2026-09-10')
+
+    mounted.state.value.data = 'invalid'
+    mounted.result.onBlur()
+    vi.runAllTimers()
+    expect(mounted.handleChange).toHaveBeenLastCalledWith('value', null)
+    expect(mounted.result.touched.value).toBe(true)
+    mounted.stop()
   })
 })
 

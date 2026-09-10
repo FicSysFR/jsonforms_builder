@@ -6,8 +6,10 @@ import {
   resolveSliderMin,
   resolveSliderMax,
   resolveSliderStep,
+  useSliderControl,
 } from '../../src/composables/useSliderControl'
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
+import { mountControl } from '../helpers/controlHarness'
 
 describe('createSliderAdaptTarget', () => {
   it('keeps finite numbers', () => {
@@ -92,5 +94,33 @@ describe('isSliderOption / isSliderControl', () => {
     const schema = { type: 'integer', minimum: 0, maximum: 10 } as JsonSchema
 
     expect(isSliderControl(uischema, schema, ctx)).toBe(true)
+  })
+})
+
+describe('useSliderControl', () => {
+  it('exposes configured bounds and substitutes the minimum for invalid data', () => {
+    const mounted = mountControl(
+      (jsonFormsControl) =>
+        useSliderControl({ jsonFormsControl, clearValue: 0, debounceWait: undefined }),
+      {
+        schema: { type: 'number', minimum: 10, maximum: 20, multipleOf: 2 },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/value',
+          options: { step: 0.5, hideValue: true },
+        },
+        data: Number.NaN,
+      },
+    )
+
+    expect(mounted.result.min.value).toBe(10)
+    expect(mounted.result.max.value).toBe(20)
+    expect(mounted.result.step.value).toBe(0.5)
+    expect(mounted.result.modelValue.value).toBe(10)
+    expect(mounted.result.showValue.value).toBe(false)
+
+    mounted.result.onChange('12.5')
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', 12.5)
+    mounted.stop()
   })
 })

@@ -6,7 +6,9 @@ import {
   resolvePinLength,
   resolvePinType,
   splitPinValue,
+  usePinInputControl,
 } from '../../src/composables/usePinInputControl'
+import { mountControl } from '../helpers/controlHarness'
 
 describe('readPatternLength', () => {
   it('reads a fixed quantifier', () => {
@@ -92,5 +94,33 @@ describe('resolvePinType', () => {
   it('stays textual otherwise', () => {
     expect(resolvePinType(undefined, undefined)).toBe('text')
     expect(resolvePinType(undefined, '^[A-Z0-9]{8}$')).toBe('text')
+  })
+})
+
+describe('usePinInputControl', () => {
+  it('derives cells and confidential input options', () => {
+    const mounted = mountControl(
+      (jsonFormsControl) =>
+        usePinInputControl({ jsonFormsControl, clearValue: null, debounceWait: undefined }),
+      {
+        schema: { type: 'string', pattern: '^\\d{6}$' },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/value',
+          options: { mask: true, otp: true },
+        },
+        data: '123456',
+      },
+    )
+
+    expect(mounted.result.length.value).toBe(6)
+    expect(mounted.result.pinType.value).toBe('number')
+    expect(mounted.result.mask.value).toBe(true)
+    expect(mounted.result.otp.value).toBe(true)
+    expect(mounted.result.modelValue.value).toEqual(['1', '2', '3', '4', '5', '6'])
+
+    mounted.result.onChange(['6', '5', '4', '3', '2', '1'])
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', '654321')
+    mounted.stop()
   })
 })

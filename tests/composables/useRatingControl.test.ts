@@ -4,7 +4,9 @@ import {
   createRatingAdaptTarget,
   resolveRatingLength,
   resolveRatingStep,
+  useRatingControl,
 } from '../../src/composables/useRatingControl'
+import { mountControl } from '../helpers/controlHarness'
 
 describe('resolveRatingLength', () => {
   it('prefers the uischema option', () => {
@@ -67,5 +69,32 @@ describe('createRatingAdaptTarget', () => {
 
     expect(adapt(0)).toBe(0)
     expect(createRatingAdaptTarget(undefined)(0)).toBe(0)
+  })
+})
+
+describe('useRatingControl', () => {
+  it('derives display behavior and adapts resets from the live schema', () => {
+    const mounted = mountControl(
+      (jsonFormsControl) =>
+        useRatingControl({ jsonFormsControl, clearValue: null, debounceWait: undefined }),
+      {
+        schema: { type: 'number', maximum: 10, minimum: 1, multipleOf: 0.5 },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/value',
+          options: { length: 7, clearable: false },
+        },
+        data: 3.5,
+      },
+    )
+
+    expect(mounted.result.length.value).toBe(7)
+    expect(mounted.result.step.value).toBe(2)
+    expect(mounted.result.modelValue.value).toBe(3.5)
+    expect(mounted.result.clearable.value).toBe(false)
+
+    mounted.result.onChange(0)
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', null)
+    mounted.stop()
   })
 })

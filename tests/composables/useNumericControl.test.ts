@@ -4,7 +4,9 @@ import {
   createNumericAdaptTarget,
   formatNumericValue,
   resolveNumericStep,
+  useNumericControl,
 } from '../../src/composables/useNumericControl'
+import { mountControl } from '../helpers/controlHarness'
 
 describe('resolveNumericStep', () => {
   it('returns integer step when schema type is integer', () => {
@@ -56,5 +58,31 @@ describe('createNumericAdaptTarget', () => {
     const adapt = createNumericAdaptTarget(null)
 
     expect(adapt('42')).toBe(42)
+  })
+})
+
+describe('useNumericControl', () => {
+  it('combines schema precision with numeric change adaptation', () => {
+    const mounted = mountControl(
+      (jsonFormsControl) =>
+        useNumericControl({ jsonFormsControl, clearValue: null, debounceWait: undefined }),
+      {
+        schema: { type: 'number', multipleOf: 0.25 },
+        uischema: {
+          type: 'Control',
+          scope: '#/properties/value',
+          options: { step: 0.01 },
+        },
+        data: 1.234,
+      },
+    )
+
+    expect(mounted.result.step.value).toBe(0.01)
+    expect(mounted.result.precision.value).toBe(2)
+    expect(mounted.result.formattedValue.value).toBe('1.23')
+
+    mounted.result.onChange('2.5')
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', 2.5)
+    mounted.stop()
   })
 })
