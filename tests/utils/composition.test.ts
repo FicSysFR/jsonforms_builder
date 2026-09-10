@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { computed, createApp, effectScope, nextTick, ref } from 'vue'
 import {
   isFieldReadonly,
@@ -8,8 +8,17 @@ import {
   determineClearValue,
   resolveClearOnHideValue,
   useUiControl,
+  useUiLabel,
+  useUiLayout,
+  useJsonForms,
 } from '../../src/utils/composition'
 import { IsDynamicPropertyContext } from '../../src/utils/inject'
+import { mountControl } from '../helpers/controlHarness'
+
+afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
 
 describe('isFieldReadonly', () => {
   it('detects readonly from uischema options', () => {
@@ -339,5 +348,165 @@ describe('useUiControl readonly / disabled', () => {
     expect(result!.rawErrors.value).toBe('requis')
 
     scope.stop()
+  })
+})
+
+describe('useUiControl interactions and presentation', () => {
+  it('adapts and debounces emitted changes', async () => {
+    vi.useFakeTimers()
+    const mounted = mountControl((jsonFormsControl) =>
+      useUiControl(jsonFormsControl, (value) => String(value).trim(), 25),
+    )
+
+    mounted.result.onChange('  next  ')
+    expect(mounted.handleChange).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(25)
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', 'next')
+    mounted.stop()
+  })
+
+  it('merges inside icons into supported pass-through props', () => {
+    const mounted = mountControl((jsonFormsControl) => useUiControl(jsonFormsControl), {
+      uischema: {
+        type: 'Control',
+        scope: '#/properties/value',
+        options: {
+          iconPlacement: 'inside',
+          leadingIcon: 'i-lucide-mail',
+          trailingIcon: 'i-lucide-check',
+          input: { size: 'lg', leadingIcon: 'i-lucide-user' },
+          custom: { color: 'primary' },
+        },
+      },
+    })
+
+    expect(mounted.result.uiProps('input')).toEqual({
+      size: 'lg',
+      leadingIcon: 'i-lucide-user',
+      trailingIcon: 'i-lucide-check',
+    })
+    expect(mounted.result.uiProps('textarea')).toEqual({
+      leadingIcon: 'i-lucide-mail',
+      trailingIcon: 'i-lucide-check',
+    })
+    expect(mounted.result.uiProps('custom')).toEqual({ color: 'primary' })
+    mounted.stop()
+  })
+
+  it('tracks focus, touch, descriptions, errors and default clearability', async () => {
+    const mounted = mountControl((jsonFormsControl) => useUiControl(jsonFormsControl), {
+      errors: 'Required',
+      config: { enableFilterErrorsBeforeTouch: true },
+    })
+
+    expect(mounted.result.showDescription()).toBe(false)
+    expect(mounted.result.control.value.errors).toBe('')
+    expect(mounted.result.isClearable.value).toBe(false)
+
+    mounted.result.handleFocus()
+    expect(mounted.result.showDescription()).toBe(true)
+    expect(mounted.result.isClearable.value).toBe(true)
+
+    mounted.result.handleBlur()
+    await nextTick()
+    expect(mounted.result.control.value.errors).toBe('Required')
+    expect(mounted.result.showDescription()).toBe(false)
+
+    mounted.result.isHovered.value = true
+    expect(mounted.result.isClearable.value).toBe(true)
+    mounted.stop()
+  })
+
+  it('builds wrapper metadata with outside icons and optional description', () => {
+    const mounted = mountControl((jsonFormsControl) => useUiControl(jsonFormsControl), {
+      id: '#/properties/contact/email',
+      required: true,
+      uischema: {
+        type: 'Control',
+        scope: '#/properties/value',
+        options: {
+          leadingIcon: 'i-lucide-mail',
+          trailingIcon: 'i-lucide-check',
+          hideDescription: true,
+          clearable: false,
+          showUnfocusedDescription: true,
+        },
+      },
+    })
+
+    expect(mounted.result.controlWrapper.value).toMatchObject({
+      id: 'properties_contact_email',
+      description: undefined,
+      required: true,
+      leadingIcon: 'i-lucide-mail',
+      trailingIcon: 'i-lucide-check',
+    })
+    expect(mounted.result.showDescription()).toBe(true)
+    mounted.result.isHovered.value = true
+    expect(mounted.result.isClearable.value).toBe(false)
+    mounted.stop()
+  })
+})
+
+describe('label, layout and JSON Forms injection', () => {
+  it('applies label options and exposes themed UI props', () => {
+    const app = createApp({})
+    const scope = effectScope()
+    let result: ReturnType<typeof useUiLabel> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        result = useUiLabel({
+          label: computed(() => ({
+            uischema: {
+              type: 'Label',
+              text: 'Heading',
+              options: { custom: { color: 'primary' } },
+            },
+            config: { density: 'compact' },
+          })),
+        })
+      })
+    })
+
+    expect(result?.appliedOptions.value).toMatchObject({ density: 'compact' })
+    expect(result?.uiProps('custom')).toEqual({ color: 'primary' })
+    expect(result?.styles.label.root).toBeDefined()
+    scope.stop()
+  })
+
+  it('applies layout options without a DOM environment', () => {
+    const app = createApp({})
+    const scope = effectScope()
+    let result: ReturnType<typeof useUiLayout> | undefined
+
+    app.runWithContext(() => {
+      scope.run(() => {
+        result = useUiLayout({
+          layout: computed(() => ({
+            uischema: {
+              type: 'VerticalLayout',
+              elements: [],
+              options: { gap: 'sm' },
+            },
+            config: { density: 'compact' },
+          })),
+        })
+      })
+    })
+
+    expect(result?.appliedOptions.value).toMatchObject({ gap: 'sm', density: 'compact' })
+    expect(result?.styles.verticalLayout.root).toBeDefined()
+    scope.stop()
+  })
+
+  it('fails explicitly outside a JSON Forms provider', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const app = createApp({})
+
+    expect(() => app.runWithContext(() => useJsonForms())).toThrow(
+      "jsonforms couldn't be injected. Are you within JSON Forms?",
+    )
   })
 })
