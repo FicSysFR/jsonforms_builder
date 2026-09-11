@@ -1,0 +1,39 @@
+# Messages de commit (bouton « Generate Commit Message » de Cursor)
+
+Ce fichier n'est lu que par le générateur de message de commit de Cursor, pas
+par le chat ni l'agent. Convention complète et source de vérité du dépôt :
+`commit-convention.md`.
+
+## Format
+
+`type(scope): description`
+
+- Langue : anglais, sujet et corps.
+- Sujet : impératif, minuscule après `:`, sans point final, ≤ 72 caractères.
+- Types : `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`,
+  `ci`, `chore`, `revert`.
+- Un seul scope, tiré de l'énumération ci-dessous. L'omettre plutôt qu'en
+  inventer un.
+- Auteurs humains uniquement : jamais de trailer `Co-Authored-By` pour une IA.
+
+## Scopes du dépôt
+
+Recopier ici l'énumération réellement acceptée (ex. `scope-enum` de
+commitlint) : ce fichier doit rester autonome, le bouton ne suit aucun renvoi.
+
+| Fichiers touchés | Scope |
+| --- | --- |
+|  |  |
+
+## Ruptures
+
+`feat(scope)!: description`, ou pied de page `BREAKING CHANGE: description`.
+
+## Anti-exemples
+
+```
+Add feature             → type absent
+feat(unknown): add x    → scope hors énumération
+feat(api): add thing.   → point final interdit
+Co-Authored-By: Claude  → IA en co-auteur
+```
