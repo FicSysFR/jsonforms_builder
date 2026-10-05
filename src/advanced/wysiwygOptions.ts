@@ -1,5 +1,16 @@
 import type { AnyExtension } from '@tiptap/core'
-import { DEFAULT_TOOLBAR } from './wysiwygToolbar'
+import {
+  DISABLED_WYSIWYG_AI,
+  resolveWysiwygAiOptions,
+  type ResolvedWysiwygAiOptions,
+} from './wysiwyg/ai/options'
+import type { WysiwygAiOptions } from './wysiwyg/ai/types'
+import {
+  resolveWysiwygFeatures,
+  type ResolvedWysiwygFeatures,
+  type WysiwygFeatures,
+} from './wysiwyg/features'
+import { buildWysiwygToolbar } from './wysiwyg/toolbar'
 
 export type WysiwygContentType = 'html' | 'json'
 
@@ -48,7 +59,7 @@ export type WysiwygOptions = {
   debounce?: number
   /**
    * Toolbar items (Nuxt UI `EditorToolbarItem[][]`), or `false` to hide.
-   * Default: built-in French toolbar.
+   * Default: built-in French toolbar, adapted to `features` and `ai`.
    */
   toolbar?: false | unknown[][]
   /** Spacing preset for the contenteditable. Default: `compact`. */
@@ -80,6 +91,14 @@ export type WysiwygOptions = {
   /** Extra / overriding Nuxt UI editor handlers. */
   handlers?: WysiwygHandlers
   hideRequiredAsterisk?: boolean
+  /** Editor capabilities (tables, colors, find & replace…). `false` disables them all. */
+  features?: false | WysiwygFeatures
+  /** Formatting bubble on text selection. Default: `false`. */
+  bubbleMenu?: boolean
+  /** `/` command palette. Default: `false`. */
+  slashCommands?: boolean
+  /** AI writing assistant, inert unless `ai.enabled === true`. */
+  ai?: WysiwygAiOptions
 }
 
 export type ResolvedWysiwygOptions = {
@@ -105,6 +124,10 @@ export type ResolvedWysiwygOptions = {
   }
   extensions: AnyExtension[]
   handlers?: WysiwygHandlers
+  features: ResolvedWysiwygFeatures
+  bubbleMenu: boolean
+  slashCommands: boolean
+  ai: ResolvedWysiwygAiOptions
 }
 
 const DENSITY_PRESETS: Record<
@@ -178,8 +201,20 @@ export const resolveWysiwygOptions = (
         ? opts.imageMaxSize
         : 2 * 1024 * 1024
 
+  const features = resolveWysiwygFeatures(opts.features)
+  const ai = opts.ai === undefined ? DISABLED_WYSIWYG_AI : resolveWysiwygAiOptions(opts.ai)
+
   const toolbar =
-    opts.toolbar === false ? false : Array.isArray(opts.toolbar) ? opts.toolbar : DEFAULT_TOOLBAR
+    opts.toolbar === false
+      ? false
+      : Array.isArray(opts.toolbar)
+        ? opts.toolbar
+        : buildWysiwygToolbar({
+            features,
+            imagesEnabled,
+            aiActions: ai.actions,
+            aiLabel: ai.labels.menu,
+          })
 
   return {
     contentType,
@@ -207,5 +242,9 @@ export const resolveWysiwygOptions = (
     },
     extensions: Array.isArray(opts.extensions) ? opts.extensions : [],
     handlers: opts.handlers,
+    features,
+    bubbleMenu: opts.bubbleMenu === true,
+    slashCommands: opts.slashCommands === true,
+    ai,
   }
 }

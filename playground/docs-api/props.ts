@@ -596,8 +596,30 @@ const WYSIWYG: ApiPropGroup = {
     },
     {
       name: 'toolbar',
-      type: 'Array',
-      description: 'Remplace la barre d’outils.',
+      type: 'Array | false',
+      description: 'Remplace la barre d’outils ou la masque.',
+    },
+    {
+      name: 'features',
+      type: 'false | Object',
+      description:
+        'Tableaux, tâches, alignement, couleurs, surlignage, lien, rechercher/remplacer, source, aperçu (tout activé).',
+    },
+    {
+      name: 'bubbleMenu',
+      type: 'Boolean',
+      description: 'Bulle de mise en forme sur sélection (défaut false).',
+    },
+    {
+      name: 'slashCommands',
+      type: 'Boolean',
+      description: 'Palette de commandes / (défaut false).',
+    },
+    {
+      name: 'ai',
+      type: 'Object',
+      description:
+        'Assistant IA optionnel : enabled, endpoint ou transport, actions, maxContextCharacters…',
     },
     {
       name: 'editor',
@@ -708,6 +730,7 @@ export const API_BY_EXAMPLE: Record<string, ApiPropGroup[]> = {
   'nuxt-autocomplete': [COMMON_OPTIONS, API_AUTOCOMPLETE],
   'nuxt-array': [COMMON_OPTIONS, ARRAY],
   'nuxt-wysiwyg': [COMMON_OPTIONS, WYSIWYG],
+  'nuxt-wysiwyg-ai': [COMMON_OPTIONS, WYSIWYG],
   'nuxt-layouts': [COMMON_OPTIONS, LAYOUTS],
   'nuxt-pin-input': [COMMON_OPTIONS, PIN],
   'nuxt-color': [COMMON_OPTIONS, COLOR],
