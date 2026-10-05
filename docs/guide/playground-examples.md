@@ -29,6 +29,7 @@ Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans *
 | [File Upload](/playground#/?section=docs&example=nuxt-file-upload) | `UFileUpload` | `accept`, `layout`, multi via `array` |
 | [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete) | `UInputMenu` | `api.*`, `minLength`, `suggestion` |
 | [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg) | `UEditor` | `wysiwyg`, `contentType` (`json` \| `html`) |
+| [WYSIWYG + IA](/playground#/?section=docs&example=nuxt-wysiwyg-ai) | `UEditor` + IA | `bubbleMenu`, `slashCommands`, `ai` (transport local) |
 
 ### Nombres & booléens
 

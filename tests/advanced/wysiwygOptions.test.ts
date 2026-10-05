@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_IMAGE_RESIZE, resolveWysiwygOptions } from '../../src/advanced/wysiwygOptions'
-import { DEFAULT_TOOLBAR } from '../../src/advanced/wysiwygToolbar'
+import { DEFAULT_WYSIWYG_FEATURES } from '../../src/advanced/wysiwyg/features'
+import { buildWysiwygToolbar } from '../../src/advanced/wysiwyg/toolbar'
 
 describe('resolveWysiwygOptions', () => {
   it('derives safe defaults from the schema type', () => {
@@ -10,7 +11,7 @@ describe('resolveWysiwygOptions', () => {
     expect(html).toMatchObject({
       contentType: 'html',
       debounce: 300,
-      toolbar: DEFAULT_TOOLBAR,
+      toolbar: buildWysiwygToolbar({ features: DEFAULT_WYSIWYG_FEATURES, imagesEnabled: true }),
       density: 'compact',
       editorClass: '',
       minHeight: 'min-h-40',

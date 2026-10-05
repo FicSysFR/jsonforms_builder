@@ -75,6 +75,11 @@
   },
   "dependencies": {
     "@internationalized/date": "^3.12.1",
+    "@tiptap/extension-highlight": "^3.29.2",
+    "@tiptap/extension-list": "^3.29.2",
+    "@tiptap/extension-table": "^3.29.2",
+    "@tiptap/extension-text-align": "^3.29.2",
+    "@tiptap/extension-text-style": "^3.29.2",
     "defu": "^6.1.4",
     "radash": "^12.1.1"
   },

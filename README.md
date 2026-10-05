@@ -87,7 +87,10 @@ WYSIWYG options (`options.wysiwyg: true`):
 | `minHeight` / `padding` / `blockSpacing` / `editorClass` | spacing overrides |
 | `debounce` | `onChange` debounce in ms (default `300`) |
 | `image` | `false` to disable, or `{ upload, accept, maxSize, resize, bubble, … }` |
-| `extensions` / `handlers` | extra TipTap extensions / Nuxt UI handlers |
+| `extensions` / `handlers` | extra TipTap extensions / Nuxt UI handlers (host versions win) |
+| `features` | tables, task lists, alignment, colors, highlight, link panel, find & replace, source mode, preview — all on; `false` or `{ table: false, … }` to opt out |
+| `bubbleMenu` / `slashCommands` | formatting bubble on selection / `/` palette (default `false`) |
+| `ai` | optional AI assistant, inert unless `ai.enabled === true` |
 
 ```ts
 options: {
@@ -101,6 +104,42 @@ options: {
   },
 }
 ```
+
+#### WYSIWYG AI assistant
+
+AI actions (improve, fix grammar, shorter, summarize, translate, continue, custom
+instruction…) are exposed in the selection bubble, the toolbar and `/ai`. Results stream into
+a detached panel and only reach the document after *Replace* / *Insert* / *Insert below*;
+*Stop* aborts the request.
+
+```ts
+options: {
+  wysiwyg: true,
+  ai: { enabled: true, endpoint: '/api/ai/editor', actions: ['improve', 'shorter', 'translate'] },
+}
+```
+
+The package ships no AI SDK or provider dependency and never sees API keys: the endpoint is
+the application's own route, implemented with [AI SDK](https://ai-sdk.dev/) and any provider.
+
+```ts
+// server/api/ai/editor.post.ts (Nuxt / Nitro)
+import { streamText } from 'ai'
+import { openai } from '@ai-sdk/openai' // or anthropic, google, mistral, xai…
+
+export default defineEventHandler(async (event) => {
+  const request = await readBody(event) // WysiwygAiRequest + { stream }
+  const result = streamText({
+    model: openai(process.env.AI_MODEL ?? 'gpt-5-mini'),
+    system: 'You are a writing assistant inside a rich-text editor. Return only the proposed text.',
+    prompt: `${request.instruction ?? request.action}\n\n${request.selectedText ?? request.textBeforeSelection}`,
+  })
+  return result.toUIMessageStreamResponse() // toTextStreamResponse() and JSON also work
+})
+```
+
+Advanced setups pass `ai.transport` (`WysiwygAiTransport`, or `createWysiwygAiHttpTransport`)
+instead of `endpoint`. Full reference: [WYSIWYG editor & AI](https://ficsysfr.github.io/jsonforms_builder/en/guide/wysiwyg-ai).
 | `string` + `options.format: pin` | `UPinInput` |
 | `string` + `format: color` | `UColorPicker` in a popover + text input |
 | `string` + `format: data-url` | `UFileUpload` |

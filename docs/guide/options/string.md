@@ -287,9 +287,16 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
 |---|---|---|---|
 | `wysiwyg` | `Boolean` | — | **Requis** (`true`) pour activer l’éditeur. |
 | `contentType` | `"json"` \| `"html"` | inféré | Format stocké : objet ProseMirror (`json`) ou chaîne HTML (`html`). |
-| `toolbar` | `Array` | toolbar Nuxt UI | Remplace la barre d’outils (`EditorToolbarItem[]`). |
+| `toolbar` | `Array` \| `false` | barre intégrée | Remplace la barre d’outils (`EditorToolbarItem[][]`) ou la masque. |
 | `placeholder` | `String` | — | Placeholder de l’éditeur. |
+| `features` | `false` \| `Object` | tout activé | Tableaux, listes de tâches, alignement, couleurs, surlignage, lien, rechercher/remplacer, source, aperçu. |
+| `bubbleMenu` | `Boolean` | `false` | Bulle de mise en forme sur sélection. |
+| `slashCommands` | `Boolean` | `false` | Palette de commandes `/`. |
+| `ai` | `Object` | — | Assistant IA optionnel (`enabled`, `endpoint` ou `transport`, `actions`…). |
 | `editor` | `Object` | — | Pass-through → `UEditor`. |
+
+Détail des fonctions d’édition, de l’assistant IA et d’un backend AI SDK :
+[Éditeur WYSIWYG & IA](/guide/wysiwyg-ai).
 
 ### Exemples
 
@@ -321,3 +328,4 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
 - [File Upload](/playground#/?section=docs&example=nuxt-file-upload)
 - [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete)
 - [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg)
+- [WYSIWYG + IA](/playground#/?section=docs&example=nuxt-wysiwyg-ai)
