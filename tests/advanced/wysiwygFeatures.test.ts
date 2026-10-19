@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import { Extension, type Editor } from '@tiptap/core'
+import Image from '@tiptap/extension-image'
 import { TableKit } from '@tiptap/extension-table'
+import { Markdown } from '@tiptap/markdown'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { computed, reactive, ref } from 'vue'
 import { isSafeWysiwygUrl, sanitizeWysiwygAiHtml } from '../../src/advanced/wysiwyg/ai/sanitize'
@@ -349,6 +351,38 @@ describe('source mode helpers', () => {
     expect(parseWysiwygSource('{', 'json')).toMatchObject({ ok: false })
     expect(parseWysiwygSource('[]', 'json')).toMatchObject({ ok: false })
     expect(parseWysiwygSource('{"type":"paragraph"}', 'json')).toMatchObject({ ok: false })
+  })
+
+  it('serializes and re-applies Markdown sources, images and tables included', () => {
+    const editor = createTestEditor('', [Markdown, Image, TableKit])
+    editors.push(editor)
+    const source = [
+      '## Title',
+      '',
+      'Some **bold** text and a [link](https://example.com).',
+      '',
+      '- one',
+      '- two',
+      '',
+      '![Screenshot](https://example.com/shot.png)',
+      '',
+      '| A | B |',
+      '| --- | --- |',
+      '| 1 | 2 |',
+    ].join('\n')
+
+    const parsed = parseWysiwygSource(source, 'markdown')
+    expect(parsed).toEqual({ ok: true, content: source })
+    editor.commands.setContent(source, { contentType: 'markdown' })
+
+    expect(editor.getHTML()).toContain('<h2>Title</h2>')
+    expect(editor.getHTML()).toContain('src="https://example.com/shot.png"')
+    const markdown = serializeWysiwygSource(editor, 'markdown')
+    expect(markdown).toContain('## Title')
+    expect(markdown).toContain('**bold**')
+    expect(markdown).toContain('[link](https://example.com)')
+    expect(markdown).toContain('![Screenshot](https://example.com/shot.png)')
+    expect(markdown).toMatch(/\|\s*A\s*\|\s*B\s*\|/)
   })
 })
 

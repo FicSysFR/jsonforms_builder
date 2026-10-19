@@ -476,7 +476,7 @@
           p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — texte riche
           u-form-field(label="Format stocké" help="options.contentType — adapte aussi le type du schema")
             u-select(
-              :model-value="options.contentType === 'html' ? 'html' : 'json'"
+              :model-value="options.contentType === 'html' || options.contentType === 'markdown' ? options.contentType : 'json'"
               :items="wysiwygContentItems"
               value-key="value"
               class="w-full"
@@ -699,6 +699,7 @@ export default defineComponent({
     const wysiwygContentItems = [
       { label: 'JSON (ProseMirror)', value: 'json' },
       { label: 'HTML', value: 'html' },
+      { label: 'Markdown', value: 'markdown' },
     ]
 
     const asNumber = (value: unknown): number | undefined =>
@@ -799,10 +800,10 @@ export default defineComponent({
 
     /** contentType drives both the option and the schema `type` (object vs string). */
     const patchWysiwygContentType = (value: unknown) => {
-      const contentType = value === 'html' ? 'html' : 'json'
+      const contentType = value === 'html' || value === 'markdown' ? value : 'json'
       emit('update:control', {
         element: { options: { ...options.value, contentType } },
-        property: { type: contentType === 'html' ? 'string' : 'object' },
+        property: { type: contentType === 'json' ? 'object' : 'string' },
       })
     }
 

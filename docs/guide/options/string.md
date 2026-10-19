@@ -286,7 +286,7 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `wysiwyg` | `Boolean` | — | **Requis** (`true`) pour activer l’éditeur. |
-| `contentType` | `"json"` \| `"html"` | inféré | Format stocké : objet ProseMirror (`json`) ou chaîne HTML (`html`). |
+| `contentType` | `"json"` \| `"html"` \| `"markdown"` | inféré | Format stocké : objet ProseMirror (`json`), chaîne HTML (`html`) ou chaîne Markdown (`markdown`, schema `string`). |
 | `toolbar` | `Array` \| `false` | barre intégrée | Remplace la barre d’outils (`EditorToolbarItem[][]`) ou la masque. |
 | `placeholder` | `String` | — | Placeholder de l’éditeur. |
 | `features` | `false` \| `Object` | tout activé | Tableaux, listes de tâches, alignement, couleurs, surlignage, lien, rechercher/remplacer, source, aperçu. |
@@ -319,6 +319,23 @@ Détail des fonctions d’édition, de l’assistant IA et d’un backend AI SDK
   }
 }
 ```
+
+```json
+{
+  "type": "Control",
+  "scope": "#/properties/article",
+  "options": {
+    "wysiwyg": true,
+    "contentType": "markdown",
+    "density": "prose"
+  }
+}
+```
+
+En `markdown`, la valeur est sérialisée par l'extension Markdown de TipTap (chargée par `UEditor`) :
+titres, listes, liens, code, tableaux et images (`![alt](src)`) font l'aller-retour ; la largeur
+d'une image redimensionnée n'a pas d'équivalent Markdown et n'est pas conservée. Le mode source
+édite alors le Markdown brut.
 
 ## Playground
 

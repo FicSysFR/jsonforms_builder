@@ -89,6 +89,8 @@
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/vue": "^3.6.0",
     "@nuxt/ui": "^4.8.1",
+    "@tiptap/extension-image": "^3.29.2",
+    "@tiptap/markdown": "^3.29.2",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.10.0",

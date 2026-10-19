@@ -66,6 +66,9 @@ describe('resolveWysiwygOptions', () => {
       contentType: 'html',
       debounce: 300,
     })
+    expect(resolveWysiwygOptions({ contentType: 'markdown' }, 'string').contentType).toBe(
+      'markdown',
+    )
     expect(resolveWysiwygOptions({ toolbar: false }, 'object').toolbar).toBe(false)
   })
 

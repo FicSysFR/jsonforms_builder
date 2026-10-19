@@ -11,6 +11,14 @@ export const data = {
     ],
   },
   notesHtml: '<p>Notes HTML libres…</p>',
+  article: [
+    '## Procédure',
+    '',
+    '1. Ouvrir le portail',
+    '2. Cliquer sur **Nouvelle demande**',
+    '',
+    '> Astuce : joignez une capture.',
+  ].join('\n'),
 }
 
 export const schema = {
@@ -25,6 +33,11 @@ export const schema = {
       type: 'string',
       title: 'Notes (HTML)',
       description: 'contentType: "html" stocke une chaîne HTML.',
+    },
+    article: {
+      type: 'string',
+      title: 'Article (Markdown)',
+      description: 'contentType: "markdown" stocke une chaîne Markdown.',
     },
   },
 }
@@ -49,6 +62,16 @@ export const uischema = {
         wysiwyg: true,
         contentType: 'html',
         placeholder: 'Saisie HTML…',
+        showUnfocusedDescription: true,
+      },
+    },
+    {
+      type: 'Control',
+      scope: '#/properties/article',
+      options: {
+        wysiwyg: true,
+        contentType: 'markdown',
+        density: 'prose',
         showUnfocusedDescription: true,
       },
     },
