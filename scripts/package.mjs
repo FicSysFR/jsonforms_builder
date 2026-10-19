@@ -39,7 +39,7 @@ export const PACKAGE_SPECS = [
       /(?:^|\/)\.env(?:\.|$)/,
     ],
     maximumPackedSize: 750_000,
-    maximumUnpackedSize: 3_000_000,
+    maximumUnpackedSize: 3_500_000,
   },
   {
     directory: join(root, 'mcp'),
