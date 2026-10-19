@@ -25,7 +25,7 @@ Termes canoniques du métier, un par entrée, affûtés par le skill
 
 ## Développement
 
-- Runtime et versions : Node.js 22 ou supérieur ; TypeScript 5 ; Vue 3.5 ; JSON Forms 3.6 ; Nuxt UI 4.8.
+- Runtime et versions : Node.js 22 ou supérieur ; TypeScript 5 ; Vue 3.5 ; JSON Forms 3.6 ; Nuxt UI 4.10.
 - Package manager : Yarn Classic 1.22.22, avec un lockfile à la racine et un lockfile séparé dans `mcp/`.
 - Commande d'installation : `yarn install --frozen-lockfile` ; pour le paquet MCP, `yarn --cwd mcp install --frozen-lockfile`.
 - Commande de développement : `yarn start:dev` pour le playground sur le port 5174 ; `yarn docs:dev` pour VitePress sur le port 5173.

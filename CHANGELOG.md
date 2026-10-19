@@ -19,6 +19,11 @@ versioning follows [SemVer](https://semver.org/).
   Markdown extension; source mode edits the raw Markdown and the builder inspector offers the
   Markdown format (`string` schema).
 
+### 🐛 Fixes
+
+- The `@nuxt/ui` peer dependency now requires `^4.10`: the rating control imports `UInputRating`,
+  which first shipped in Nuxt UI 4.10.0, so hosts on 4.8 or 4.9 failed to build.
+
 ### 📝 Documentation
 
 - WYSIWYG & AI guide, Markdown storage options and playground example (FR/EN).
