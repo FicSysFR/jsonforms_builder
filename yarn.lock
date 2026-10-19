@@ -1181,7 +1181,7 @@
     pkg-types "^2.3.1"
     std-env "^4.2.0"
 
-"@nuxt/ui@^4.8.1":
+"@nuxt/ui@^4.10.0":
   version "4.10.0"
   resolved "https://registry.yarnpkg.com/@nuxt/ui/-/ui-4.10.0.tgz#a18ccd40bf50a95e3e4b3902a6aa20aa8c82c596"
   integrity sha512-f6eFtHZ958XIVnbpGz7OeVRjuEXdmQWgNKWBppNlh/lP790KDi8IXTZ6lndJ72lpp7hC8Wo2BbSL9zo9fwywWQ==
@@ -1770,7 +1770,7 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-3.29.2.tgz#a2afe200c29f9355fa1a79c96fc73bef016bbbd2"
   integrity sha512-8/ZPzbB9X85Mc9/7xVLZupQKBr2UVcQTGr512xtqMW+XkCQRHCph46tRo828YE13IMWI5fWn/FaNCqXG9cULSw==
 
-"@tiptap/extension-image@^3.27.3":
+"@tiptap/extension-image@^3.27.3", "@tiptap/extension-image@^3.29.2":
   version "3.29.2"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-image/-/extension-image-3.29.2.tgz#3c2295362d24b7a6be4f5d2cdffefd2424fe0a0b"
   integrity sha512-F+S4iru247mNVZdkNwNDZHeb281DkjsBJinaOGsOyJTvXY+KU5Uq7vY1LQTn493dTfU48Z0yMBUXwJffCT92Mg==
@@ -1862,7 +1862,7 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extensions/-/extensions-3.29.2.tgz#207c6ed79db1a5baec13f3fd8653b437fca2c8b6"
   integrity sha512-BCz+FCAChSYtUe4BFj97HEO+nSK+J7GxbJgZG4Hg7DT/gI+hRyeNndU8efiQAx3WGdzsFi3UxRpcF1tTQM7iMQ==
 
-"@tiptap/markdown@^3.27.3":
+"@tiptap/markdown@^3.27.3", "@tiptap/markdown@^3.29.2":
   version "3.29.2"
   resolved "https://registry.yarnpkg.com/@tiptap/markdown/-/markdown-3.29.2.tgz#4a5fe4fb796e6a3c03c59de2c5a2fb840d2489ac"
   integrity sha512-Knf9YqG3fxOyFuS3pe3eapDz0ya9eqPGzmyMSd5PuHNmR9/Ir6i5qk5+Md6bCPgDNjYskztNm7DoBXPfbXbO/w==

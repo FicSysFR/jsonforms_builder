@@ -286,7 +286,7 @@ Requires `allRenderers` (not just `nuxtUiRenderers`).
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `wysiwyg` | `Boolean` | — | **Required** (`true`) to enable the editor. |
-| `contentType` | `"json"` \| `"html"` | inferred | Stored format: ProseMirror object (`json`) or HTML string (`html`). |
+| `contentType` | `"json"` \| `"html"` \| `"markdown"` | inferred | Stored format: ProseMirror object (`json`), HTML string (`html`) or Markdown string (`markdown`, `string` schema). |
 | `toolbar` | `Array` \| `false` | built-in toolbar | Replaces the toolbar (`EditorToolbarItem[][]`) or hides it. |
 | `placeholder` | `String` | — | Editor placeholder. |
 | `features` | `false` \| `Object` | all on | Tables, task lists, alignment, colors, highlight, link, find & replace, source, preview. |
@@ -319,6 +319,22 @@ Editing features, the AI assistant and an AI SDK backend are detailed in
   }
 }
 ```
+
+```json
+{
+  "type": "Control",
+  "scope": "#/properties/article",
+  "options": {
+    "wysiwyg": true,
+    "contentType": "markdown",
+    "density": "prose"
+  }
+}
+```
+
+With `markdown`, the value is serialized by TipTap's Markdown extension (loaded by `UEditor`):
+headings, lists, links, code, tables and images (`![alt](src)`) round-trip; the width of a resized
+image has no Markdown equivalent and is not kept. Source mode then edits the raw Markdown.
 
 ## Playground
 

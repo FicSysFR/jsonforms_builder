@@ -12,7 +12,10 @@ import {
 } from './wysiwyg/features'
 import { buildWysiwygToolbar } from './wysiwyg/toolbar'
 
-export type WysiwygContentType = 'html' | 'json'
+/** Stored value format: TipTap JSON (object), HTML or Markdown (strings). */
+export type WysiwygContentType = 'html' | 'json' | 'markdown'
+
+const CONTENT_TYPES: readonly WysiwygContentType[] = ['html', 'json', 'markdown']
 
 export type WysiwygDensity = 'compact' | 'comfortable' | 'prose'
 
@@ -163,7 +166,7 @@ export const resolveWysiwygOptions = (
 
   const explicitContent = opts.contentType
   const contentType: WysiwygContentType =
-    explicitContent === 'html' || explicitContent === 'json'
+    explicitContent && CONTENT_TYPES.includes(explicitContent)
       ? explicitContent
       : schemaType === 'string'
         ? 'html'

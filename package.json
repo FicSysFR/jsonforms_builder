@@ -88,7 +88,9 @@
     "@iconify-json/lucide": "^1.2.111",
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/vue": "^3.6.0",
-    "@nuxt/ui": "^4.8.1",
+    "@nuxt/ui": "^4.10.0",
+    "@tiptap/extension-image": "^3.29.2",
+    "@tiptap/markdown": "^3.29.2",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.10.0",
@@ -118,7 +120,7 @@
   "peerDependencies": {
     "@jsonforms/core": "^3.6",
     "@jsonforms/vue": "^3.6",
-    "@nuxt/ui": "^4.8",
+    "@nuxt/ui": "^4.10",
     "typescript": "^5",
     "vue": "^3.5"
   },

@@ -74,14 +74,14 @@ Palette, drag-and-drop reorderable tree, property inspector, live preview, and J
 | `string` | `UInput` |
 | `string` + `options.multi` | `UTextarea` |
 | `string` + `format: password` | `UInput` + visibility toggle |
-| `object` / `string` + `options.wysiwyg` | `UEditor` (JSON or HTML via `contentType`) |
+| `object` / `string` + `options.wysiwyg` | `UEditor` (JSON, HTML or Markdown via `contentType`) |
 | WYSIWYG images | upload dropzone, drag-resize, bubble replace/delete |
 
 WYSIWYG options (`options.wysiwyg: true`):
 
 | Option | Role |
 |---|---|
-| `contentType` | `'json'` \| `'html'` (else inferred from schema) |
+| `contentType` | `'json'` \| `'html'` \| `'markdown'` (else inferred from schema) |
 | `toolbar` | Nuxt UI toolbar groups, or `false` to hide |
 | `density` | `'compact'` \| `'comfortable'` \| `'prose'` |
 | `minHeight` / `padding` / `blockSpacing` / `editorClass` | spacing overrides |
