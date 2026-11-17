@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { PACKAGE_SPECS, validateLibraryManifest, validatePackResult } from '../package.mjs'
+import {
+  BUNDLED_THIRD_PARTY_PACKAGES,
+  PACKAGE_SPECS,
+  validateLibraryManifest,
+  validatePackResult,
+  validateThirdPartyNotices,
+} from '../package.mjs'
 
 const libraryManifest = () =>
   JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'))
@@ -61,4 +67,19 @@ test('package audit enforces name, version and size budgets', () => {
   result.version = '2.0.1'
   result.size = spec.maximumPackedSize + 1
   assert.throws(() => validatePackResult(result, spec, '2.0.2'), /expected package name/)
+})
+
+test('library package ships the third-party notices', () => {
+  assert.ok(PACKAGE_SPECS[0].required.includes('THIRD_PARTY_NOTICES.md'))
+
+  const unlisted = libraryManifest()
+  unlisted.files = unlisted.files.filter((entry) => entry !== 'THIRD_PARTY_NOTICES.md')
+  assert.throws(() => validateLibraryManifest(unlisted), /THIRD_PARTY_NOTICES\.md/)
+})
+
+test('third-party notices cover every package bundled into dist', () => {
+  const notices = readFileSync(new URL('../../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8')
+  assert.doesNotThrow(() => validateThirdPartyNotices(notices))
+  assert.ok(BUNDLED_THIRD_PARTY_PACKAGES.includes('dayjs'))
+  assert.throws(() => validateThirdPartyNotices(notices.replaceAll('dayjs', 'removed')), /dayjs/)
 })

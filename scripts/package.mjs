@@ -27,6 +27,7 @@ export const PACKAGE_SPECS = [
       'package.json',
       'README.md',
       'LICENSE',
+      'THIRD_PARTY_NOTICES.md',
       'dist/index.d.ts',
       'dist/json-formbuilder.es.js',
       'dist/json-formbuilder.cjs.js',
@@ -149,8 +150,27 @@ export function validatePackResult(result, spec, expectedVersion) {
  */
 export const TYPESCRIPT_PEER_RANGE = '^5 || ^6 || ^7'
 
+/**
+ * Third-party packages compiled into `dist/` rather than left external in `vite.config.ts`.
+ * Their licenses require the notice to travel with every copy, so each one needs a section in
+ * `THIRD_PARTY_NOTICES.md`, which the library tarball must ship.
+ */
+export const BUNDLED_THIRD_PARTY_PACKAGES = ['dayjs']
+
+export function validateThirdPartyNotices(notices) {
+  const missing = BUNDLED_THIRD_PARTY_PACKAGES.filter(
+    (name) => !new RegExp(`^## .*\\(\`${name}\`, `, 'm').test(notices),
+  )
+  if (missing.length > 0) {
+    throw new Error(`THIRD_PARTY_NOTICES.md lacks a section for bundled ${missing.join(', ')}`)
+  }
+}
+
 export function validateLibraryManifest(manifest) {
   const errors = []
+  if (!manifest.files?.includes('THIRD_PARTY_NOTICES.md')) {
+    errors.push('files must publish THIRD_PARTY_NOTICES.md')
+  }
   const typescriptPeer = manifest.peerDependencies?.typescript
   if (typescriptPeer !== undefined) {
     if (typescriptPeer !== TYPESCRIPT_PEER_RANGE) {
@@ -183,6 +203,7 @@ function validateManifests() {
 
   const library = manifests[0].manifest
   validateLibraryManifest(library)
+  validateThirdPartyNotices(readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8'))
   for (const target of [
     library.main,
     library.module,

@@ -12,6 +12,13 @@ les exports publics restent identiques en dehors du chemin d'import.
 `typescript` est une peerDependency **optionnelle** (`^5 || ^6 || ^7`) : elle ne sert qu’au
 contrôle de types de l’hôte ou à l’export `./source`, et n’est jamais requise à l’exécution.
 
+## Licences
+
+La bibliothèque est sous licence BSD-3-Clause (`LICENSE`). Le paquet npm livre aussi
+`THIRD_PARTY_NOTICES.md` : notices MIT du code dérivé de JSON Forms et de Day.js, embarqué dans
+`dist/`. Une application qui redistribue la bibliothèque reproduit ces deux fichiers dans ses
+notices tierces.
+
 ## Prérequis
 
 - Node.js ≥ 22
