@@ -23,3 +23,11 @@ yarn-error.log*
 # Notes de release temporaires (chemin `make release`, et extraction CI depuis CHANGELOG.md)
 RELEASE_NOTES.md
 .release-notes.md
+
+# Recette navigateur (`yarn test:browser`) : page construite, résultats Playwright et fichiers
+# générés par le plugin Vite de Nuxt UI.
+tests/browser/.dist/
+tests/browser/.results/
+tests/browser/fixture/auto-imports.d.ts
+tests/browser/fixture/components.d.ts
+tests/browser/fixture/node_modules/

@@ -90,6 +90,39 @@ export default defineNuxtConfig({
 Add Nuxt UI's own component icons (`appConfig.ui.icons`) and the icons your UI schemas name
 (`leadingIcon`, `trailingIcon`).
 
+## Strict CSP
+
+`strictCspRenderers` renders under a CSP without `'unsafe-inline'`, `'unsafe-eval'` or `data:`
+(`script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'`). It is
+`nuxtUiRenderers` minus the renderers that need more:
+
+- `oneOf` / `anyOf` and `allOf` variants: JSON Forms picks the variant by compiling every
+  subschema with Ajv on each render, whatever the validation mode (`'unsafe-eval'`);
+- file upload: previews are `data:` URLs (`img-src data:`).
+
+```vue
+<json-forms
+  :schema="schema"
+  :uischema="uischema"
+  :data="data"
+  :renderers="strictCspRenderers"
+  validation-mode="NoValidation"
+  :additional-errors="serverErrors"
+  @change="onChange"
+/>
+```
+
+Ajv validation compiles code too: pass `validation-mode="NoValidation"` and supply errors through
+`additional-errors`. A `oneOf` of constants stays available: the select renderer handles it, not
+the combinator renderer. On the host side, Nuxt UI still needs: the icons declared (previous
+section), icons rendered as SVG (`icon.mode: 'svg'`, Nuxt Icon's CSS mode injects a `<style>`), and
+Nuxt UI's colors `<style>` and, when enabled, the color-mode anti-flash script allowed by hash or
+nonce.
+
+`yarn test:browser` checks this recipe in Chromium: a complete form served under that CSP, every
+field edited, no violation attributable to the library and no request leaving the origin; two
+counter-tests show that combinators and Ajv validation need `'unsafe-eval'`.
+
 ## Known upstream issue — `subTree`
 
 `@vueuse/core` 14.4.0 has an unguarded access to `vm.$` inside `onClickOutside`. After an unmount, a click reaching a surviving listener can throw `Cannot read properties of null (reading 'subTree')`.

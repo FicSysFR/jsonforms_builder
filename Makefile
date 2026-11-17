@@ -13,7 +13,7 @@ CHANNEL ?= latest
 WATCH ?=
 YES ?=
 
-.PHONY: help install dev docs docs-build docs-preview mcp-build stop build package lint typecheck format test test-watch test-coverage test-regression test-perf test-scripts changelog-build changelog-check release release-status ncu ncu-upgrade
+.PHONY: help install dev docs docs-build docs-preview mcp-build stop build package lint typecheck format test test-watch test-coverage test-regression test-perf test-browser test-scripts changelog-build changelog-check release release-status ncu ncu-upgrade
 .DEFAULT_GOAL := help
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -70,6 +70,9 @@ test-regression: ## Run the regression suite only
 
 test-perf: ## Run the performance suite only
 	@yarn test:perf
+
+test-browser: ## Strict CSP and read-only recipe in Chromium (needs `yarn playwright install chromium`)
+	@yarn test:browser
 
 test-scripts: ## Test release, changelog and package tooling
 	@yarn test:scripts

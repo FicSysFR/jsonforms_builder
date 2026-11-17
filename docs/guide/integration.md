@@ -91,6 +91,39 @@ export default defineNuxtConfig({
 Ajouter les icônes propres aux composants Nuxt UI (`appConfig.ui.icons`) et celles que vos UI
 schemas nomment (`leadingIcon`, `trailingIcon`).
 
+## CSP stricte
+
+`strictCspRenderers` rend sous une CSP sans `'unsafe-inline'`, sans `'unsafe-eval'` et sans
+`data:` (`script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'`). C'est
+`nuxtUiRenderers` sans les renderers qui exigent plus :
+
+- `oneOf` / `anyOf` et `allOf` de variantes : JSON Forms choisit la variante en compilant chaque
+  sous-schéma avec Ajv à chaque rendu, quel que soit le mode de validation (`'unsafe-eval'`) ;
+- upload de fichier : les aperçus sont des URL `data:` (`img-src data:`).
+
+```vue
+<json-forms
+  :schema="schema"
+  :uischema="uischema"
+  :data="data"
+  :renderers="strictCspRenderers"
+  validation-mode="NoValidation"
+  :additional-errors="serverErrors"
+  @change="onChange"
+/>
+```
+
+La validation Ajv compile elle aussi du code : passer `validation-mode="NoValidation"` et fournir
+les erreurs par `additional-errors`. Un `oneOf` de constantes reste disponible : il est rendu par la
+liste de sélection, pas par le renderer de combinateur. Côté hôte, Nuxt UI demande encore :
+déclarer les icônes (section précédente), rendre les icônes en SVG (`icon.mode: 'svg'`, le mode CSS
+de Nuxt Icon injecte un `<style>`), et autoriser par empreinte ou nonce le `<style>` des couleurs de
+Nuxt UI et, s’il est activé, le script anti-flash du mode couleur.
+
+`yarn test:browser` vérifie cette recette dans Chromium : formulaire complet servi sous cette CSP,
+chaque champ édité, aucune violation imputable à la bibliothèque et aucune requête hors origine ;
+deux contre-épreuves montrent que les combinateurs et la validation Ajv exigent `'unsafe-eval'`.
+
 ## Problème amont connu — `subTree`
 
 `@vueuse/core` 14.4.0 contient dans `onClickOutside` un accès non gardé à `vm.$`. Après un unmount, un clic qui atteint un listener survivant peut lever `Cannot read properties of null (reading 'subTree')`.
