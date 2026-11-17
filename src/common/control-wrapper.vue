@@ -221,7 +221,7 @@ export default defineComponent({
      * @see help — description is always rendered; cf. template comment.
      */
     fieldUi(): Record<string, string> {
-      return this.uiProps?.('formField')?.ui ?? {}
+      return (this.uiProps?.('formField')?.ui ?? {}) as Record<string, string>
     },
   },
 })

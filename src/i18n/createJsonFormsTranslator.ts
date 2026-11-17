@@ -48,7 +48,13 @@ export const createJsonFormsTranslator = (
     },
   }
 
-  return (key, defaultMessage, values) => {
+  // `Translator` ties the return type to `defaultMessage`: a string default always yields a
+  // string, which the branches below honour; only a missing default can yield `undefined`.
+  const translate = (
+    key: string,
+    defaultMessage?: string,
+    values?: Parameters<typeof interpolateAjvErrorMessage>[1],
+  ): string | undefined => {
     const fromMessages = options.messages ? (get(options.messages, key) as unknown) : undefined
     const fromAjv = get(ajvDict, key) as unknown
     const raw =
@@ -68,4 +74,6 @@ export const createJsonFormsTranslator = (
 
     return returnUndefinedWhenMissing ? undefined : ''
   }
+
+  return translate as Translator
 }

@@ -40,6 +40,39 @@ jobs:
           yarn test:scripts
           yarn changelog:check
 
+  typescript:
+    name: TypeScript ${{ matrix.typescript }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The `typescript` peer accepts ^5 || ^6 || ^7: type-check and build the library and its
+        # declarations under each supported major that the toolchain (vue-tsc) runs on.
+        typescript: ['5.9', '6.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install TypeScript ${{ matrix.typescript }}
+        env:
+          TYPESCRIPT_RANGE: ~${{ matrix.typescript }}.0
+        run: |
+          yarn add --dev --ignore-scripts "typescript@${TYPESCRIPT_RANGE}"
+          node -e "const v=require('typescript').version;console.log('TypeScript',v);if(!v.startsWith(process.argv[1]+'.'))process.exit(1)" "${{ matrix.typescript }}"
+
+      - name: Type-check and build
+        run: yarn build
+
   test:
     runs-on: ubuntu-latest
 

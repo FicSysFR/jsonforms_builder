@@ -54,7 +54,7 @@ const isMultipleFileSchema = schemaMatches((schema) => {
 
   const items = schema.items
 
-  return Boolean(items) && hasType(items, 'string')
+  return items !== undefined && hasType(items, 'string')
 })
 
 /**

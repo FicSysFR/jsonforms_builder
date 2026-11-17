@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "module": "es2022",
+    // Explicit since TypeScript 6 turns `strict` on by default: both majors must agree.
+    "strict": true,
     "types": ["node"],
     // `DOM` is required: the library uses drag-and-drop events, `fetch`,
     // `AbortController`, and `structuredClone`. v1 declared `["es7"]` alone, which
