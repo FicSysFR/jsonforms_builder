@@ -253,6 +253,30 @@ Multi-fichiers : schema `type: "array"` d’items `string`.
 | `labelKey` | `String` | `"label"` | Chemin vers le libellé d’un item. |
 | `valueKey` | `String` | `"value"` | Chemin vers la valeur stockée. |
 
+### Politique de l’hôte (`config.apiPolicy`)
+
+Un UI schema peut venir d’une source moins sûre que l’application (extension, définition
+stockée) : il ne décide pas seul des requêtes. La politique se lit dans le `config` de JSON Forms,
+jamais dans `options`.
+
+- Sans politique : URL de même origine que la page, avec ses cookies (comportement antérieur) ;
+  toute autre origine est refusée, sans requête.
+- `allowedOrigins` : origines exactes (`https://api.example.com`) que la bibliothèque peut
+  interroger, sans cookies (`credentials: 'omit'`, modifiable par `credentials`).
+- `resolve(request)` : l’hôte exécute chaque requête lui-même (authentification, proxy, cache,
+  refus) ; il reçoit `{ url, headers, search, api, signal }` et renvoie la charge JSON, à laquelle
+  `itemsPath` s’applique.
+
+Les schémas `javascript:`, `data:` ou `file:` ne sont jamais interrogés. Une `url` relative sans
+`base` se résout depuis la page.
+
+```vue
+<json-forms
+  :config="{ apiPolicy: { allowedOrigins: ['https://data.geopf.fr'] } }"
+  …
+/>
+```
+
 ### Exemple
 
 ```json

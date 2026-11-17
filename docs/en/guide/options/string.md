@@ -253,6 +253,30 @@ Multi-file: schema `type: "array"` of `string` items.
 | `labelKey` | `String` | `"label"` | Path to an item’s label. |
 | `valueKey` | `String` | `"value"` | Path to the stored value. |
 
+### Host policy (`config.apiPolicy`)
+
+A UI schema may come from a less trusted source than the application (an extension, a stored
+definition): it does not decide requests on its own. The policy is read from JSON Forms `config`,
+never from `options`.
+
+- No policy: URLs of the page's origin, with its cookies (previous behavior); any other origin is
+  refused, with no request.
+- `allowedOrigins`: exact origins (`https://api.example.com`) the library may query, without
+  cookies (`credentials: 'omit'`, changed through `credentials`).
+- `resolve(request)`: the host runs every request itself (authentication, proxy, cache, refusal);
+  it receives `{ url, headers, search, api, signal }` and returns the JSON payload, to which
+  `itemsPath` applies.
+
+`javascript:`, `data:` or `file:` URLs are never queried. A relative `url` without `base` resolves
+against the page.
+
+```vue
+<json-forms
+  :config="{ apiPolicy: { allowedOrigins: ['https://data.geopf.fr'] } }"
+  …
+/>
+```
+
 ### Example
 
 ```json

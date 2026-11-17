@@ -171,6 +171,8 @@ describe('useAutocompleteControl', () => {
           },
         },
       },
+      // Cross-origin fetches need the host's allow-list.
+      config: { apiPolicy: { allowedOrigins: ['https://api.example.test'] } },
     })
 
     await mounted.result.onSearch('ada')
@@ -199,6 +201,8 @@ describe('useAutocompleteControl', () => {
         scope: '#/properties/value',
         options: { api: { url: 'https://api.example.test/users', itemsPath: 'items' } },
       },
+      // Cross-origin fetches need the host's allow-list.
+      config: { apiPolicy: { allowedOrigins: ['https://api.example.test'] } },
     })
 
     await mounted.result.fetchOptions('first')
@@ -233,6 +237,8 @@ describe('useAutocompleteControl', () => {
         scope: '#/properties/value',
         options: { api: { url: 'https://api.example.test/users' } },
       },
+      // Cross-origin fetches need the host's allow-list.
+      config: { apiPolicy: { allowedOrigins: ['https://api.example.test'] } },
     })
 
     const firstRequest = mounted.result.fetchOptions('first')

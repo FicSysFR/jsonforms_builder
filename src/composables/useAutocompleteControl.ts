@@ -21,6 +21,73 @@ export type AutocompleteOption = {
   value: unknown
 }
 
+/** Request built from a UI schema's `options.api`, as the host policy receives it. */
+export type AutocompleteApiRequest = {
+  /** Absolute URL, query parameters included. */
+  url: URL
+  headers: Record<string, string>
+  search: string
+  api: AutocompleteApiConfig
+  signal: AbortSignal
+}
+
+/**
+ * Host policy for `options.api`. A UI schema may come from a less trusted source than the host
+ * (an extension, a stored definition), so the policy is read from JSON Forms `config.apiPolicy`
+ * only, never from `uischema.options`.
+ *
+ * Without a policy, the library fetches same-origin URLs as before and refuses every other
+ * origin.
+ */
+export type AutocompleteApiPolicy = {
+  /**
+   * Host fetcher, given every request instead of the library's `fetch`: it can authenticate,
+   * proxy, cache or refuse (throw). Returns the response payload; `itemsPath` then applies.
+   */
+  resolve?: (request: AutocompleteApiRequest) => Promise<unknown>
+  /** Exact origins (`https://api.example.com`) the library may fetch besides its own. */
+  allowedOrigins?: readonly string[]
+  /** `credentials` for allow-listed origins. Default `'omit'`. */
+  credentials?: RequestCredentials
+}
+
+export type AutocompleteApiDecision =
+  | { allowed: true; credentials: RequestCredentials }
+  | { allowed: false; reason: string }
+
+/**
+ * Whether the library may itself fetch `url`. Same origin: allowed, with the browser's
+ * default `same-origin` credentials. Another origin: only if allow-listed, without cookies
+ * unless the policy says otherwise. Non-HTTP schemes: never.
+ */
+export const decideAutocompleteRequest = (
+  url: URL,
+  policy: AutocompleteApiPolicy | undefined,
+  pageOrigin: string,
+): AutocompleteApiDecision => {
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    return { allowed: false, reason: `scheme ${url.protocol} is not fetched` }
+  }
+  if (url.origin === pageOrigin) {
+    return { allowed: true, credentials: 'same-origin' }
+  }
+  if (policy?.allowedOrigins?.includes(url.origin)) {
+    return { allowed: true, credentials: policy.credentials ?? 'omit' }
+  }
+  return {
+    allowed: false,
+    reason: `origin ${url.origin} is not in config.apiPolicy.allowedOrigins`,
+  }
+}
+
+const pageLocation = () => (typeof location === 'undefined' ? undefined : location.href)
+
+/** Host policy from JSON Forms `config` (never merged with the UI schema options). */
+const readApiPolicy = (config: unknown): AutocompleteApiPolicy | undefined => {
+  const policy = (config as { apiPolicy?: unknown } | undefined)?.apiPolicy
+  return policy && typeof policy === 'object' ? (policy as AutocompleteApiPolicy) : undefined
+}
+
 type JsonFormsEnumControl = ReturnType<typeof useJsonFormsEnumControl>
 
 type UseAutocompleteControlOptions = {
@@ -73,8 +140,10 @@ export const extractAutocompleteApiConfig = (
 export const buildAutocompleteRequest = (
   api: AutocompleteApiConfig,
   search: string,
+  /** Base for a relative `url` without `base`: the page URL in a browser. */
+  pageUrl: string | undefined = pageLocation(),
 ): { url: string; headers: Record<string, string> } => {
-  const baseUrl = api.base ? new URL(api.url, api.base) : new URL(api.url)
+  const baseUrl = new URL(api.url, api.base ?? pageUrl)
   const queryKey = api.queryKey ?? 'q'
   baseUrl.searchParams.set(queryKey, search)
 
@@ -181,22 +250,51 @@ export const useAutocompleteControl = ({
       return
     }
 
-    const request = buildAutocompleteRequest(apiConfig, search)
-
     clearPendingRequest()
-    abortController.value = new AbortController()
+    const controller = new AbortController()
+    abortController.value = controller
 
     try {
-      const response = await fetch(request.url, {
-        signal: abortController.value.signal,
-        headers: request.headers,
-      })
+      const request = buildAutocompleteRequest(apiConfig, search)
+      const url = new URL(request.url)
+      const policy = readApiPolicy(control.control.value.config)
+      let data: unknown
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      if (policy?.resolve) {
+        data = await policy.resolve({
+          url,
+          headers: request.headers,
+          search,
+          api: apiConfig,
+          signal: controller.signal,
+        })
+      } else {
+        // Outside a browser no origin counts as the page's: only allow-listed origins pass.
+        const page = pageLocation()
+        const decision = decideAutocompleteRequest(
+          url,
+          policy,
+          page ? new URL(page).origin : 'null',
+        )
+        if (!decision.allowed) {
+          console.warn(`[autocomplete] request refused: ${decision.reason}`)
+          optionsList.value = []
+          return
+        }
+
+        const response = await fetch(request.url, {
+          signal: controller.signal,
+          headers: request.headers,
+          credentials: decision.credentials,
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+
+        data = await response.json()
       }
 
-      const data = await response.json()
       const rawItems = apiConfig.itemsPath ? get(data, apiConfig.itemsPath) : data
       const items = isArray(rawItems) ? rawItems : []
       optionsList.value = resolveFetchedOptions(items, apiConfig)
