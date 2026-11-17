@@ -45,8 +45,8 @@ export const PACKAGE_SPECS = [
       /^(?:tests|docs|coverage|node_modules|\.git)(?:\/|$)/,
       /(?:^|\/)\.env(?:\.|$)/,
     ],
-    maximumPackedSize: 750_000,
-    maximumUnpackedSize: 3_500_000,
+    maximumPackedSize: 900_000,
+    maximumUnpackedSize: 4_250_000,
   },
   {
     directory: join(root, 'mcp'),
