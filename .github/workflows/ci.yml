@@ -40,14 +40,15 @@ jobs:
           yarn test:scripts
           yarn changelog:check
 
-  typescript:
-    name: TypeScript ${{ matrix.typescript }}
+  compat:
+    name: Nuxt UI ${{ matrix.nuxt-ui }} · TypeScript ${{ matrix.typescript }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # The `typescript` peer accepts ^5 || ^6 || ^7: type-check and build the library and its
-        # declarations under each supported major that the toolchain (vue-tsc) runs on.
+        # Supported host range: the `@nuxt/ui` peer floor (4.10) and the current minor (4.12);
+        # the `typescript` peer accepts ^5 || ^6 || ^7, and vue-tsc runs on 5.9 and 6.0.
+        nuxt-ui: ['4.10', '4.12']
         typescript: ['5.9', '6.0']
 
     steps:
@@ -63,15 +64,42 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install TypeScript ${{ matrix.typescript }}
+      - name: Install Nuxt UI ${{ matrix.nuxt-ui }} and TypeScript ${{ matrix.typescript }}
         env:
+          NUXT_UI_RANGE: ~${{ matrix.nuxt-ui }}.0
           TYPESCRIPT_RANGE: ~${{ matrix.typescript }}.0
         run: |
-          yarn add --dev --ignore-scripts "typescript@${TYPESCRIPT_RANGE}"
-          node -e "const v=require('typescript').version;console.log('TypeScript',v);if(!v.startsWith(process.argv[1]+'.'))process.exit(1)" "${{ matrix.typescript }}"
+          yarn add --dev --ignore-scripts "@nuxt/ui@${NUXT_UI_RANGE}" "typescript@${TYPESCRIPT_RANGE}"
+          node -e "
+            const fs = require('node:fs')
+            const ui = JSON.parse(fs.readFileSync('node_modules/@nuxt/ui/package.json', 'utf8')).version
+            const ts = require('typescript').version
+            console.log('Nuxt UI', ui, '· TypeScript', ts)
+            if (!ui.startsWith(process.argv[1] + '.') || !ts.startsWith(process.argv[2] + '.')) process.exit(1)
+          " "${{ matrix.nuxt-ui }}" "${{ matrix.typescript }}"
 
       - name: Type-check and build
         run: yarn build
+
+      - name: Run unit tests
+        run: yarn test
+
+      - name: Install Chromium
+        run: yarn playwright install --with-deps chromium
+
+      # Strict CSP and read-only recipe (`yarn test:browser` without its library build step).
+      - name: Run the browser recipe against this Nuxt UI
+        run: |
+          yarn vite build --config tests/browser/vite.config.ts
+          yarn playwright test --config tests/browser/playwright.config.ts
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-recipe-nuxt-ui-${{ matrix.nuxt-ui }}-ts-${{ matrix.typescript }}
+          path: tests/browser/.results
+          retention-days: 7
 
   test:
     runs-on: ubuntu-latest
@@ -102,37 +130,6 @@ jobs:
           name: codecov-umbrella
           disable_search: true
           fail_ci_if_error: true
-
-  browser:
-    name: Browser recipe (strict CSP, read-only)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Install Chromium
-        run: yarn playwright install --with-deps chromium
-
-      - name: Build the library and run the recipe
-        run: yarn test:browser
-
-      - name: Upload Playwright traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: browser-recipe-results
-          path: tests/browser/.results
-          retention-days: 7
 
   build:
     runs-on: ubuntu-latest
