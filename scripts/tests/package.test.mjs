@@ -1,6 +1,30 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { PACKAGE_SPECS, validatePackResult } from '../package.mjs'
+import { PACKAGE_SPECS, validateLibraryManifest, validatePackResult } from '../package.mjs'
+
+const libraryManifest = () =>
+  JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'))
+
+test('library manifest satisfies the published peer contract', () => {
+  assert.doesNotThrow(() => validateLibraryManifest(libraryManifest()))
+})
+
+test('library manifest rejects a required or TypeScript 6 incompatible typescript peer', () => {
+  const required = libraryManifest()
+  required.peerDependencies.typescript = '^5 || ^6 || ^7'
+  delete required.peerDependenciesMeta
+  assert.throws(() => validateLibraryManifest(required), /typescript.*optional/)
+
+  const outdated = libraryManifest()
+  outdated.peerDependencies.typescript = '^5'
+  assert.throws(() => validateLibraryManifest(outdated), /typescript.*\^5 \|\| \^6 \|\| \^7/)
+
+  const absent = libraryManifest()
+  delete absent.peerDependencies.typescript
+  delete absent.peerDependenciesMeta?.typescript
+  assert.doesNotThrow(() => validateLibraryManifest(absent))
+})
 
 function validResult(spec) {
   return {

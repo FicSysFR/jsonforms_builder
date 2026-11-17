@@ -9,6 +9,9 @@ unchanged apart from the import path.
 
 `@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue` and `vue` are **peerDependencies**: the library bundles no Nuxt UI component of its own; it imports them from the host application’s installation.
 
+`typescript` is an **optional** peerDependency (`^5 || ^6 || ^7`): it only matters for the
+host’s type-checking or the `./source` export, never at runtime.
+
 ## Requirements
 
 - Node.js ≥ 22

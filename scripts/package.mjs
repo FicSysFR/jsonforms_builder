@@ -142,6 +142,27 @@ export function validatePackResult(result, spec, expectedVersion) {
   if (errors.length > 0) throw new Error(`${spec.name}:\n- ${errors.join('\n- ')}`)
 }
 
+/**
+ * TypeScript is only needed to type-check hosts or to consume `./source`: the compiled
+ * entries ship declarations that every supported TypeScript major reads. A required peer
+ * would make TypeScript 6 hosts fail strict peer resolution for no runtime reason.
+ */
+export const TYPESCRIPT_PEER_RANGE = '^5 || ^6 || ^7'
+
+export function validateLibraryManifest(manifest) {
+  const errors = []
+  const typescriptPeer = manifest.peerDependencies?.typescript
+  if (typescriptPeer !== undefined) {
+    if (typescriptPeer !== TYPESCRIPT_PEER_RANGE) {
+      errors.push(`typescript peer must be ${TYPESCRIPT_PEER_RANGE}, got ${typescriptPeer}`)
+    }
+    if (manifest.peerDependenciesMeta?.typescript?.optional !== true) {
+      errors.push('typescript peer must be optional (peerDependenciesMeta.typescript.optional)')
+    }
+  }
+  if (errors.length > 0) throw new Error(`${manifest.name}:\n- ${errors.join('\n- ')}`)
+}
+
 function validateManifests() {
   const manifests = PACKAGE_SPECS.map((spec) => ({
     spec,
@@ -161,6 +182,7 @@ function validateManifests() {
   }
 
   const library = manifests[0].manifest
+  validateLibraryManifest(library)
   for (const target of [
     library.main,
     library.module,
