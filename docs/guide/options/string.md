@@ -248,10 +248,38 @@ Multi-fichiers : schema `type: "array"` d’items `string`.
 | `base` | `String` | — | Préfixe d’origine (ex. `https://api.example.com`). |
 | `queryKey` | `String` | `"q"` | Nom du paramètre de recherche. |
 | `params` | `Object` | — | Paramètres de query fixes. |
-| `headers` | `Object` | — | En-têtes HTTP. |
+| `headers` | `Object` | — | En-têtes HTTP (filtrés : voir `allowedHeaders`). |
 | `itemsPath` | `String` | — | Chemin (dot) vers le tableau dans la réponse JSON. |
 | `labelKey` | `String` | `"label"` | Chemin vers le libellé d’un item. |
 | `valueKey` | `String` | `"value"` | Chemin vers la valeur stockée. |
+
+### Politique de l’hôte (`config.apiPolicy`)
+
+Un UI schema peut venir d’une source moins sûre que l’application (extension, définition
+stockée) : il ne décide pas seul des requêtes. La politique se lit dans le `config` de JSON Forms,
+jamais dans `options`. **Sans politique, aucune requête n’est envoyée.**
+
+- `allowedOrigins` : liste blanche d’origines exactes (`https://api.example.com`), interrogées sans
+  cookies (`credentials: 'omit'`, modifiable par `credentials`). `'self'` désigne l’origine de la
+  page, interrogée avec ses cookies (`credentials: 'same-origin'`).
+- `allowedHeaders` : en-têtes supplémentaires que le UI schema peut envoyer. Par défaut, seuls
+  `Accept`, `Accept-Language` et `Content-Language` passent ; les en-têtes d’un `config.api` de
+  l’hôte sont conservés.
+- `resolve(request)` : l’hôte exécute chaque requête lui-même (authentification, proxy, cache,
+  refus) ; il reçoit `{ url, headers, search, api, signal }` et renvoie la charge JSON, à laquelle
+  `itemsPath` s’applique. Un refus (exception) n’est jamais suivi d’un `fetch`.
+
+Les URL non HTTP(S) et celles qui portent des identifiants (`user:pass@`) ne sont jamais
+interrogées, ni par la bibliothèque ni par `resolve`. Les redirections sont refusées
+(`redirect: 'error'`). L’objet `api` vient entier du UI schema ou, à défaut, de `config.api` :
+jamais d’un mélange des deux. Une `url` relative sans `base` se résout depuis la page.
+
+```vue
+<json-forms
+  :config="{ apiPolicy: { allowedOrigins: ['self', 'https://data.geopf.fr'] } }"
+  …
+/>
+```
 
 ### Exemple
 

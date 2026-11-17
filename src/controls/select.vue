@@ -13,7 +13,7 @@
       :items="control.options"
       :class="styles.control.input"
       :disabled="isDisabled || isReadonly"
-      :placeholder="appliedOptions.placeholder ?? 'Sélectionner…'"
+      :placeholder="appliedOptions.placeholder ?? t('jsonformsBuilder.select.placeholder')"
       :color="control.errors ? 'error' : undefined"
       value-key="value"
       label-key="label"
@@ -45,6 +45,7 @@ import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue, useJsonForms } from '../utils'
 import { useRadioGroupControl } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * SelectControlRenderer
@@ -91,10 +92,13 @@ const controlRenderer = defineComponent({
     const clearValue = determineClearValue(undefined)
 
     // Same contract as the radio group: a single value chosen from a closed list.
-    return useRadioGroupControl({
-      jsonFormsControl,
-      clearValue,
-    })
+    return {
+      ...useRadioGroupControl({
+        jsonFormsControl,
+        clearValue,
+      }),
+      t: useUiText(),
+    }
   },
 })
 

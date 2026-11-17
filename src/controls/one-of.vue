@@ -13,7 +13,7 @@
         :model-value="selectedIndex"
         :items="variantItems"
         :class="styles.oneOf.select"
-        :disabled="isDisabled"
+        :disabled="isLocked"
         value-key="value"
         label-key="label"
         @update:model-value="onVariantChange"
@@ -25,6 +25,7 @@
       :uischema="selectedUiSchema"
       :path="control.path"
       :enabled="control.enabled"
+      :readonly="control.readonly"
       :renderers="control.renderers"
       :cells="control.cells"
     )
@@ -45,13 +46,14 @@ import { computed, defineComponent, nextTick, ref, watch } from 'vue'
 import {
   DispatchRenderer,
   rendererProps,
-  useJsonFormsOneOfControl,
+  useJsonFormsControl,
   type RendererProps,
 } from '@jsonforms/vue'
 import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
 import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * CombinatorControlRenderer
@@ -60,6 +62,10 @@ import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } fro
  * the selected branch.
  *
  * Missing in v1, although the theme already declared a `oneOf` slot.
+ *
+ * Uses `useJsonFormsControl` rather than `useJsonFormsOneOfControl`: the latter compiles every
+ * variant with Ajv on each render to find the matching one (`new Function`, refused by a CSP
+ * without `'unsafe-eval'`), whereas `detectOneOfVariant` picks it without validation.
  */
 const controlRenderer = defineComponent({
   name: 'CombinatorControlRenderer',
@@ -72,7 +78,8 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsOneOfControl(props))
+    const control = useUiControl(useJsonFormsControl(props))
+    const t = useUiText()
 
     /** Combinator branches, `$ref` resolved. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>
@@ -86,7 +93,10 @@ const controlRenderer = defineComponent({
       // The label may live on the reference (`{ $ref, title }`) or the target:
       // check both rather than losing the title when resolving.
       return variants.value.map((variant, index) => ({
-        label: raw[index]?.title ?? variant.title ?? `Option ${index + 1}`,
+        label:
+          raw[index]?.title ??
+          variant.title ??
+          t('jsonformsBuilder.combinator.option', { index: index + 1 }),
         value: index,
       }))
     })
@@ -134,7 +144,7 @@ const controlRenderer = defineComponent({
      * `hasMultipleRoots` tests `vm` but not `vm.$`).
      */
     const onVariantChange = async (index: number) => {
-      if (index === selectedIndex.value) {
+      if (control.isLocked.value || index === selectedIndex.value) {
         return
       }
 

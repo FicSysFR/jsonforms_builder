@@ -5,6 +5,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -31,6 +32,11 @@ export const PACKAGE_SPECS = [
       'dist/index.d.ts',
       'dist/json-formbuilder.es.js',
       'dist/json-formbuilder.cjs.js',
+      ...['core', 'advanced', 'builder', 'icons'].flatMap((entry) => [
+        `dist/${entry}.d.ts`,
+        `dist/${entry}.es.js`,
+        `dist/${entry}.cjs`,
+      ]),
       'src/index.ts',
     ],
     forbidden: [
@@ -39,8 +45,8 @@ export const PACKAGE_SPECS = [
       /^(?:tests|docs|coverage|node_modules|\.git)(?:\/|$)/,
       /(?:^|\/)\.env(?:\.|$)/,
     ],
-    maximumPackedSize: 750_000,
-    maximumUnpackedSize: 3_500_000,
+    maximumPackedSize: 900_000,
+    maximumUnpackedSize: 4_250_000,
   },
   {
     directory: join(root, 'mcp'),
@@ -150,12 +156,45 @@ export function validatePackResult(result, spec, expectedVersion) {
  */
 export const TYPESCRIPT_PEER_RANGE = '^5 || ^6 || ^7'
 
+/** Entry points besides the root: each ships ESM, CommonJS (`.cjs`) and declarations. */
+export const LIBRARY_SUBPATHS = ['./core', './advanced', './builder', './icons']
+
 /**
  * Third-party packages compiled into `dist/` rather than left external in `vite.config.ts`.
  * Their licenses require the notice to travel with every copy, so each one needs a section in
  * `THIRD_PARTY_NOTICES.md`, which the library tarball must ship.
  */
 export const BUNDLED_THIRD_PARTY_PACKAGES = ['dayjs']
+
+function sourceFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) return sourceFiles(path)
+    return /\.(?:ts|vue)$/.test(entry.name) && !entry.name.endsWith('.d.ts') ? [path] : []
+  })
+}
+
+/**
+ * Packages imported at runtime by `src/` (type-only imports excluded) that the manifest declares
+ * neither as dependencies nor as peers: a strict installer (pnpm) cannot resolve them for hosts.
+ * Packages bundled into `dist/` need no declaration.
+ */
+export function findUndeclaredImports(manifest, sourceRoot = join(root, 'src')) {
+  const declared = new Set([
+    ...Object.keys(manifest.dependencies ?? {}),
+    ...Object.keys(manifest.peerDependencies ?? {}),
+    ...BUNDLED_THIRD_PARTY_PACKAGES,
+  ])
+  const imported = new Set()
+  for (const file of sourceFiles(sourceRoot)) {
+    const code = readFileSync(file, 'utf8')
+    for (const match of code.matchAll(/^\s*import\s+(?!type\s)[^'"]*?from\s+'([^'.#][^']*)'/gm)) {
+      const parts = match[1].split('/')
+      imported.add(match[1].startsWith('@') ? parts.slice(0, 2).join('/') : parts[0])
+    }
+  }
+  return [...imported].filter((name) => !declared.has(name)).sort()
+}
 
 export function validateThirdPartyNotices(notices) {
   const missing = BUNDLED_THIRD_PARTY_PACKAGES.filter(
@@ -168,6 +207,15 @@ export function validateThirdPartyNotices(notices) {
 
 export function validateLibraryManifest(manifest) {
   const errors = []
+  if (manifest.sideEffects !== false) {
+    errors.push('sideEffects must be false so that hosts tree-shake unused entries')
+  }
+  for (const subpath of LIBRARY_SUBPATHS) {
+    const target = manifest.exports?.[subpath]
+    if (!target?.import || !target?.require?.endsWith('.cjs') || !target?.types) {
+      errors.push(`exports["${subpath}"] needs import, a .cjs require and types`)
+    }
+  }
   if (!manifest.files?.includes('THIRD_PARTY_NOTICES.md')) {
     errors.push('files must publish THIRD_PARTY_NOTICES.md')
   }
@@ -203,6 +251,10 @@ function validateManifests() {
 
   const library = manifests[0].manifest
   validateLibraryManifest(library)
+  const undeclared = findUndeclaredImports(library)
+  if (undeclared.length > 0) {
+    throw new Error(`src imports undeclared packages: ${undeclared.join(', ')}`)
+  }
   validateThirdPartyNotices(readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8'))
   for (const target of [
     library.main,
@@ -211,6 +263,11 @@ function validateManifests() {
     library.exports?.['.']?.import,
     library.exports?.['.']?.require,
     library.exports?.['.']?.types,
+    ...LIBRARY_SUBPATHS.flatMap((subpath) => [
+      library.exports?.[subpath]?.import,
+      library.exports?.[subpath]?.require,
+      library.exports?.[subpath]?.types,
+    ]),
     library.exports?.['./source'],
   ]) {
     if (!target || !existsSync(join(root, target))) {
@@ -355,10 +412,23 @@ const cjs = require.resolve('@ficsysfr/jsonforms_builder')
 if (!esm.endsWith('json-formbuilder.es.js')) throw new Error('ESM export mismatch: ' + esm)
 if (!cjs.endsWith('json-formbuilder.cjs.js')) throw new Error('CJS export mismatch: ' + cjs)
 if (!source.endsWith(join('src', 'index.ts'))) throw new Error('source export mismatch: ' + source)
+for (const entry of ['core', 'advanced', 'builder']) {
+  const esmEntry = fileURLToPath(import.meta.resolve('@ficsysfr/jsonforms_builder/' + entry))
+  const cjsEntry = require.resolve('@ficsysfr/jsonforms_builder/' + entry)
+  if (!esmEntry.endsWith(entry + '.es.js') || !cjsEntry.endsWith(entry + '.cjs')) {
+    throw new Error(entry + ' export mismatch: ' + esmEntry + ' / ' + cjsEntry)
+  }
+}
 const packageRoot = dirname(dirname(esm))
 const manifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
 if (manifest.version !== '${version}') throw new Error('installed version mismatch')
 if (!existsSync(join(packageRoot, manifest.types))) throw new Error('types entry is missing')
+// The icon lists must load without any dependency: build configurations import them.
+const { CONTROL_ICONS } = await import('@ficsysfr/jsonforms_builder/icons')
+const cjsIcons = require('@ficsysfr/jsonforms_builder/icons')
+if (!CONTROL_ICONS.includes('i-lucide-x') || cjsIcons.CONTROL_ICONS.length !== CONTROL_ICONS.length) {
+  throw new Error('icons export mismatch')
+}
 `,
     )
     run(process.execPath, [consumer], { cwd: temporaryRoot })

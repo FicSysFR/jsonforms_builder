@@ -41,7 +41,8 @@ Le `label` du Group devient le titre de la carte.
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `variant` | `"stepper"` | tabs | `"stepper"` → wizard `UStepper` ; sinon `UTabs`. |
-| `queryKey` | `String` | `"tab"` | Clé du hash / query pour mémoriser l’onglet. |
+| `urlHash` | `Boolean` | `false` | Mémorise l’onglet actif dans `location.hash` (`#tab=…`), pour le conserver au rechargement ou dans un lien partagé. Sans cette option, l’onglet reste en mémoire et l’URL n’est jamais modifiée. Aussi lisible dans le `config` de JSON Forms. |
+| `queryKey` | `String` | `"tab"` | Clé du hash quand `urlHash` est actif. |
 | `defaultTab` | `String` | `"0"` | Identifiant d’onglet initial. |
 | `tabs` | `Object` | — | Pass-through → `UTabs`. |
 | `stepper` | `Object` | — | Pass-through → `UStepper`. |
@@ -50,7 +51,7 @@ Le `label` du Group devient le titre de la carte.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `queryId` | `String` | index | Identifiant stable pour le hash URL. |
+| `queryId` | `String` | index | Identifiant stable de l’onglet (dans le hash avec `urlHash`). |
 
 ### Exemples
 
@@ -59,7 +60,7 @@ Onglets :
 ```json
 {
   "type": "Categorization",
-  "options": { "queryKey": "section", "defaultTab": "basic" },
+  "options": { "urlHash": true, "queryKey": "section", "defaultTab": "basic" },
   "elements": [
     {
       "type": "Category",

@@ -2,6 +2,7 @@ import { Node, mergeAttributes, type CommandProps, type NodeViewRenderer } from 
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
 import type { Editor } from '@tiptap/vue-3'
 import type { InjectionKey, Ref } from 'vue'
+import { createUiText, type UiText } from '../i18n/ui'
 import WysiwygImageUploadNode from './WysiwygImageUploadNode.vue'
 
 export type WysiwygImageUploadContext = {
@@ -63,14 +64,15 @@ export const imageUploadHandler = {
   isDisabled: undefined as undefined,
 }
 
-export const readFileAsDataUrl = (file: File): Promise<string> =>
+/** Reads `file` as a data URL; error messages come from `t`. */
+export const readFileAsDataUrl = (file: File, t: UiText = createUiText()): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
       const result = reader.result
       if (typeof result === 'string') resolve(result)
-      else reject(new Error('Impossible de lire le fichier image'))
+      else reject(new Error(t('jsonformsBuilder.wysiwyg.imageUpload.unreadable')))
     }
-    reader.onerror = () => reject(reader.error ?? new Error('Lecture du fichier impossible'))
+    reader.onerror = () => reject(reader.error ?? new Error(t('jsonformsBuilder.file.readError')))
     reader.readAsDataURL(file)
   })

@@ -11,7 +11,7 @@
       :model-value="selected"
       :items="control.options"
       :class="styles.control.input"
-      :disabled="isDisabled"
+      :disabled="isLocked"
       :orientation="appliedOptions.vertical === false ? 'horizontal' : 'vertical'"
       value-key="value"
       label-key="label"
@@ -76,6 +76,10 @@ const controlRenderer = defineComponent({
      * preserving the existing order of already checked values.
      */
     const onSelectionChange = (next: unknown[]) => {
+      // Bypasses `onChange`, so it must honour the read-only lock itself.
+      if (control.isLocked.value) {
+        return
+      }
       const path = control.control.value.path
       const before = selected.value
 

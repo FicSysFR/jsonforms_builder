@@ -108,7 +108,10 @@ export interface WysiwygAiTransport {
   ): AsyncIterable<WysiwygAiStreamChunk>
 }
 
-/** UI strings of the AI menu and result panel (French by default). */
+/**
+ * UI strings of the AI menu and result panel. Defaults: the `jsonformsBuilder.wysiwyg.ai.*`
+ * interface texts (French without a translator).
+ */
 export type WysiwygAiLabels = {
   menu: string
   ask: string

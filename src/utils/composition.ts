@@ -7,10 +7,11 @@ import {
   type JsonSchema,
   type UISchemaElement,
 } from '@jsonforms/core'
-import { debounce, get, isObject } from 'radash'
+import { debounce, get, isObject } from './lang'
 import { defu } from 'defu'
 import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
+import { useControlErrors } from './errors'
 import { IsDynamicPropertyContext } from './inject'
 
 /** Loose options bag from JSON Forms `uischema.options` / `config`. */
@@ -244,8 +245,15 @@ export const useUiControl = <
       ? debounce({ delay: debounceWait }, handleChange)
       : handleChange
 
+  /**
+   * User edits only: a locked control (read-only or disabled, see `isLocked`) never writes,
+   * even if a Nuxt UI widget lacking a `readonly` prop still emits an update. Programmatic
+   * resets such as `clearOnHide` go through `handleChange` directly.
+   */
   const onChange = (value: unknown) => {
-    if (changeEmitter) {
+    if (changeEmitter && !isLocked.value) {
+      // A user edit counts as a touch: checkboxes, selects and sliders may never blur.
+      touched.value = true
       changeEmitter(input.control.value.path, adaptTarget(value))
     }
   }
@@ -287,10 +295,16 @@ export const useUiControl = <
     isFocused.value = false
   }
 
+  const { localErrors, serverErrors } = useControlErrors(input.control)
+
+  /**
+   * `enableFilterErrorsBeforeTouch` only delays local validation errors: errors supplied by the
+   * host (`additional-errors`) are shown at once, since the user cannot fix them by typing.
+   */
   const filteredErrors = computed(() => {
     return touched.value || !appliedOptions.value.enableFilterErrorsBeforeTouch
       ? input.control.value.errors
-      : ''
+      : serverErrors.value
   })
 
   /**
@@ -317,7 +331,8 @@ export const useUiControl = <
   })
 
   const controlWrapper = computed(() => {
-    const { description, errors, label, visible, required } = input.control.value
+    const { description, label, visible, required } = input.control.value
+    const errors = filteredErrors.value
     const id = input.control.value.id.replace(/#\//g, '').replace(/\//g, '_')
 
     // `hideDescription` removes help text for this field. Used by the array renderer on
@@ -355,6 +370,12 @@ export const useUiControl = <
   const rawErrors = computed(() => input.control.value.errors)
 
   const isReadonly = computed(() => {
+    // JSON Forms 3.8+ resolves every read-only source (form flag, READONLY/WRITABLE rules,
+    // options, config, schema) into `readonly`, kept apart from `enabled` when
+    // `config.separateReadonlyFromDisabled` is set. Older versions leave it undefined.
+    if ((input.control.value as { readonly?: boolean }).readonly === true) {
+      return true
+    }
     if (input.control.value.config?.readonly === true) {
       return true
     }
@@ -364,6 +385,13 @@ export const useUiControl = <
 
   /** `disabled` in the Nuxt UI sense: disabled unless we are simply read-only. */
   const isDisabled = computed(() => !input.control.value.enabled && !isReadonly.value)
+
+  /**
+   * The control accepts no edit: read-only (rendered as such where the widget supports it) or
+   * disabled. JSON Forms already reports `enabled: false` for every read-only source; widgets
+   * without a `readonly` prop must bind `:disabled="isLocked"`.
+   */
+  const isLocked = computed(() => !input.control.value.enabled || isReadonly.value)
 
   return {
     ...input,
@@ -380,10 +408,13 @@ export const useUiControl = <
     handleFocus,
     onChange,
     rawErrors,
+    localErrors,
+    serverErrors,
     isHovered,
     isClearable,
     isReadonly,
     isDisabled,
+    isLocked,
   }
 }
 

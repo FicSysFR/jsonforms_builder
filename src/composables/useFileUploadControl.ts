@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import type { JsonSchema } from '@jsonforms/core'
+import { createUiText, type UiText, useUiText } from '../i18n/ui'
 import { useUiControl } from '../utils'
 
 type UiControlInput = Parameters<typeof useUiControl>[0]
@@ -18,7 +19,6 @@ export type ParsedDataUrl = {
 }
 
 const FALLBACK_MIME = 'application/octet-stream'
-const FALLBACK_NAME = 'fichier'
 
 /**
  * Parses a data URL `data:<mime>[;name=…][;base64],<payload>`.
@@ -98,13 +98,13 @@ export const isMultipleFileSchema = (schema: JsonSchema | undefined): boolean =>
 }
 
 /** Human-readable size, for the help line under the drop zone. */
-export const formatFileSize = (bytes: unknown): string => {
+export const formatFileSize = (bytes: unknown, t: UiText = createUiText()): string => {
   const size = Number(bytes)
   if (!Number.isFinite(size) || size < 0) {
     return ''
   }
 
-  const units = ['o', 'ko', 'Mo', 'Go']
+  const units = t('jsonformsBuilder.file.units').split(',')
   let value = size
   let unit = 0
 
@@ -117,7 +117,7 @@ export const formatFileSize = (bytes: unknown): string => {
 }
 
 /** Rebuilds a `File` from a data URL, to redisplay a loaded form. */
-export const dataUrlToFile = (value: unknown): File | undefined => {
+export const dataUrlToFile = (value: unknown, t: UiText = createUiText()): File | undefined => {
   const parsed = parseDataUrl(value)
   if (!parsed?.isBase64) {
     return undefined
@@ -130,18 +130,20 @@ export const dataUrlToFile = (value: unknown): File | undefined => {
       bytes[index] = binary.charCodeAt(index)
     }
 
-    return new File([bytes], parsed.name ?? FALLBACK_NAME, { type: parsed.mime })
+    return new File([bytes], parsed.name ?? t('jsonformsBuilder.file.defaultName'), {
+      type: parsed.mime,
+    })
   } catch {
     return undefined
   }
 }
 
 /** Outbound path: the component's `File` to the data URL stored in the model. */
-export const fileToDataUrl = (file: File): Promise<string> => {
+export const fileToDataUrl = (file: File, t: UiText = createUiText()): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
-    reader.onerror = () => reject(reader.error ?? new Error('Lecture du fichier impossible'))
+    reader.onerror = () => reject(reader.error ?? new Error(t('jsonformsBuilder.file.readError')))
     reader.onload = () => {
       const result = String(reader.result ?? '')
       const parsed = parseDataUrl(result)
@@ -171,6 +173,7 @@ export const useFileUploadControl = ({
   }
 
   const control = useUiControl(jsonFormsControl, adaptTarget)
+  const t = useUiText()
 
   const multiple = computed(() => isMultipleFileSchema(control.control.value.schema))
 
@@ -206,7 +209,7 @@ export const useFileUploadControl = ({
 
       lastEmitted.value = serialized
       files.value = toDataUrls(data)
-        .map(dataUrlToFile)
+        .map((value) => dataUrlToFile(value, t))
         .filter((file): file is File => file !== undefined)
     },
     { immediate: true },
@@ -216,7 +219,7 @@ export const useFileUploadControl = ({
     const list = value ? (Array.isArray(value) ? value : [value]) : []
     files.value = list
 
-    const urls = await Promise.all(list.map(fileToDataUrl))
+    const urls = await Promise.all(list.map((file) => fileToDataUrl(file, t)))
     const next = multiple.value ? urls : urls[0]
 
     lastEmitted.value = JSON.stringify(adaptTarget(next) ?? null)
@@ -234,7 +237,10 @@ export const useFileUploadControl = ({
     const total = files.value.reduce((sum, file) => sum + file.size, 0)
     const count = files.value.length
 
-    return `${count} fichier${count > 1 ? 's' : ''} · ${formatFileSize(total)}`
+    return t(count > 1 ? 'jsonformsBuilder.file.count.other' : 'jsonformsBuilder.file.count.one', {
+      count,
+      size: formatFileSize(total, t),
+    })
   })
 
   return {
@@ -245,6 +251,7 @@ export const useFileUploadControl = ({
     files,
     modelValue,
     summary,
+    t,
     onFilesChange,
   }
 }

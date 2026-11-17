@@ -9,11 +9,11 @@
         color="neutral"
         variant="outline"
         size="sm"
-        label="Ajouter"
+        :label="t('jsonformsBuilder.array.add')"
         @click="addItem"
       )
 
-    p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") Aucun élément.
+    p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") {{ t('jsonformsBuilder.array.empty') }}
 
     //- Primitive values: one row per entry, no card or title. Element label and
     //- description are identical across rows — repeating them would make the list
@@ -30,15 +30,16 @@
             :uischema="childUiSchema"
             :path="childPath(index)"
             :enabled="control.enabled"
+            :readonly="control.readonly"
             :renderers="control.renderers"
             :cells="control.cells"
           )
         u-button(
           v-if="showSortButtons"
-          :disabled="index === 0 || !control.enabled"
+          :disabled="index === 0 || isLocked"
           :class="styles.arrayList.itemMoveUp"
           icon="i-lucide-chevron-up"
-          aria-label="Monter l'élément"
+          :aria-label="t('jsonformsBuilder.array.moveUp')"
           color="neutral"
           variant="ghost"
           size="sm"
@@ -46,10 +47,10 @@
         )
         u-button(
           v-if="showSortButtons"
-          :disabled="index === items.length - 1 || !control.enabled"
+          :disabled="index === items.length - 1 || isLocked"
           :class="styles.arrayList.itemMoveDown"
           icon="i-lucide-chevron-down"
-          aria-label="Descendre l'élément"
+          :aria-label="t('jsonformsBuilder.array.moveDown')"
           color="neutral"
           variant="ghost"
           size="sm"
@@ -59,7 +60,7 @@
           :disabled="!canRemove"
           :class="styles.arrayList.itemDelete"
           icon="i-lucide-trash-2"
-          aria-label="Supprimer l'élément"
+          :aria-label="t('jsonformsBuilder.array.remove')"
           color="error"
           variant="ghost"
           size="sm"
@@ -80,10 +81,10 @@
             .flex.items-center.gap-1
               u-button(
                 v-if="showSortButtons"
-                :disabled="index === 0 || !control.enabled"
+                :disabled="index === 0 || isLocked"
                 :class="styles.arrayList.itemMoveUp"
                 icon="i-lucide-chevron-up"
-                aria-label="Monter l'élément"
+                :aria-label="t('jsonformsBuilder.array.moveUp')"
                 color="neutral"
                 variant="ghost"
                 size="xs"
@@ -91,10 +92,10 @@
               )
               u-button(
                 v-if="showSortButtons"
-                :disabled="index === items.length - 1 || !control.enabled"
+                :disabled="index === items.length - 1 || isLocked"
                 :class="styles.arrayList.itemMoveDown"
                 icon="i-lucide-chevron-down"
-                aria-label="Descendre l'élément"
+                :aria-label="t('jsonformsBuilder.array.moveDown')"
                 color="neutral"
                 variant="ghost"
                 size="xs"
@@ -104,7 +105,7 @@
                 :disabled="!canRemove"
                 :class="styles.arrayList.itemDelete"
                 icon="i-lucide-trash-2"
-                aria-label="Supprimer l'élément"
+                :aria-label="t('jsonformsBuilder.array.remove')"
                 color="error"
                 variant="ghost"
                 size="xs"
@@ -117,6 +118,7 @@
             :uischema="childUiSchema"
             :path="childPath(index)"
             :enabled="control.enabled"
+            :readonly="control.readonly"
             :renderers="control.renderers"
             :cells="control.cells"
           )
@@ -129,8 +131,8 @@
 
     confirm-dialog(
       :open="pendingRemoveIndex !== null"
-      :title="`Supprimer ${pendingRemoveLabel} ?`"
-      description="Cette entrée sera retirée de la liste. L'action est irréversible."
+      :title="t('jsonformsBuilder.array.removeTitle', { label: pendingRemoveLabel })"
+      :description="t('jsonformsBuilder.array.removeDescription')"
       @update:open="cancelRemove"
       @confirm="confirmRemove"
     )

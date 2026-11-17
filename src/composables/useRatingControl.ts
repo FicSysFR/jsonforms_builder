@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { isNumber } from 'radash'
+import { isNumber } from '../utils/lang'
 import { useUiControl } from '../utils'
 
 type UiControlInput = Parameters<typeof useUiControl>[0]

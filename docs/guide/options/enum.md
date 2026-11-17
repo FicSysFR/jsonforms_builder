@@ -4,7 +4,8 @@
 
 ## Select menu (défaut) — `USelectMenu`
 
-**Activation :** schema `enum` ou `oneOf` const/title, sans `format` spécial.
+**Activation :** schema `enum` ou `oneOf` const/title, sans `format` spécial. Un `oneOf` de constantes
+(de tout type) arrive toujours ici, jamais sur le renderer de combinateur réservé aux variantes d'objet.
 
 ### API
 

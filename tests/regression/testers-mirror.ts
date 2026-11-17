@@ -30,6 +30,7 @@ import {
   type UISchemaElement,
 } from '@jsonforms/core'
 import { isCombinatorItemsArray } from '../../src/composables/useArrayControl'
+import { enumSuggestionTester } from '../../src/composables/useEnumSuggestionControl'
 import { isRenderableObjectSchema } from '../../src/composables/useObjectControl'
 import { isSliderControl } from '../../src/composables/useSliderControl'
 
@@ -49,7 +50,7 @@ export const mirroredTesters: MirroredTester[] = [
   { name: 'PasswordControl', tester: rankWith(2, and(isStringControl, formatIs('password'))) },
   { name: 'TextareaControl', tester: rankWith(2, and(isStringControl, isMultiLineControl)) },
   { name: 'DateControl', tester: rankWith(2, isDateControl) },
-  { name: 'EnumControl', tester: rankWith(2, isEnumControl) },
+  { name: 'EnumControl', tester: enumSuggestionTester },
   {
     name: 'RadioGroupControl',
     tester: rankWith(20, and(isEnumControl, optionIs('format', 'radio'))),

@@ -38,8 +38,29 @@
       "import": "./dist/json-formbuilder.es.js",
       "require": "./dist/json-formbuilder.cjs.js"
     },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.es.js",
+      "require": "./dist/core.cjs"
+    },
+    "./advanced": {
+      "types": "./dist/advanced.d.ts",
+      "import": "./dist/advanced.es.js",
+      "require": "./dist/advanced.cjs"
+    },
+    "./builder": {
+      "types": "./dist/builder.d.ts",
+      "import": "./dist/builder.es.js",
+      "require": "./dist/builder.cjs"
+    },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.es.js",
+      "require": "./dist/icons.cjs"
+    },
     "./source": "./src/index.ts"
   },
+  "sideEffects": false,
   "files": [
     "dist/**/*",
     "src/**/*",
@@ -65,6 +86,7 @@
     "test:regression": "vitest run tests/regression",
     "test:perf": "vitest run tests/performance",
     "test:scripts": "node --test scripts/tests/*.test.mjs",
+    "test:browser": "yarn build && vite build --config tests/browser/vite.config.ts && playwright test --config tests/browser/playwright.config.ts",
     "changelog:build": "node scripts/build-changelog.mjs",
     "changelog:check": "node scripts/build-changelog.mjs --check",
     "package": "node scripts/package.mjs",
@@ -76,13 +98,12 @@
   },
   "dependencies": {
     "@internationalized/date": "^3.12.1",
-    "@tiptap/extension-highlight": "^3.29.2",
-    "@tiptap/extension-list": "^3.29.2",
-    "@tiptap/extension-table": "^3.29.2",
-    "@tiptap/extension-text-align": "^3.29.2",
-    "@tiptap/extension-text-style": "^3.29.2",
-    "defu": "^6.1.4",
-    "radash": "^12.1.1"
+    "@tiptap/extension-highlight": "^3.30.5",
+    "@tiptap/extension-list": "^3.30.5",
+    "@tiptap/extension-table": "^3.30.5",
+    "@tiptap/extension-text-align": "^3.30.5",
+    "@tiptap/extension-text-style": "^3.30.5",
+    "defu": "^6.1.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
@@ -90,8 +111,9 @@
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/vue": "^3.6.0",
     "@nuxt/ui": "^4.10.0",
-    "@tiptap/extension-image": "^3.29.2",
-    "@tiptap/markdown": "^3.29.2",
+    "@playwright/test": "1.65.0",
+    "@tiptap/extension-image": "^3.30.5",
+    "@tiptap/markdown": "^3.30.5",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.10.0",
@@ -122,10 +144,26 @@
     "@jsonforms/core": "^3.6",
     "@jsonforms/vue": "^3.6",
     "@nuxt/ui": "^4.10",
+    "@tiptap/core": "^3.30.5",
+    "@tiptap/extension-image": "^3.30.5",
+    "@tiptap/pm": "^3.30.5",
+    "@tiptap/vue-3": "^3.30.5",
     "typescript": "^5 || ^6 || ^7",
     "vue": "^3.5"
   },
   "peerDependenciesMeta": {
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/vue-3": {
+      "optional": true
+    },
     "typescript": {
       "optional": true
     }

@@ -1,10 +1,11 @@
-import { get } from 'radash'
+import { get } from '../utils/lang'
 import type { Translator } from '@jsonforms/core'
 import {
   getAjvErrorTranslations,
   interpolateAjvErrorMessage,
   type AjvErrorMessageDict,
 } from './ajvErrorTranslations'
+import { getUiTranslations } from './ui'
 
 export type CreateJsonFormsTranslatorOptions = {
   /** Active locale (`fr`, `en`, `fr-FR`…). */
@@ -29,16 +30,19 @@ export type CreateJsonFormsTranslatorOptions = {
 
 /**
  * Builds a JSON Forms `translate` function that:
- * 1. Resolves keys from `messages` (nested paths via radash `get`)
+ * 1. Resolves keys from `messages` (nested dotted paths)
  * 2. Falls back to built-in AJV error messages for the locale
- * 3. Interpolates `{{param}}` from `error.params`
- * 4. Returns `undefined` when neither a translation nor a default exists
+ * 3. With an explicit `locale`, falls back to the library's interface texts
+ *    (`jsonformsBuilder.*`, French or English); without one they keep their French defaults
+ * 4. Interpolates `{{param}}` from `error.params` and the given values
+ * 5. Returns `undefined` when neither a translation nor a default exists
  *    (required for the AJV error key fallback chain)
  */
 export const createJsonFormsTranslator = (
   options: CreateJsonFormsTranslatorOptions = {},
 ): Translator => {
   const returnUndefinedWhenMissing = options.returnUndefinedWhenMissing !== false
+  const uiDict = options.locale ? getUiTranslations(options.locale) : undefined
   const ajvDict = {
     ...getAjvErrorTranslations(options.locale),
     ...options.ajvErrors,
@@ -57,12 +61,13 @@ export const createJsonFormsTranslator = (
   ): string | undefined => {
     const fromMessages = options.messages ? (get(options.messages, key) as unknown) : undefined
     const fromAjv = get(ajvDict, key) as unknown
+    const fromUi = uiDict?.[key]
     const raw =
       typeof fromMessages === 'string'
         ? fromMessages
         : typeof fromAjv === 'string'
           ? fromAjv
-          : undefined
+          : fromUi
 
     if (raw !== undefined) {
       return interpolateAjvErrorMessage(raw, values)

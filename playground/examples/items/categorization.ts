@@ -1,5 +1,5 @@
 import type { Translator } from '@jsonforms/core'
-import { get } from 'radash'
+import { get } from '../../../src/utils/lang'
 import { registerExamples } from '../register'
 import type { Layout, UISchemaElement, JsonSchema } from '@jsonforms/core'
 

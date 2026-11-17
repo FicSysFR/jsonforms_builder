@@ -16,6 +16,7 @@
               :uischema="item.uischema"
               :path="layout.path"
               :enabled="layout.enabled"
+              :readonly="layout.readonly"
               :renderers="layout.renderers"
               :cells="layout.cells"
             )
@@ -27,14 +28,14 @@
           icon="i-lucide-arrow-left"
           color="neutral"
           variant="outline"
-          label="Précédent"
+          :label="t('jsonformsBuilder.categorization.previous')"
           @click="goToStep(activeIndex - 1)"
         )
         u-button(
           :disabled="activeIndex >= visibleCategories.length - 1"
           :class="styles.categorization.stepperButtonNext"
           trailing-icon="i-lucide-arrow-right"
-          label="Suivant"
+          :label="t('jsonformsBuilder.categorization.next')"
           @click="goToStep(activeIndex + 1)"
         )
 
@@ -55,6 +56,7 @@
             :uischema="item.uischema"
             :path="layout.path"
             :enabled="layout.enabled"
+            :readonly="layout.readonly"
             :renderers="layout.renderers"
             :cells="layout.cells"
           )
@@ -80,8 +82,9 @@ import UTabs from '@nuxt/ui/components/Tabs.vue'
 import UStepper from '@nuxt/ui/components/Stepper.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import { useUiLayout } from '../utils'
-import { useHashState } from '../composables'
-import { get, isString } from 'radash'
+import { useCategoryState } from '../composables'
+import { useUiText } from '../i18n/ui'
+import { get, isString } from '../utils/lang'
 
 const DEFAULT_QUERY_KEY = 'tab'
 const DEFAULT_DEFAULT_TAB = '0'
@@ -93,8 +96,9 @@ const DEFAULT_DEFAULT_TAB = '0'
  * as a step-by-step wizard (`UStepper`) — the latter variant was declared in the v1 theme
  * but had never been implemented.
  *
- * The active category is persisted in the URL hash (`#tab=…`), making long forms
- * shareable and resilient to reload.
+ * The active category stays in memory. With `options.urlHash: true` (or the same key in the
+ * JSON Forms `config`), it is persisted in the URL hash (`#tab=…`), making long forms shareable
+ * and resilient to reload.
  */
 const layoutRenderer = defineComponent({
   name: 'categorization-renderer',
@@ -108,8 +112,8 @@ const layoutRenderer = defineComponent({
     ...rendererProps<Layout>(),
   },
   setup(props: RendererProps<Layout>) {
-    const { state, set } = useHashState()
     const renderedProps = useUiLayout(useJsonFormsCategorization(props))
+    const { state, set } = useCategoryState(renderedProps.appliedOptions.value?.urlHash === true)
     const queryKey = get(renderedProps.layout.value, 'uischema.options.queryKey', DEFAULT_QUERY_KEY)
     const defaultTab = get(
       renderedProps.layout.value,
@@ -206,6 +210,7 @@ const layoutRenderer = defineComponent({
 
     return {
       ...renderedProps,
+      t: useUiText(),
 
       isStepper,
       activeCategory,

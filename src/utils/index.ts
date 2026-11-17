@@ -1,4 +1,5 @@
 export * from './composition'
+export * from './errors'
 export * from './inject'
 export * from './options'
 export * from './validator'

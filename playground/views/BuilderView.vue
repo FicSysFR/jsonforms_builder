@@ -1,6 +1,6 @@
 <template lang="pug">
 .p-4
-  form-builder(v-model="builderDefinition")
+  form-builder(v-model="builderDefinition" :storage-key="true")
 </template>
 
 <script setup lang="ts">

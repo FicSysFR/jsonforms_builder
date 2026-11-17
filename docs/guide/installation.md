@@ -12,6 +12,25 @@ les exports publics restent identiques en dehors du chemin d'import.
 `typescript` est une peerDependency **optionnelle** (`^5 || ^6 || ^7`) : elle ne sert qu’au
 contrôle de types de l’hôte ou à l’export `./source`, et n’est jamais requise à l’exécution.
 
+Le renderer WYSIWYG (`./advanced`) importe `@tiptap/core`, `@tiptap/pm`, `@tiptap/vue-3` et
+`@tiptap/extension-image`, que Nuxt UI fournit déjà : ce sont des peerDependencies optionnelles
+(`^3.30.5`). Avec pnpm en mode strict, les déclarer dans l’application pour partager l’instance de
+Nuxt UI. `./core` n’en a pas besoin.
+
+## Points d’entrée
+
+| Import | Contenu |
+|---|---|
+| `@ficsysfr/jsonforms_builder` | Tout : rétrocompatible, exige les paquets Tiptap au build. |
+| `@ficsysfr/jsonforms_builder/core` | Contrôles, dispositions, composables, i18n, thème, icônes, `nuxtUiRenderers`, `strictCspRenderers`. N’importe aucun paquet Tiptap. |
+| `@ficsysfr/jsonforms_builder/advanced` | Renderer WYSIWYG, assistant IA, `advancedRenderers`, `allRenderers` (Tiptap). |
+| `@ficsysfr/jsonforms_builder/builder` | Constructeur visuel `<FormBuilder>` et ses utilitaires. |
+| `@ficsysfr/jsonforms_builder/icons` | Listes d’icônes, sans dépendance (importable depuis `nuxt.config`). |
+
+Le paquet déclare `"sideEffects": false` : un bundler élimine ce qu’une page n’utilise pas. Un
+formulaire sans texte riche importe `./core` et charge ainsi environ un tiers de code en moins
+qu’avec l’ancien build en un seul fichier.
+
 ## Licences
 
 La bibliothèque est sous licence BSD-3-Clause (`LICENSE`). Le paquet npm livre aussi

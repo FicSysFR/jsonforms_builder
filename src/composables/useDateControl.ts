@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useUiControl } from '../utils'
 import type { useJsonFormsControl } from '@jsonforms/vue'
-import { isEmpty } from 'radash'
+import { isEmpty } from '../utils/lang'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import type { ManipulateType } from 'dayjs'
@@ -14,6 +14,7 @@ import {
   parseDate,
   parseDateTime,
   parseTime,
+  toZoned,
 } from '@internationalized/date'
 
 dayjs.extend(customParseFormat)
@@ -89,6 +90,41 @@ export const normalizeDateValue = (value: string, pattern: string): string => {
   }
 
   return value
+}
+
+const RFC3339_DATE_TIME =
+  /^(\d{4}-\d{2}-\d{2})[Tt ](\d{2}:\d{2})(:\d{2})?(?:\.\d+)?([Zz]|[+-]\d{2}:?\d{2})?$/
+
+/**
+ * Splits an RFC 3339 `date-time` into its wall time (`YYYY-MM-DDTHH:mm:ss`, fractional seconds
+ * dropped) and its offset (`Z` or `±HH:mm`). Strings that are not date-times come back as-is.
+ */
+export const splitDateTimeOffset = (value: string): { local: string; offset?: string } => {
+  const match = RFC3339_DATE_TIME.exec(value)
+  if (!match) {
+    return { local: value }
+  }
+
+  const [, date, hourMinute, seconds = ':00', rawOffset] = match
+  const local = `${date}T${hourMinute}${seconds}`
+  if (!rawOffset) {
+    return { local }
+  }
+
+  const offset =
+    rawOffset.toUpperCase() === 'Z' ? 'Z' : `${rawOffset.slice(0, 3)}:${rawOffset.slice(-2)}`
+  return { local, offset }
+}
+
+/** Offset (`±HH:mm`) that `timeZone` applies at this wall time, daylight saving included. */
+export const resolveLocalOffset = (
+  value: CalendarDateTime,
+  timeZone: string = getLocalTimeZone(),
+): string => {
+  const minutes = Math.round(toZoned(value, timeZone).offset / 60_000)
+  const sign = minutes < 0 ? '-' : '+'
+  const absolute = Math.abs(minutes)
+  return `${sign}${pad2(Math.floor(absolute / 60))}:${pad2(absolute % 60)}`
 }
 
 export const resolveDateInputType = (format?: string): 'date' | 'time' | 'datetime-local' => {
@@ -452,8 +488,51 @@ export const useDateControl = ({
     return typeof pattern === 'string' && pattern ? pattern : patternDefault.value
   })
 
+  /**
+   * RFC 3339 offsets are handled for `date-time` without a custom `options.pattern` (a custom
+   * pattern stays the sole contract). The wall time is shown in the stored offset and written
+   * back with it; a naive value stays naive.
+   */
+  const handlesOffset = computed(
+    () => rawFormat.value === 'date-time' && optionPattern.value === DEFAULT_DATETIME_FORMAT,
+  )
+
+  const splitData = computed(() => {
+    const data = control.control.value.data
+    return handlesOffset.value && typeof data === 'string' && data
+      ? splitDateTimeOffset(data)
+      : undefined
+  })
+
+  /** Offset of the stored value (`Z`, `±HH:mm`), `undefined` when naive or not a date-time. */
+  const dateTimeOffset = computed(() => splitData.value?.offset)
+
+  /** Data as the dayjs pattern reads it: the wall time, without offset. */
+  const patternData = computed(() => splitData.value?.local ?? control.control.value.data)
+
+  /**
+   * Offset for a written value: the stored one, none for a naive stored value, otherwise the
+   * browser's offset at that wall time (`options.dateTimeOffset: 'none'` writes naive values).
+   */
+  const resolveWriteOffset = (value: CalendarDate | CalendarDateTime | Time | null | undefined) => {
+    if (!handlesOffset.value || !value || !('hour' in value) || !('year' in value)) {
+      return undefined
+    }
+    if (splitData.value) {
+      return splitData.value.offset
+    }
+    if (control.appliedOptions.value?.dateTimeOffset === 'none') {
+      return undefined
+    }
+    return resolveLocalOffset(value)
+  }
+
+  /** Text edits keep the stored offset (keyboard paths). */
+  const withStoredOffset = (text: string) =>
+    splitData.value?.offset ? `${text}${splitData.value.offset}` : text
+
   const controlData = computed(() => {
-    const date = dayjs(control.control.value.data, optionPattern.value, true)
+    const date = dayjs(patternData.value, optionPattern.value, true)
 
     return date.format(patternDefault.value)
   })
@@ -476,7 +555,7 @@ export const useDateControl = ({
 
   /** Value exposed to `UInputDate` / `UInputTime`. */
   const dateValue = computed(() =>
-    toDateValue(control.control.value.data, optionPattern.value, rawFormat.value),
+    toDateValue(patternData.value, optionPattern.value, rawFormat.value),
   )
 
   /** Component return: convert back to a schema-pattern string before propagating. */
@@ -486,7 +565,9 @@ export const useDateControl = ({
       return
     }
 
-    control.onChange(adaptTarget(fromDateValue(value, optionPattern.value, rawFormat.value)))
+    const text = fromDateValue(value, optionPattern.value, rawFormat.value)
+    const offset = text ? resolveWriteOffset(value) : undefined
+    control.onChange(adaptTarget(offset ? `${text}${offset}` : text))
   }
 
   const normalizeValue = (value: string, pattern = patternDefault.value) => {
@@ -531,11 +612,11 @@ export const useDateControl = ({
       return
     }
 
-    control.onChange(date.format(optionPattern.value))
+    control.onChange(withStoredOffset(date.format(optionPattern.value)))
   }
 
   const changeValueAtPosition = (increment: number, cursorPosition: number) => {
-    const currentDate = dayjs(control.control.value.data, optionPattern.value, true)
+    const currentDate = dayjs(patternData.value, optionPattern.value, true)
 
     if (!currentDate.isValid()) {
       // If no valid date, use the current date
@@ -548,7 +629,7 @@ export const useDateControl = ({
     const dateUnit = detectDateUnitFromPosition(optionPattern.value, cursorPosition)
     const newDate = currentDate.add(increment, dateUnit)
 
-    control.onChange(newDate.format(optionPattern.value))
+    control.onChange(withStoredOffset(newDate.format(optionPattern.value)))
   }
 
   /** Suppress keydown so only keyup increments (avoids double step on repeat). */
@@ -569,6 +650,7 @@ export const useDateControl = ({
     calendarType,
     dateConstraints,
     dateValue,
+    dateTimeOffset,
     onChangeDateValue,
     optionPattern,
     controlData,

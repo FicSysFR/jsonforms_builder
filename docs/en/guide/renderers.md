@@ -15,7 +15,7 @@ Schema / option → Nuxt UI component mapping.
 | `number` + `options.slider` | `USlider` | [Slider](./options/number#slider-—-uslider) |
 | `number` + `options.format: rating` | `UInputRating` | [Rating](./options/number#rating-—-uinputrating) |
 | `boolean` | `UCheckbox` / `USwitch` | [Boolean](./options/boolean) |
-| `enum` | `USelectMenu` | [Enum](./options/enum) |
+| `enum`, `oneOf` of constants (`const`, `title`) | `USelectMenu` (searchable) | [Enum](./options/enum) |
 | `enum` + `options.format: select` | `USelect` | [Select](./options/enum#select-no-search-—-uselect) |
 | `enum` + `options.format: radio` | `URadioGroup` | [Radio](./options/enum#radio-—-uradiogroup) |
 | `string` + `options.api` | `UInputMenu` | [Autocomplete](./options/string#autocomplete-api-—-uinputmenu) |
@@ -23,7 +23,7 @@ Schema / option → Nuxt UI component mapping.
 | `options.format: calendar` | `UCalendar` | [Calendar](./options/date#calendar-—-inline-ucalendar) |
 | `array` + `options.format: tags` | `UInputTags` | [Tags](./options/array#tags-—-uinputtags) |
 | `array` | repeatable cards | [Array](./options/array#array-—-repeatable-cards) |
-| `oneOf` | selector + sub-form | [oneOf](./options/array#oneof-anyof) |
+| `oneOf` / `anyOf` of variants | selector + sub-form | [oneOf](./options/array#oneof-anyof) |
 | `Group` | `UCard` | [Group](./options/layouts#group-—-ucard) |
 | `Categorization` | `UTabs` / `UStepper` | [Categorization](./options/layouts#categorization-—-utabs-ustepper) |
 | `Label` | heading + `USeparator` | [Label](./options/layouts#label) |

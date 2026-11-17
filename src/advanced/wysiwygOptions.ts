@@ -1,4 +1,5 @@
 import type { AnyExtension } from '@tiptap/core'
+import { createUiText, type UiText } from '../i18n/ui'
 import {
   DISABLED_WYSIWYG_AI,
   resolveWysiwygAiOptions,
@@ -62,7 +63,7 @@ export type WysiwygOptions = {
   debounce?: number
   /**
    * Toolbar items (Nuxt UI `EditorToolbarItem[][]`), or `false` to hide.
-   * Default: built-in French toolbar, adapted to `features` and `ai`.
+   * Default: built-in toolbar (translated interface texts), adapted to `features` and `ai`.
    */
   toolbar?: false | unknown[][]
   /** Spacing preset for the contenteditable. Default: `compact`. */
@@ -154,11 +155,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
 /**
- * Resolves uischema options + schema type into a flat runtime config.
+ * Resolves uischema options + schema type into a flat runtime config. Built-in labels
+ * (toolbar, image upload, AI) come from `t`.
  */
 export const resolveWysiwygOptions = (
   raw: Record<string, unknown> | undefined,
   schemaType: unknown,
+  t: UiText = createUiText(),
 ): ResolvedWysiwygOptions => {
   const opts = (raw ?? {}) as WysiwygOptions
   const density = opts.density ?? 'compact'
@@ -205,19 +208,17 @@ export const resolveWysiwygOptions = (
         : 2 * 1024 * 1024
 
   const features = resolveWysiwygFeatures(opts.features)
-  const ai = opts.ai === undefined ? DISABLED_WYSIWYG_AI : resolveWysiwygAiOptions(opts.ai)
+  const ai = opts.ai === undefined ? DISABLED_WYSIWYG_AI : resolveWysiwygAiOptions(opts.ai, t)
 
   const toolbar =
     opts.toolbar === false
       ? false
       : Array.isArray(opts.toolbar)
         ? opts.toolbar
-        : buildWysiwygToolbar({
-            features,
-            imagesEnabled,
-            aiActions: ai.actions,
-            aiLabel: ai.labels.menu,
-          })
+        : buildWysiwygToolbar(
+            { features, imagesEnabled, aiActions: ai.actions, aiLabel: ai.labels.menu },
+            t,
+          )
 
   return {
     contentType,
@@ -237,11 +238,13 @@ export const resolveWysiwygOptions = (
       upload: upload ?? opts.onImageUpload,
       accept: accept ?? opts.imageAccept ?? 'image/*',
       maxSize: resolvedMaxSize,
-      label: label ?? opts.imageLabel ?? 'Ajouter une image',
+      label: label ?? opts.imageLabel ?? t('jsonformsBuilder.wysiwyg.imageUpload.label'),
       description:
         description ??
         opts.imageDescription ??
-        `PNG, JPG, GIF ou WebP (max. ${Math.round(resolvedMaxSize / (1024 * 1024))} Mo)`,
+        t('jsonformsBuilder.wysiwyg.imageUpload.description', {
+          size: Math.round(resolvedMaxSize / (1024 * 1024)),
+        }),
     },
     extensions: Array.isArray(opts.extensions) ? opts.extensions : [],
     handlers: opts.handlers,

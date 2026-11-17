@@ -248,10 +248,37 @@ Multi-file: schema `type: "array"` of `string` items.
 | `base` | `String` | — | Origin prefix (e.g. `https://api.example.com`). |
 | `queryKey` | `String` | `"q"` | Name of the search parameter. |
 | `params` | `Object` | — | Fixed query parameters. |
-| `headers` | `Object` | — | HTTP headers. |
+| `headers` | `Object` | — | HTTP headers (filtered: see `allowedHeaders`). |
 | `itemsPath` | `String` | — | Dot path to the array in the JSON response. |
 | `labelKey` | `String` | `"label"` | Path to an item’s label. |
 | `valueKey` | `String` | `"value"` | Path to the stored value. |
+
+### Host policy (`config.apiPolicy`)
+
+A UI schema may come from a less trusted source than the application (an extension, a stored
+definition): it does not decide requests on its own. The policy is read from JSON Forms `config`,
+never from `options`. **Without a policy, no request is sent.**
+
+- `allowedOrigins`: allow-list of exact origins (`https://api.example.com`), queried without
+  cookies (`credentials: 'omit'`, changed through `credentials`). `'self'` stands for the page's
+  origin, queried with its cookies (`credentials: 'same-origin'`).
+- `allowedHeaders`: extra headers the UI schema may send. By default only `Accept`,
+  `Accept-Language` and `Content-Language` pass; the headers of a host `config.api` are kept.
+- `resolve(request)`: the host runs every request itself (authentication, proxy, cache, refusal);
+  it receives `{ url, headers, search, api, signal }` and returns the JSON payload, to which
+  `itemsPath` applies. A refusal (exception) is never followed by a `fetch`.
+
+Non-HTTP(S) URLs and URLs carrying credentials (`user:pass@`) are never queried, neither by the
+library nor through `resolve`. Redirects are refused (`redirect: 'error'`). The `api` object comes
+whole from the UI schema or, failing that, from `config.api`: never a mix of both. A relative `url`
+without `base` resolves against the page.
+
+```vue
+<json-forms
+  :config="{ apiPolicy: { allowedOrigins: ['self', 'https://data.geopf.fr'] } }"
+  …
+/>
+```
 
 ### Example
 

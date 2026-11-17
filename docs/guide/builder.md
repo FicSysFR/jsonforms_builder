@@ -20,11 +20,15 @@ Le builder fournit :
 - un **aperçu live** ;
 - un **export JSON** de `{ data, schema, uischema }` ;
 - un **import** (coller un JSON ou charger un fichier `.json`) pour éditer un formulaire existant ;
-- une **sauvegarde automatique** du brouillon (`schema`, `uischema`, `data`) dans `localStorage` — désactivable avec `:storage-key="false"`.
+- une **sauvegarde du brouillon** (`schema`, `uischema`, `data`) dans `localStorage`, sur demande : `:storage-key="true"` (clé historique) ou `storage-key="ma-cle"`. Sans cette prop, rien n’est persisté : un brouillon peut contenir des données que l’hôte ne veut pas laisser dans le navigateur.
 
 Formats d’import acceptés :
 
 - `{ "schema": …, "uischema": …, "data"?: … }` (`data` alimente l’aperçu) ;
 - un **JSON Schema** seul — l’UI Schema est généré automatiquement.
+
+La prop `locale` (`fr`, `en`, `en-GB`…) choisit la langue de l’interface du builder (palette, inspecteur, import, confirmations, libellés par défaut des nouveaux champs) et de l’aperçu, via `createJsonFormsTranslator({ locale })` : `form-builder(v-model="definition" locale="en")`. Sans `locale` ni `translate`, les textes restent en français.
+
+La prop `translate` reçoit un traducteur JSON Forms (`createJsonFormsTranslator({ locale, messages })`, un pont vue-i18n…) et l’emporte sur `locale`. Il est interrogé avec les clés `jsonformsBuilder.builder.*` (liste dans `UI_MESSAGES`) ; une clé pour laquelle il renvoie `undefined` garde son texte français. L’aperçu reçoit le même traducteur.
 
 Vous pouvez aussi l’ouvrir depuis le playground via **Open builder** (route `#/builder`, avec `?return=` pour revenir à la galerie).

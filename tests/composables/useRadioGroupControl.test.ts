@@ -33,12 +33,15 @@ describe('createRadioAdaptTarget', () => {
     expect(mounted.result.disable.value).toBe(true)
     mounted.result.onChange('')
     await vi.runAllTimersAsync()
-    expect(mounted.handleChange).toHaveBeenCalledWith('value', null)
+    expect(mounted.handleChange).not.toHaveBeenCalled()
 
     mounted.state.value = { ...mounted.state.value, data: 'beta', enabled: true }
     await nextTick()
     expect(mounted.result.modelValue.value).toBe('beta')
     expect(mounted.result.disable.value).toBe(false)
+    mounted.result.onChange('')
+    await vi.runAllTimersAsync()
+    expect(mounted.handleChange).toHaveBeenCalledWith('value', null)
     mounted.stop()
   })
 })

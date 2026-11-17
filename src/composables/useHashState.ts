@@ -1,5 +1,5 @@
 import { ref, watchEffect, onMounted, onBeforeUnmount, type Ref } from 'vue'
-import { assign, shake } from 'radash'
+import { assign, shake } from '../utils/lang'
 
 export type HashState = Record<string, string | undefined>
 
@@ -172,6 +172,25 @@ export function useHashState(): UseHashStateResult {
      */
     set(partial: HashState): void {
       state.value = assign(state.value, partial) as HashState
+    },
+  }
+}
+
+/**
+ * State of the active category of a `Categorization`. In memory by default: a form never
+ * writes into the page URL, which may belong to the host's router. With `urlHash`, it
+ * syncs with `location.hash` (`#tab=…`) so that a long form survives a reload or a shared link.
+ */
+export function useCategoryState(urlHash: boolean): UseHashStateResult {
+  if (urlHash) {
+    return useHashState()
+  }
+
+  const state = ref<HashState>({})
+  return {
+    state,
+    set: (partial: HashState) => {
+      state.value = { ...state.value, ...partial }
     },
   }
 }

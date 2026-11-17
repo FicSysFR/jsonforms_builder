@@ -1,5 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { ControlElement, JsonSchema, UISchemaElement } from '@jsonforms/core'
+import type { UiText } from '../i18n/ui'
 import { createControl, findPaletteContainer, findPaletteField } from './palette'
 import {
   addSchemaProperty,
@@ -67,8 +68,10 @@ const HISTORY_LIMIT = 50
  *
  * All mutations go through `commit`, ensuring no operation can bypass history — the
  * main source of bugs in this kind of editor.
+ *
+ * `t` resolves the default texts of new fields and containers (French by default).
  */
-export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
+export const useFormBuilder = (initial?: Partial<FormDefinition>, t?: UiText) => {
   const empty = createEmptyDefinition()
 
   const definition = ref<FormDefinition>({
@@ -128,7 +131,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
 
   /** Adds a palette field: property in the schema + `Control` in the uischema. */
   const addField = (paletteKey: string, parentPath: ElementPath, index: number) => {
-    const field = findPaletteField(paletteKey)
+    const field = findPaletteField(paletteKey, t)
     if (!field) return
 
     const name = slugifyPropertyName(field.label, listPropertyNames(definition.value.schema))
@@ -146,7 +149,7 @@ export const useFormBuilder = (initial?: Partial<FormDefinition>) => {
 
   /** Adds a container (layout, group, tabs, title). */
   const addContainer = (paletteKey: string, parentPath: ElementPath, index: number) => {
-    const container = findPaletteContainer(paletteKey)
+    const container = findPaletteContainer(paletteKey, t)
     if (!container) return
 
     commit({

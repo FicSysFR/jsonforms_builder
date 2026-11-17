@@ -8,8 +8,8 @@
       v-model="term"
       size="xs"
       icon="i-lucide-search"
-      placeholder="Rechercher"
-      aria-label="Rechercher"
+      :placeholder="t('jsonformsBuilder.wysiwyg.find.search')"
+      :aria-label="t('jsonformsBuilder.wysiwyg.find.search')"
       autofocus
       @keydown.enter.prevent="next"
     )
@@ -18,25 +18,48 @@
       :color="caseSensitive ? 'primary' : 'neutral'"
       :variant="caseSensitive ? 'soft' : 'ghost'"
       icon="i-lucide-case-sensitive"
-      aria-label="Respecter la casse"
+      :aria-label="t('jsonformsBuilder.wysiwyg.find.caseSensitive')"
       :aria-pressed="caseSensitive"
       @click="caseSensitive = !caseSensitive"
     )
     span.min-w-12.text-xs.text-muted.tabular-nums(aria-live="polite") {{ counter }}
-    u-button(size="xs" color="neutral" variant="ghost" icon="i-lucide-chevron-up" aria-label="Précédent" :disabled="!total" @click="previous")
-    u-button(size="xs" color="neutral" variant="ghost" icon="i-lucide-chevron-down" aria-label="Suivant" :disabled="!total" @click="next")
+    u-button(
+      size="xs"
+      color="neutral"
+      variant="ghost"
+      icon="i-lucide-chevron-up"
+      :aria-label="t('jsonformsBuilder.wysiwyg.find.previous')"
+      :disabled="!total"
+      @click="previous"
+    )
+    u-button(
+      size="xs"
+      color="neutral"
+      variant="ghost"
+      icon="i-lucide-chevron-down"
+      :aria-label="t('jsonformsBuilder.wysiwyg.find.next')"
+      :disabled="!total"
+      @click="next"
+    )
     template(v-if="editable")
       u-input.w-40(
         v-model="replacement"
         size="xs"
         icon="i-lucide-replace"
-        placeholder="Remplacer par"
-        aria-label="Remplacer par"
+        :placeholder="t('jsonformsBuilder.wysiwyg.find.replaceWith')"
+        :aria-label="t('jsonformsBuilder.wysiwyg.find.replaceWith')"
         @keydown.enter.prevent="replace"
       )
-      u-button(size="xs" color="neutral" variant="outline" :disabled="!total" @click="replace") Remplacer
-      u-button(size="xs" color="neutral" variant="outline" :disabled="!total" @click="replaceAll") Tout remplacer
-    u-button.ms-auto(size="xs" color="neutral" variant="ghost" icon="i-lucide-x" aria-label="Fermer" @click="$emit('close')")
+      u-button(size="xs" color="neutral" variant="outline" :disabled="!total" @click="replace") {{ t('jsonformsBuilder.wysiwyg.find.replace') }}
+      u-button(size="xs" color="neutral" variant="outline" :disabled="!total" @click="replaceAll") {{ t('jsonformsBuilder.wysiwyg.find.replaceAll') }}
+    u-button.ms-auto(
+      size="xs"
+      color="neutral"
+      variant="ghost"
+      icon="i-lucide-x"
+      :aria-label="t('jsonformsBuilder.wysiwyg.close')"
+      @click="$emit('close')"
+    )
 </template>
 
 <script lang="ts">
@@ -44,6 +67,7 @@ import { computed, defineComponent, onBeforeUnmount, ref, watch, type PropType }
 import type { Editor } from '@tiptap/vue-3'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UInput from '@nuxt/ui/components/Input.vue'
+import { useUiText } from '../../i18n/ui'
 import { getWysiwygSearchState, scrollToCurrentSearchResult } from './search'
 
 export default defineComponent({
@@ -55,6 +79,7 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props) {
+    const t = useUiText()
     const term = ref('')
     const replacement = ref('')
     const caseSensitive = ref(false)
@@ -100,7 +125,18 @@ export default defineComponent({
       if (!props.editor.isDestroyed) props.editor.commands.setSearchTerm('')
     })
 
-    return { term, replacement, caseSensitive, total, counter, next, previous, replace, replaceAll }
+    return {
+      t,
+      term,
+      replacement,
+      caseSensitive,
+      total,
+      counter,
+      next,
+      previous,
+      replace,
+      replaceAll,
+    }
   },
 })
 </script>

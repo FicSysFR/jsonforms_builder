@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import {
   BUNDLED_THIRD_PARTY_PACKAGES,
+  findUndeclaredImports,
   PACKAGE_SPECS,
   validateLibraryManifest,
   validatePackResult,
@@ -82,4 +83,24 @@ test('third-party notices cover every package bundled into dist', () => {
   assert.doesNotThrow(() => validateThirdPartyNotices(notices))
   assert.ok(BUNDLED_THIRD_PARTY_PACKAGES.includes('dayjs'))
   assert.throws(() => validateThirdPartyNotices(notices.replaceAll('dayjs', 'removed')), /dayjs/)
+})
+
+test('library manifest declares tree-shakable entry points', () => {
+  assert.doesNotThrow(() => validateLibraryManifest(libraryManifest()))
+
+  const withSideEffects = libraryManifest()
+  withSideEffects.sideEffects = true
+  assert.throws(() => validateLibraryManifest(withSideEffects), /sideEffects/)
+
+  const withoutCore = libraryManifest()
+  delete withoutCore.exports['./core']
+  assert.throws(() => validateLibraryManifest(withoutCore), /exports\["\.\/core"\]/)
+})
+
+test('every package the sources import at runtime is declared', () => {
+  assert.deepEqual(findUndeclaredImports(libraryManifest()), [])
+
+  const manifest = libraryManifest()
+  delete manifest.peerDependencies['@tiptap/core']
+  assert.deepEqual(findUndeclaredImports(manifest), ['@tiptap/core'])
 })

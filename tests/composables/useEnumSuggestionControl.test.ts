@@ -1,6 +1,8 @@
+import { isAnyOfControl, isOneOfControl, or, rankWith } from '@jsonforms/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createEnumAdaptTarget,
+  enumSuggestionTester,
   isArraySchemaControl,
   normalizeSuggestions,
   useEnumSuggestionControl,
@@ -74,5 +76,48 @@ describe('useEnumSuggestionControl', () => {
     expect(mounted.result.isArrayControl.value).toBe(true)
     expect(mounted.result.suggestions.value).toEqual(['one', '2'])
     mounted.stop()
+  })
+})
+
+describe('enumSuggestionTester', () => {
+  const rootSchema = { type: 'object' } as const
+  const context = { rootSchema, config: undefined }
+  const control = (options?: Record<string, unknown>) =>
+    ({ type: 'Control', scope: '#', ...(options ? { options } : {}) }) as const
+  const combinatorRank = rankWith(3, or(isOneOfControl, isAnyOfControl))
+
+  const oneOfConstants = {
+    oneOf: [
+      { const: 'draft', title: 'Draft' },
+      { const: 'published', title: 'Published' },
+    ],
+  }
+
+  it('renders a oneOf of constants as a searchable select, not as a combinator', () => {
+    const rank = enumSuggestionTester(control(), oneOfConstants, context)
+    expect(rank).toBe(5)
+    expect(rank).toBeGreaterThan(combinatorRank(control(), oneOfConstants, context))
+  })
+
+  it('also covers typed and numeric constants', () => {
+    const numeric = { type: 'integer', oneOf: [{ const: 1, title: 'One' }] } as const
+    expect(enumSuggestionTester(control(), numeric, context)).toBe(5)
+  })
+
+  it('keeps string enums and suggestions at their former rank', () => {
+    expect(enumSuggestionTester(control(), { type: 'string', enum: ['a', 'b'] }, context)).toBe(2)
+    expect(enumSuggestionTester(control({ suggestion: ['a'] }), { type: 'string' }, context)).toBe(
+      2,
+    )
+  })
+
+  it('leaves object variants to the combinator renderer', () => {
+    const variants = {
+      oneOf: [
+        { type: 'object', properties: { a: { type: 'string' } } },
+        { type: 'object', properties: { b: { type: 'string' } } },
+      ],
+    } as const
+    expect(enumSuggestionTester(control(), variants, context)).toBe(-1)
   })
 })

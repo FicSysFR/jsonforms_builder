@@ -67,5 +67,7 @@ registerExamples([
     data,
     schema,
     uischema,
+    // Another origin: the host allows it explicitly (a UI schema cannot).
+    config: { apiPolicy: { allowedOrigins: ['https://data.geopf.fr'] } },
   },
 ])

@@ -1,21 +1,21 @@
 <template lang="pug">
   u-modal(
     :open="open"
-    :title="title"
-    :description="description"
+    :title="title ?? t('jsonformsBuilder.confirm.title')"
+    :description="description ?? t('jsonformsBuilder.confirm.description')"
     :dismissible="true"
     @update:open="$emit('update:open', $event)"
   )
     template(#footer)
       .flex.w-full.items-center.justify-end.gap-2
         u-button(
-          :label="cancelLabel"
+          :label="cancelLabel ?? t('jsonformsBuilder.confirm.cancel')"
           color="neutral"
           variant="ghost"
           @click="$emit('update:open', false)"
         )
         u-button(
-          :label="confirmLabel"
+          :label="confirmLabel ?? t('jsonformsBuilder.confirm.confirm')"
           :color="danger ? 'error' : 'primary'"
           @click="$emit('confirm')"
         )
@@ -25,6 +25,7 @@
 import { defineComponent, type Component } from 'vue'
 import UModal from '@nuxt/ui/components/Modal.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
+import { useUiText } from '../i18n/ui'
 
 /**
  * ConfirmDialog
@@ -50,22 +51,22 @@ const confirmDialog: Component = defineComponent({
     title: {
       required: false as const,
       type: String,
-      default: 'Confirmer la suppression',
+      default: undefined,
     },
     description: {
       required: false as const,
       type: String,
-      default: 'Cette action est irréversible.',
+      default: undefined,
     },
     confirmLabel: {
       required: false as const,
       type: String,
-      default: 'Supprimer',
+      default: undefined,
     },
     cancelLabel: {
       required: false as const,
       type: String,
-      default: 'Annuler',
+      default: undefined,
     },
     /** Colors the confirm action red. */
     danger: {
@@ -75,6 +76,10 @@ const confirmDialog: Component = defineComponent({
     },
   },
   emits: ['update:open', 'confirm'],
+  // Texts default to the translated `jsonformsBuilder.confirm.*` keys.
+  setup() {
+    return { t: useUiText() }
+  },
 })
 
 export default confirmDialog

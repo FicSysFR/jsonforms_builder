@@ -16,7 +16,7 @@
       :readonly="isReadonly"
       :autofocus="appliedOptions.focus"
       :granularity="optionPattern.includes('s') ? 'second' : 'minute'"
-      :locale="appliedOptions.locale ?? 'fr-FR'"
+      :locale="appliedOptions.locale ?? t('jsonformsBuilder.locale')"
       hour-cycle="24"
       @update:model-value="onChangeDateValue"
       @focus="handleFocus"
@@ -34,7 +34,7 @@
             variant="link"
             size="sm"
             class="px-0"
-            aria-label="Ouvrir le sélecteur d'heure"
+            :aria-label="t('jsonformsBuilder.date.openTime')"
             tabindex="-1"
           )
           template(#content)
@@ -61,7 +61,7 @@
       :readonly="isReadonly"
       :autofocus="appliedOptions.focus"
       :granularity="granularity"
-      :locale="appliedOptions.locale ?? 'fr-FR'"
+      :locale="appliedOptions.locale ?? t('jsonformsBuilder.locale')"
       :min-value="dateConstraints.minValue"
       :max-value="dateConstraints.maxValue"
       :is-date-unavailable="dateConstraints.isDateUnavailable"
@@ -71,6 +71,7 @@
       @blur="handleBlur"
     )
       template(#trailing)
+        span.me-1.text-xs.text-muted(v-if="dateTimeOffsetLabel") {{ dateTimeOffsetLabel }}
         u-popover(
           v-if="!isDisabled && !isReadonly"
           v-model:open="pickerOpen"
@@ -92,7 +93,7 @@
                   v-bind="calendarBind"
                   :type="calendarType"
                   :model-value="calendarValue"
-                  :locale="appliedOptions.locale ?? 'fr-FR'"
+                  :locale="appliedOptions.locale ?? t('jsonformsBuilder.locale')"
                   :color="control.errors ? 'error' : undefined"
                   :number-of-months="appliedOptions.months"
                   :week-numbers="!!appliedOptions.weekNumbers"
@@ -152,6 +153,7 @@ import UInputDate from '@nuxt/ui/components/InputDate.vue'
 import UInputTime from '@nuxt/ui/components/InputTime.vue'
 import UPopover from '@nuxt/ui/components/Popover.vue'
 import { ControlWrapper, TimePicker } from '../common'
+import { useUiText } from '../i18n/ui'
 import { determineClearValue } from '../utils'
 import { CALENDAR_CONSTRAINT_CELL_UI, useDateControl } from '../composables'
 
@@ -225,11 +227,21 @@ const controlRenderer: Component = defineComponent({
         : 'i-lucide-calendar',
     )
 
+    const t = useUiText()
     const pickerAriaLabel = computed(() =>
-      control.inputType.value === 'datetime-local'
-        ? "Ouvrir le calendrier et l'heure"
-        : 'Ouvrir le calendrier',
+      t(
+        control.inputType.value === 'datetime-local'
+          ? 'jsonformsBuilder.date.openCalendarAndTime'
+          : 'jsonformsBuilder.date.openCalendar',
+      ),
     )
+
+    /** The wall time is shown in the stored offset: name it (`UTC`, `UTC+05:30`). */
+    const dateTimeOffsetLabel = computed(() => {
+      const offset = control.dateTimeOffset.value
+      if (!offset) return undefined
+      return offset === 'Z' ? 'UTC' : `UTC${offset}`
+    })
 
     const showSeconds = computed(() => {
       const pattern = control.optionPattern.value
@@ -348,6 +360,7 @@ const controlRenderer: Component = defineComponent({
 
     return {
       ...control,
+      t,
       pickerOpen,
       calendarBind,
       calendarIcon,
@@ -360,6 +373,7 @@ const controlRenderer: Component = defineComponent({
       onMinuteChange,
       onSecondChange,
       onCalendarSelect,
+      dateTimeOffsetLabel,
     }
   },
 })

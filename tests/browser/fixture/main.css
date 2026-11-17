@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Like a host: Tailwind scans the published `dist`, not the sources. */
+@source "../../../dist";

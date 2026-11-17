@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { isEmpty } from 'radash'
+import { isEmpty } from '../utils/lang'
 import { useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 
@@ -25,7 +25,8 @@ export const useRadioGroupControl = ({
 
   const modelValue = computed(() => control.control.value.data)
 
-  const disable = computed(() => !control.control.value.enabled && !control.isReadonly.value)
+  // `URadioGroup` has no `readonly` prop: a read-only radio group is rendered disabled.
+  const disable = computed(() => control.isLocked.value)
 
   return {
     ...control,

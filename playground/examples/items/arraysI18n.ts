@@ -24,7 +24,7 @@
 */
 import { registerExamples } from '../register'
 import { ArrayTranslationEnum, type Translator } from '@jsonforms/core'
-import { get } from 'radash'
+import { get } from '../../../src/utils/lang'
 
 export const schema = {
   type: 'object',

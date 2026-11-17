@@ -24,7 +24,7 @@
         .flex.shrink-0.items-center(class="gap-0.5")
           u-button(
             icon="i-lucide-chevron-up"
-            aria-label="Monter"
+            :aria-label="t('jsonformsBuilder.builder.node.moveUp')"
             color="neutral"
             variant="ghost"
             size="xs"
@@ -32,7 +32,7 @@
           )
           u-button(
             icon="i-lucide-chevron-down"
-            aria-label="Descendre"
+            :aria-label="t('jsonformsBuilder.builder.node.moveDown')"
             color="neutral"
             variant="ghost"
             size="xs"
@@ -40,7 +40,7 @@
           )
           u-button(
             icon="i-lucide-trash-2"
-            aria-label="Supprimer"
+            :aria-label="t('jsonformsBuilder.builder.node.remove')"
             color="error"
             variant="ghost"
             size="xs"
@@ -74,7 +74,8 @@
           @dragover.prevent="dropTarget = 'inside'"
           @dragleave="dropTarget = null"
           @drop.prevent="onDropInside"
-        ) Déposer ici
+          v-text="t('jsonformsBuilder.builder.node.dropInside')"
+        )
 
     //- Drop zone after the last sibling: without it, you cannot append to the list.
     .h-2.rounded.transition-colors(
@@ -99,6 +100,7 @@ import {
   type ElementPath,
 } from './tree'
 import { readDragPayload, writeDragPayload } from './drag'
+import { useUiText } from '../i18n/ui'
 
 const NODE_ICONS: Record<string, string> = {
   Control: 'i-lucide-square-pen',
@@ -153,6 +155,8 @@ export default defineComponent({
   },
   emits: ['select', 'remove', 'shift', 'drop-item'],
   setup(props, { emit }) {
+    const t = useUiText()
+
     /** Which drop zone is hovered, so only one is highlighted at a time. */
     const dropTarget = ref<'before' | 'after' | 'inside' | null>(null)
 
@@ -224,6 +228,7 @@ export default defineComponent({
     }
 
     return {
+      t,
       dropTarget,
       children,
       isHorizontal,

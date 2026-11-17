@@ -7,6 +7,8 @@ import {
   readFormDraft,
   writeFormDraft,
   type FormDraftStorage,
+  DEFAULT_FORM_BUILDER_STORAGE_KEY,
+  resolveFormBuilderStorageKey,
 } from '../../src/builder/persistForm'
 
 afterEach(() => {
@@ -150,5 +152,18 @@ describe('form draft storage', () => {
         Object.defineProperty(globalThis, 'localStorage', descriptor)
       }
     }
+  })
+})
+
+describe('resolveFormBuilderStorageKey', () => {
+  it('persists nothing unless the host opts in', () => {
+    expect(resolveFormBuilderStorageKey(undefined)).toBeUndefined()
+    expect(resolveFormBuilderStorageKey(false)).toBeUndefined()
+    expect(resolveFormBuilderStorageKey('')).toBeUndefined()
+  })
+
+  it('uses the historical key for `true` and a host key as given', () => {
+    expect(resolveFormBuilderStorageKey(true)).toBe(DEFAULT_FORM_BUILDER_STORAGE_KEY)
+    expect(resolveFormBuilderStorageKey('my-app:form-draft')).toBe('my-app:form-draft')
   })
 })

@@ -1,9 +1,10 @@
 import { rendererEntry } from '../rendererEntry'
+import { nuxtUiRenderers } from '../renderers'
 
 import WysiwygControlRenderer, { entry as wysiwygControlRendererEntry } from './wysiwyg.vue'
 
 export { WysiwygControlRenderer }
-export { DEFAULT_TOOLBAR } from './wysiwygToolbar'
+export { DEFAULT_TOOLBAR, buildDefaultWysiwygToolbar } from './wysiwygToolbar'
 export {
   resolveWysiwygOptions,
   DEFAULT_IMAGE_RESIZE,
@@ -23,7 +24,13 @@ export {
   type WysiwygFeatures,
 } from './wysiwyg/features'
 export { buildWysiwygFeatureExtensions } from './wysiwyg/extensions'
-export { WYSIWYG_HIGHLIGHT_COLORS, WYSIWYG_TEXT_COLORS, type WysiwygColor } from './wysiwyg/colors'
+export {
+  WYSIWYG_HIGHLIGHT_COLORS,
+  WYSIWYG_TEXT_COLORS,
+  buildWysiwygHighlightColors,
+  buildWysiwygTextColors,
+  type WysiwygColor,
+} from './wysiwyg/colors'
 export {
   WysiwygSearch,
   findWysiwygTextRanges,
@@ -33,6 +40,7 @@ export {
 } from './wysiwyg/search'
 export {
   WYSIWYG_TABLE_BUBBLE,
+  buildWysiwygTableBubble,
   buildWysiwygTextBubble,
   buildWysiwygToolbar,
 } from './wysiwyg/toolbar'
@@ -50,3 +58,9 @@ export {
 export const advancedRenderers = [
   rendererEntry(wysiwygControlRendererEntry, WysiwygControlRenderer),
 ]
+
+/**
+ * Adds the advanced renderers (rich text editor) to `nuxtUiRenderers`. Kept apart so that forms
+ * without rich text, imported from `@ficsysfr/jsonforms_builder/core`, do not pull in Tiptap.
+ */
+export const allRenderers = [...nuxtUiRenderers, ...advancedRenderers]

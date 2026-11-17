@@ -13,7 +13,7 @@ Applied to most controls (label, description, read-only, errors).
 | `showUnfocusedDescription` | `Boolean` | — | Shows the schema description even when the field is not focused. |
 | `hideDescription` | `Boolean` | — | Removes the description entirely. |
 | `clearOnHide` | `Boolean` | `true` | When a `HIDE` rule applies, resets the value to `default` / `undefined`. Set to `false` to keep the value. |
-| `enableFilterErrorsBeforeTouch` | `Boolean` | — | Hides validation errors until the field has been touched. |
+| `enableFilterErrorsBeforeTouch` | `Boolean` | — | Hides local validation errors until the field has been touched (blur or change). Errors supplied by the host stay visible. |
 | `clearable` | `Boolean` | — | “Clear” behaviour (notably rating: click again to empty). |
 | `leadingIcon` | `String` | — | Nuxt Icon shown before the control (e.g. `i-lucide-mail`). |
 | `trailingIcon` | `String` | — | Nuxt Icon shown after the control (e.g. `i-lucide-check`). |
@@ -48,6 +48,24 @@ In `inside` mode, pass-through still wins (`options.input.leadingIcon`, …). Co
   "options": { "readonly": true }
 }
 ```
+
+Every JSON Forms read-only source locks the control: `<json-forms readonly>`, `config.readonly`,
+`options.readonly`, `readOnly: true` in the schema, a `DISABLE` rule and, since JSON Forms 3.8, a
+`READONLY` rule or the `readonly` state split off by `config.separateReadonlyFromDisabled`
+(propagated to nested renderers). A locked control never
+writes to the data. Widgets with a `readonly` prop (input, textarea, number, date, rating) stay
+readable and selectable; the others (checkbox, switch, radio group, lists, autocomplete, variant
+selector, slider, tags) are disabled. Array add, remove and reorder buttons are hidden or
+disabled, and the WYSIWYG toolbar is hidden.
+
+### Local and server errors
+
+Local validation errors (Ajv) and the errors the host supplies through
+`<json-forms :additional-errors>` (server or business validators, JSON Pointer in `instancePath`)
+are kept apart. `enableFilterErrorsBeforeTouch` only delays the former: a server error shows at
+once, since typing cannot fix it. With `validation-mode="NoValidation"`, only host errors appear. A
+custom renderer reads both messages separately through `localErrors` and `serverErrors`, returned
+by `useUiControl`.
 
 ### Keep the value when the control is hidden
 
