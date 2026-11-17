@@ -20,7 +20,7 @@ Le builder fournit :
 - un **aperçu live** ;
 - un **export JSON** de `{ data, schema, uischema }` ;
 - un **import** (coller un JSON ou charger un fichier `.json`) pour éditer un formulaire existant ;
-- une **sauvegarde automatique** du brouillon (`schema`, `uischema`, `data`) dans `localStorage` — désactivable avec `:storage-key="false"`.
+- une **sauvegarde du brouillon** (`schema`, `uischema`, `data`) dans `localStorage`, sur demande : `:storage-key="true"` (clé historique) ou `storage-key="ma-cle"`. Sans cette prop, rien n’est persisté : un brouillon peut contenir des données que l’hôte ne veut pas laisser dans le navigateur.
 
 Formats d’import acceptés :
 

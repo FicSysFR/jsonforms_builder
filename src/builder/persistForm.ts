@@ -1,8 +1,20 @@
 import type { JsonSchema, UISchemaElement } from '@jsonforms/core'
 import type { FormDefinition } from './useFormBuilder'
 
-/** Default `localStorage` key used by `<FormBuilder>` when persistence is enabled. */
+/** Historical `localStorage` key, used by `<FormBuilder :storage-key="true">`. */
 export const DEFAULT_FORM_BUILDER_STORAGE_KEY = '@tacxou/jsonforms_builder:draft'
+
+/**
+ * `localStorage` key for the `<FormBuilder>` draft, or `undefined` for no persistence (the
+ * default): a draft may hold data the host must not leave in the browser. `true` uses the
+ * historical key, a non-empty string is used as given.
+ */
+export const resolveFormBuilderStorageKey = (
+  storageKey: string | boolean | undefined,
+): string | undefined => {
+  if (storageKey === true) return DEFAULT_FORM_BUILDER_STORAGE_KEY
+  return typeof storageKey === 'string' && storageKey ? storageKey : undefined
+}
 
 export interface PersistedFormDraft extends FormDefinition {
   /** Preview instance data, when previously saved. */

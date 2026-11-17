@@ -20,7 +20,7 @@ The builder provides:
 - a **live preview**;
 - a **JSON export** of `{ data, schema, uischema }`;
 - an **import** (paste JSON or load a `.json` file) to edit an existing form;
-- an **automatic draft save** (`schema`, `uischema`, `data`) in `localStorage` — disable it with `:storage-key="false"`.
+- a **draft save** (`schema`, `uischema`, `data`) in `localStorage`, on request: `:storage-key="true"` (historical key) or `storage-key="my-key"`. Without that prop nothing is persisted: a draft may hold data the host does not want left in the browser.
 
 Accepted import formats:
 

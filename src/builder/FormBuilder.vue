@@ -225,7 +225,7 @@ import { readDragPayload, writeDragPayload, type DropEvent } from './drag'
 import { useFormBuilder, type FormDefinition } from './useFormBuilder'
 import { FormImportError, parseFormImport } from './importForm'
 import {
-  DEFAULT_FORM_BUILDER_STORAGE_KEY,
+  resolveFormBuilderStorageKey,
   getBrowserFormDraftStorage,
   isMeaningfulDefinition,
   readFormDraft,
@@ -244,8 +244,9 @@ import { getElementAt, type ElementPath } from './tree'
  * real `<JsonForms>` with v2 renderers, a read-only JSON tab (data / schema / uischema),
  * and an import dialog (paste or file upload) to load an existing definition for editing.
  *
- * By default the in-progress form (`schema`, `uischema`, preview `data`) is persisted to
- * `localStorage` so a refresh keeps the draft. Pass `:storage-key="false"` to disable.
+ * Nothing is persisted by default. With `storage-key` (a key, or `true` for the historical one),
+ * the in-progress form (`schema`, `uischema`, preview `data`) is saved to `localStorage` so a
+ * refresh keeps the draft.
  *
  * @example
  * <form-builder v-model="definition" />
@@ -277,19 +278,18 @@ export default defineComponent({
       default: () => allRenderers,
     },
     /**
-     * `localStorage` key for the draft. Default enables persistence; set to `false` to opt out.
+     * `localStorage` key for the draft: a key, `true` for the historical one, or `false` (the
+     * default) for no persistence.
      */
     storageKey: {
-      type: [String, Boolean] as PropType<string | false>,
-      default: DEFAULT_FORM_BUILDER_STORAGE_KEY,
+      type: [String, Boolean] as PropType<string | boolean>,
+      default: false,
     },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const draftStorage = getBrowserFormDraftStorage()
-    const resolvedStorageKey = computed(() =>
-      props.storageKey === false ? undefined : props.storageKey || DEFAULT_FORM_BUILDER_STORAGE_KEY,
-    )
+    const resolvedStorageKey = computed(() => resolveFormBuilderStorageKey(props.storageKey))
 
     const storedDraft =
       resolvedStorageKey.value && draftStorage
