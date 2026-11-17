@@ -13,7 +13,7 @@ Appliquées à la plupart des contrôles (label, description, lecture seule, err
 | `showUnfocusedDescription` | `Boolean` | — | Affiche la description du schema même hors focus. |
 | `hideDescription` | `Boolean` | — | Supprime totalement la description. |
 | `clearOnHide` | `Boolean` | `true` | Si une rule `HIDE` s’applique, remet la valeur à `default` / `undefined`. Mettre `false` pour conserver la valeur. |
-| `enableFilterErrorsBeforeTouch` | `Boolean` | — | Masque les erreurs de validation tant que le champ n’a pas été touché. |
+| `enableFilterErrorsBeforeTouch` | `Boolean` | — | Masque les erreurs de validation locales tant que le champ n’a pas été touché (sortie du champ ou modification). Les erreurs fournies par l’hôte restent visibles. |
 | `clearable` | `Boolean` | — | Comportement « clear » (notamment rating : re-clic pour vider). |
 | `leadingIcon` | `String` | — | Icône Nuxt Icon avant le contrôle (ex. `i-lucide-mail`). |
 | `trailingIcon` | `String` | — | Icône Nuxt Icon après le contrôle (ex. `i-lucide-check`). |
@@ -58,6 +58,15 @@ Un contrôle verrouillé n'écrit jamais dans les données. Les widgets qui ont 
 (case à cocher, interrupteur, boutons radio, listes, autocomplétion, sélecteur de variante,
 curseur, étiquettes) sont désactivés. Les boutons d'ajout, de retrait et de réordonnancement des
 tableaux disparaissent ou se désactivent, et la barre d'outils WYSIWYG est masquée.
+
+### Erreurs locales et erreurs serveur
+
+Les erreurs de validation locale (Ajv) et celles que l’hôte fournit par
+`<json-forms :additional-errors>` (validateurs serveur ou métier, en JSON Pointer dans
+`instancePath`) sont distinguées. `enableFilterErrorsBeforeTouch` ne retarde que les premières :
+une erreur serveur s’affiche immédiatement, puisque la saisie ne peut pas la corriger. Avec
+`validation-mode="NoValidation"`, seules les erreurs de l’hôte apparaissent. Un renderer personnalisé
+lit les deux messages séparément dans `localErrors` et `serverErrors`, renvoyés par `useUiControl`.
 
 ### Conserver la valeur quand le contrôle est masqué
 

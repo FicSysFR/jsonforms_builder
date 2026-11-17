@@ -11,6 +11,7 @@ import { debounce, get, isObject } from 'radash'
 import { defu } from 'defu'
 import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'
+import { useControlErrors } from './errors'
 import { IsDynamicPropertyContext } from './inject'
 
 /** Loose options bag from JSON Forms `uischema.options` / `config`. */
@@ -251,6 +252,8 @@ export const useUiControl = <
    */
   const onChange = (value: unknown) => {
     if (changeEmitter && !isLocked.value) {
+      // A user edit counts as a touch: checkboxes, selects and sliders may never blur.
+      touched.value = true
       changeEmitter(input.control.value.path, adaptTarget(value))
     }
   }
@@ -292,10 +295,16 @@ export const useUiControl = <
     isFocused.value = false
   }
 
+  const { localErrors, serverErrors } = useControlErrors(input.control)
+
+  /**
+   * `enableFilterErrorsBeforeTouch` only delays local validation errors: errors supplied by the
+   * host (`additional-errors`) are shown at once, since the user cannot fix them by typing.
+   */
   const filteredErrors = computed(() => {
     return touched.value || !appliedOptions.value.enableFilterErrorsBeforeTouch
       ? input.control.value.errors
-      : ''
+      : serverErrors.value
   })
 
   /**
@@ -322,7 +331,8 @@ export const useUiControl = <
   })
 
   const controlWrapper = computed(() => {
-    const { description, errors, label, visible, required } = input.control.value
+    const { description, label, visible, required } = input.control.value
+    const errors = filteredErrors.value
     const id = input.control.value.id.replace(/#\//g, '').replace(/\//g, '_')
 
     // `hideDescription` removes help text for this field. Used by the array renderer on
@@ -398,6 +408,8 @@ export const useUiControl = <
     handleFocus,
     onChange,
     rawErrors,
+    localErrors,
+    serverErrors,
     isHovered,
     isClearable,
     isReadonly,
