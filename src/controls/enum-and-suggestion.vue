@@ -31,26 +31,25 @@
 import {
   type ControlElement,
   type JsonFormsRendererRegistryEntry,
-  rankWith,
-  and,
-  or,
-  hasOption,
-  isEnumControl,
-  isPrimitiveArrayControl,
-  isStringControl,
+  isOneOfEnumControl,
 } from '@jsonforms/core'
 import { computed, defineComponent } from 'vue'
-import { rendererProps, useJsonFormsEnumControl, type RendererProps } from '@jsonforms/vue'
+import {
+  rendererProps,
+  useJsonFormsEnumControl,
+  useJsonFormsOneOfEnumControl,
+  type RendererProps,
+} from '@jsonforms/vue'
 import USelectMenu from '@nuxt/ui/components/SelectMenu.vue'
 import { ControlWrapper } from '../common'
-import { determineClearValue } from '../utils'
-import { useEnumSuggestionControl } from '../composables'
+import { determineClearValue, useJsonForms } from '../utils'
+import { enumSuggestionTester, useEnumSuggestionControl } from '../composables'
 
 /**
  * EnumAndSuggestionControlRenderer
  *
- * Renders enums and strings with an `options.suggestion` list using a `USelectMenu`
- * (built-in search).
+ * Renders enums, `oneOf` lists of constants (`[{ const, title }]`) and strings with an
+ * `options.suggestion` list using a `USelectMenu` (built-in search).
  *
  * In v1 the `#no-option` slot was declared *next to* the `q-select` rather than inside
  * it, so it never appeared. Here `#empty` is properly nested.
@@ -65,7 +64,16 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const jsonFormsControl = useJsonFormsEnumControl(props)
+    const jsonforms = useJsonForms()
+
+    // Only one of the two composables may run: each reserves an id at `onBeforeMount`.
+    const isOneOf = isOneOfEnumControl(props.uischema, props.schema, {
+      rootSchema: jsonforms.core?.schema ?? props.schema,
+      config: undefined,
+    })
+    const jsonFormsControl = isOneOf
+      ? useJsonFormsOneOfEnumControl(props)
+      : useJsonFormsEnumControl(props)
     const clearValue = determineClearValue(undefined)
 
     const control = useEnumSuggestionControl({
@@ -100,10 +108,6 @@ export default controlRenderer
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  // prettier-ignore
-  tester: rankWith(
-    2,
-    and(or(isStringControl, isPrimitiveArrayControl), or(hasOption('suggestion'), isEnumControl)),
-  ),
+  tester: enumSuggestionTester,
 }
 </script>

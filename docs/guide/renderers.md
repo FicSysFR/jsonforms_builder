@@ -15,7 +15,7 @@ Correspondance schéma / options → composant Nuxt UI.
 | `number` + `options.slider` | `USlider` | [Slider](./options/number#slider-—-uslider) |
 | `number` + `options.format: rating` | `UInputRating` | [Rating](./options/number#rating-—-uinputrating) |
 | `boolean` | `UCheckbox` / `USwitch` | [Booléen](./options/boolean) |
-| `enum` | `USelectMenu` | [Enum](./options/enum) |
+| `enum`, `oneOf` de constantes (`const`, `title`) | `USelectMenu` (avec recherche) | [Enum](./options/enum) |
 | `enum` + `options.format: select` | `USelect` | [Select](./options/enum#select-sans-recherche-—-uselect) |
 | `enum` + `options.format: radio` | `URadioGroup` | [Radio](./options/enum#radio-—-uradiogroup) |
 | `string` + `options.api` | `UInputMenu` | [Autocomplete](./options/string#autocomplete-api-—-uinputmenu) |
@@ -23,7 +23,7 @@ Correspondance schéma / options → composant Nuxt UI.
 | `options.format: calendar` | `UCalendar` | [Calendar](./options/date#calendar-—-ucalendar-deplie) |
 | `array` + `options.format: tags` | `UInputTags` | [Tags](./options/array#tags-—-uinputtags) |
 | `array` | cartes répétables | [Array](./options/array#array-—-cartes-repetables) |
-| `oneOf` | sélecteur + sous-formulaire | [oneOf](./options/array#oneof-anyof) |
+| `oneOf` / `anyOf` de variantes | sélecteur + sous-formulaire | [oneOf](./options/array#oneof-anyof) |
 | `Group` | `UCard` | [Group](./options/layouts#group-—-ucard) |
 | `Categorization` | `UTabs` / `UStepper` | [Categorization](./options/layouts#categorization-—-utabs-ustepper) |
 | `Label` | titre + `USeparator` | [Label](./options/layouts#label) |

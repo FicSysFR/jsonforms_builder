@@ -1,7 +1,36 @@
+import {
+  and,
+  hasOption,
+  isEnumControl,
+  isOneOfEnumControl,
+  isPrimitiveArrayControl,
+  isStringControl,
+  or,
+  rankWith,
+  type RankedTester,
+} from '@jsonforms/core'
 import { computed } from 'vue'
 import { isArray, isEmpty, isString } from 'radash'
 import { determineClearValue, useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
+
+const enumOrSuggestionTester = rankWith(
+  2,
+  and(or(isStringControl, isPrimitiveArrayControl), or(hasOption('suggestion'), isEnumControl)),
+)
+
+/**
+ * Rank 5 for a `oneOf` of constants (`[{ const, title }]`, any value type): above the
+ * combinator renderer (3), which would otherwise render each constant as an object variant,
+ * and below `options.format: 'select' | 'radio'` (20).
+ */
+const oneOfConstantsTester = rankWith(5, isOneOfEnumControl)
+
+export const enumSuggestionTester: RankedTester = (uischema, schema, context) =>
+  Math.max(
+    enumOrSuggestionTester(uischema, schema, context),
+    oneOfConstantsTester(uischema, schema, context),
+  )
 
 type JsonFormsEnumControl = ReturnType<typeof useJsonFormsEnumControl>
 

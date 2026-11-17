@@ -4,7 +4,8 @@
 
 ## Select menu (default) — `USelectMenu`
 
-**Trigger:** schema `enum` or `oneOf` const/title, with no special `format`.
+**Trigger:** schema `enum` or `oneOf` const/title, with no special `format`. A `oneOf` of constants
+(any value type) always lands here, never on the combinator renderer meant for object variants.
 
 ### API
 
