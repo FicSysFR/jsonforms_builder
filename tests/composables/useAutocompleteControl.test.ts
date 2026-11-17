@@ -63,7 +63,7 @@ describe('buildAutocompleteRequest', () => {
       'vue',
     )
 
-    expect(request.url).toBe('https://example.com/search?term=vue&limit=5')
+    expect(request.url).toBe('https://example.com/search?limit=5&term=vue')
     expect(request.headers).toEqual({ Authorization: 'Bearer token' })
   })
 
@@ -171,8 +171,10 @@ describe('useAutocompleteControl', () => {
           },
         },
       },
-      // Cross-origin fetches need the host's allow-list.
-      config: { apiPolicy: { allowedOrigins: ['https://api.example.test'] } },
+      // Cross-origin fetches and non-safelisted headers need the host's consent.
+      config: {
+        apiPolicy: { allowedOrigins: ['https://api.example.test'], allowedHeaders: ['x-api-key'] },
+      },
     })
 
     await mounted.result.onSearch('ada')

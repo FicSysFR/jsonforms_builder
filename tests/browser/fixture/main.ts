@@ -45,6 +45,8 @@ const Recipe = defineComponent({
     const additionalErrors = shallowRef(withServerErrors ? [SERVER_ERROR] : [])
     const renderers = markRaw([...registry])
     const config = {
+      // The autocomplete queries `/api/cities` on this origin: the host allows it explicitly.
+      apiPolicy: { allowedOrigins: ['self'] },
       ...(readonlySource === 'config' ? { readonly: true } : {}),
       ...(withServerErrors ? { enableFilterErrorsBeforeTouch: true } : {}),
     }
