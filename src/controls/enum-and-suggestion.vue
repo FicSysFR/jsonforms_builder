@@ -12,7 +12,7 @@
       :model-value="control.data"
       :items="selectItems"
       :class="styles.control.input"
-      :disabled="isDisabled"
+      :disabled="isLocked"
       :placeholder="appliedOptions.placeholder"
       :search-input="searchInput"
       :multiple="isArrayControl"

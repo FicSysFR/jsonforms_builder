@@ -32,7 +32,7 @@
             u-button.ms-auto(size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="ui.mode = 'edit'") Modifier
           template(v-else)
             u-editor-toolbar.sticky.top-0.z-10.flex-wrap.rounded-t-md.border-b.border-default.bg-default.p-1(
-              v-if="resolved.toolbar !== false && ui.mode === 'edit'"
+              v-if="resolved.toolbar !== false && ui.mode === 'edit' && editable"
               :editor="editor"
               :items="resolved.toolbar"
             )
@@ -226,7 +226,8 @@ const controlRenderer: Component = defineComponent({
     const rootEl = ref<HTMLElement | null>(null)
     const currentEditor = computed(() => editorRef.value?.editor ?? undefined)
 
-    const editable = computed(() => !control.isDisabled.value && !control.isReadonly.value)
+    // Tiptap commands still run on a non-editable editor: hide the toolbar when locked.
+    const editable = computed(() => !control.isLocked.value)
     const ui = reactive<WysiwygUiState>({ panel: null, mode: 'edit' })
 
     // AI stays fully inert (no controller, no transport call) unless `ai.enabled === true`.

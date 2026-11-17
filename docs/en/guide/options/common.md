@@ -49,6 +49,15 @@ In `inside` mode, pass-through still wins (`options.input.leadingIcon`, …). Co
 }
 ```
 
+Every JSON Forms read-only source locks the control: `<json-forms readonly>`, `config.readonly`,
+`options.readonly`, `readOnly: true` in the schema, a `DISABLE` rule and, since JSON Forms 3.8, a
+`READONLY` rule or the `readonly` state split off by `config.separateReadonlyFromDisabled`
+(propagated to nested renderers). A locked control never
+writes to the data. Widgets with a `readonly` prop (input, textarea, number, date, rating) stay
+readable and selectable; the others (checkbox, switch, radio group, lists, autocomplete, variant
+selector, slider, tags) are disabled. Array add, remove and reorder buttons are hidden or
+disabled, and the WYSIWYG toolbar is hidden.
+
 ### Keep the value when the control is hidden
 
 ```json

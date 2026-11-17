@@ -14,6 +14,7 @@
       :uischema="detailUiSchema"
       :path="control.path"
       :enabled="control.enabled"
+      :readonly="control.readonly"
       :renderers="control.renderers"
       :cells="control.cells"
     )

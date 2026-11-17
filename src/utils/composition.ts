@@ -244,8 +244,13 @@ export const useUiControl = <
       ? debounce({ delay: debounceWait }, handleChange)
       : handleChange
 
+  /**
+   * User edits only: a locked control (read-only or disabled, see `isLocked`) never writes,
+   * even if a Nuxt UI widget lacking a `readonly` prop still emits an update. Programmatic
+   * resets such as `clearOnHide` go through `handleChange` directly.
+   */
   const onChange = (value: unknown) => {
-    if (changeEmitter) {
+    if (changeEmitter && !isLocked.value) {
       changeEmitter(input.control.value.path, adaptTarget(value))
     }
   }
@@ -355,6 +360,12 @@ export const useUiControl = <
   const rawErrors = computed(() => input.control.value.errors)
 
   const isReadonly = computed(() => {
+    // JSON Forms 3.8+ resolves every read-only source (form flag, READONLY/WRITABLE rules,
+    // options, config, schema) into `readonly`, kept apart from `enabled` when
+    // `config.separateReadonlyFromDisabled` is set. Older versions leave it undefined.
+    if ((input.control.value as { readonly?: boolean }).readonly === true) {
+      return true
+    }
     if (input.control.value.config?.readonly === true) {
       return true
     }
@@ -364,6 +375,13 @@ export const useUiControl = <
 
   /** `disabled` in the Nuxt UI sense: disabled unless we are simply read-only. */
   const isDisabled = computed(() => !input.control.value.enabled && !isReadonly.value)
+
+  /**
+   * The control accepts no edit: read-only (rendered as such where the widget supports it) or
+   * disabled. JSON Forms already reports `enabled: false` for every read-only source; widgets
+   * without a `readonly` prop must bind `:disabled="isLocked"`.
+   */
+  const isLocked = computed(() => !input.control.value.enabled || isReadonly.value)
 
   return {
     ...input,
@@ -384,6 +402,7 @@ export const useUiControl = <
     isClearable,
     isReadonly,
     isDisabled,
+    isLocked,
   }
 }
 

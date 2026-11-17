@@ -8,8 +8,9 @@ describe('resolveBooleanDisable', () => {
     expect(resolveBooleanDisable(false, false)).toBe(true)
   })
 
-  it('stays enabled when readonly is true', () => {
-    expect(resolveBooleanDisable(false, true)).toBe(false)
+  it('disables a read-only boolean: checkbox and switch have no readonly prop', () => {
+    expect(resolveBooleanDisable(false, true)).toBe(true)
+    expect(resolveBooleanDisable(true, true)).toBe(true)
   })
 
   it('stays enabled when control is enabled', () => {

@@ -13,7 +13,7 @@
         :model-value="selectedIndex"
         :items="variantItems"
         :class="styles.oneOf.select"
-        :disabled="isDisabled"
+        :disabled="isLocked"
         value-key="value"
         label-key="label"
         @update:model-value="onVariantChange"
@@ -25,6 +25,7 @@
       :uischema="selectedUiSchema"
       :path="control.path"
       :enabled="control.enabled"
+      :readonly="control.readonly"
       :renderers="control.renderers"
       :cells="control.cells"
     )
@@ -134,7 +135,7 @@ const controlRenderer = defineComponent({
      * `hasMultipleRoots` tests `vm` but not `vm.$`).
      */
     const onVariantChange = async (index: number) => {
-      if (index === selectedIndex.value) {
+      if (control.isLocked.value || index === selectedIndex.value) {
         return
       }
 

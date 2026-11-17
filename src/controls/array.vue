@@ -30,12 +30,13 @@
             :uischema="childUiSchema"
             :path="childPath(index)"
             :enabled="control.enabled"
+            :readonly="control.readonly"
             :renderers="control.renderers"
             :cells="control.cells"
           )
         u-button(
           v-if="showSortButtons"
-          :disabled="index === 0 || !control.enabled"
+          :disabled="index === 0 || isLocked"
           :class="styles.arrayList.itemMoveUp"
           icon="i-lucide-chevron-up"
           aria-label="Monter l'élément"
@@ -46,7 +47,7 @@
         )
         u-button(
           v-if="showSortButtons"
-          :disabled="index === items.length - 1 || !control.enabled"
+          :disabled="index === items.length - 1 || isLocked"
           :class="styles.arrayList.itemMoveDown"
           icon="i-lucide-chevron-down"
           aria-label="Descendre l'élément"
@@ -80,7 +81,7 @@
             .flex.items-center.gap-1
               u-button(
                 v-if="showSortButtons"
-                :disabled="index === 0 || !control.enabled"
+                :disabled="index === 0 || isLocked"
                 :class="styles.arrayList.itemMoveUp"
                 icon="i-lucide-chevron-up"
                 aria-label="Monter l'élément"
@@ -91,7 +92,7 @@
               )
               u-button(
                 v-if="showSortButtons"
-                :disabled="index === items.length - 1 || !control.enabled"
+                :disabled="index === items.length - 1 || isLocked"
                 :class="styles.arrayList.itemMoveDown"
                 icon="i-lucide-chevron-down"
                 aria-label="Descendre l'élément"
@@ -117,6 +118,7 @@
             :uischema="childUiSchema"
             :path="childPath(index)"
             :enabled="control.enabled"
+            :readonly="control.readonly"
             :renderers="control.renderers"
             :cells="control.cells"
           )

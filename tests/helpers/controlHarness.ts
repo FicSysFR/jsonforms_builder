@@ -12,6 +12,8 @@ export type TestControlState = {
   description: string
   required: boolean
   enabled: boolean
+  /** JSON Forms 3.8+: read-only state kept apart from `enabled` (READONLY rules, config flag). */
+  readonly?: boolean
   errors: string
   data: unknown
   id: string

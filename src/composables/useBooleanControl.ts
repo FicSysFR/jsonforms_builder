@@ -23,6 +23,7 @@ export const useBooleanControl = ({ jsonFormsControl, debounceWait }: UseBoolean
   }
 }
 
+/** Checkbox and switch have no `readonly` prop: a read-only boolean is rendered disabled. */
 export const resolveBooleanDisable = (enabled: boolean, isReadonly: boolean) => {
-  return !enabled && !isReadonly
+  return !enabled || isReadonly
 }

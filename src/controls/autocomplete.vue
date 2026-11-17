@@ -12,7 +12,7 @@
       :model-value="modelValue"
       :items="selectOptions"
       :class="styles.control.input"
-      :disabled="isDisabled"
+      :disabled="isLocked"
       :placeholder="appliedOptions.placeholder"
       :color="control.errors ? 'error' : undefined"
       value-key="value"

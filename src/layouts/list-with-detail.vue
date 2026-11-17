@@ -45,6 +45,7 @@
           :uischema="childUiSchema"
           :path="childPath(selectedIndex)"
           :enabled="control.enabled"
+          :readonly="control.readonly"
           :renderers="control.renderers"
           :cells="control.cells"
         )

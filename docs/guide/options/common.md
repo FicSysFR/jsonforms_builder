@@ -49,6 +49,16 @@ En mode `inside`, le pass-through reste prioritaire (`options.input.leadingIcon`
 }
 ```
 
+Toutes les sources de lecture seule de JSON Forms verrouillent le contrôle : `<json-forms readonly>`,
+`config.readonly`, `options.readonly`, `readOnly: true` dans le schéma, une règle `DISABLE`, et
+depuis JSON Forms 3.8 une règle `READONLY` ou l'état `readonly` séparé par
+`config.separateReadonlyFromDisabled` (propagé aux renderers imbriqués).
+Un contrôle verrouillé n'écrit jamais dans les données. Les widgets qui ont une prop `readonly`
+(saisie, zone de texte, nombre, date, note) restent lisibles et sélectionnables ; les autres
+(case à cocher, interrupteur, boutons radio, listes, autocomplétion, sélecteur de variante,
+curseur, étiquettes) sont désactivés. Les boutons d'ajout, de retrait et de réordonnancement des
+tableaux disparaissent ou se désactivent, et la barre d'outils WYSIWYG est masquée.
+
 ### Conserver la valeur quand le contrôle est masqué
 
 ```json

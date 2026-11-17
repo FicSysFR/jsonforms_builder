@@ -13,6 +13,7 @@
         :uischema="element"
         :path="layout.path"
         :enabled="layout.enabled"
+        :readonly="layout.readonly"
         :renderers="layout.renderers"
         :cells="layout.cells"
       )
