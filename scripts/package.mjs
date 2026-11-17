@@ -31,6 +31,9 @@ export const PACKAGE_SPECS = [
       'dist/index.d.ts',
       'dist/json-formbuilder.es.js',
       'dist/json-formbuilder.cjs.js',
+      'dist/icons.d.ts',
+      'dist/icons.es.js',
+      'dist/icons.cjs',
       'src/index.ts',
     ],
     forbidden: [
@@ -211,6 +214,9 @@ function validateManifests() {
     library.exports?.['.']?.import,
     library.exports?.['.']?.require,
     library.exports?.['.']?.types,
+    library.exports?.['./icons']?.import,
+    library.exports?.['./icons']?.require,
+    library.exports?.['./icons']?.types,
     library.exports?.['./source'],
   ]) {
     if (!target || !existsSync(join(root, target))) {
@@ -359,6 +365,12 @@ const packageRoot = dirname(dirname(esm))
 const manifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
 if (manifest.version !== '${version}') throw new Error('installed version mismatch')
 if (!existsSync(join(packageRoot, manifest.types))) throw new Error('types entry is missing')
+// The icon lists must load without any dependency: build configurations import them.
+const { CONTROL_ICONS } = await import('@ficsysfr/jsonforms_builder/icons')
+const cjsIcons = require('@ficsysfr/jsonforms_builder/icons')
+if (!CONTROL_ICONS.includes('i-lucide-x') || cjsIcons.CONTROL_ICONS.length !== CONTROL_ICONS.length) {
+  throw new Error('icons export mismatch')
+}
 `,
     )
     run(process.execPath, [consumer], { cwd: temporaryRoot })

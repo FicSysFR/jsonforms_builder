@@ -38,6 +38,11 @@
       "import": "./dist/json-formbuilder.es.js",
       "require": "./dist/json-formbuilder.cjs.js"
     },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.es.js",
+      "require": "./dist/icons.cjs"
+    },
     "./source": "./src/index.ts"
   },
   "files": [

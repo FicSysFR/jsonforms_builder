@@ -69,6 +69,27 @@ resolve: {
 
 See `playground/vite.config.ts` for a full commented configuration (including the `#imports` stubs `@nuxt/icon` needs outside Nuxt).
 
+## Offline icons and CSP
+
+By default Nuxt Icon fetches icons from the Iconify API, which a `connect-src 'self'` CSP or an
+offline app forbids. The dependency-free entry `@ficsysfr/jsonforms_builder/icons` lists the Lucide
+icons the library displays: `CONTROL_ICONS` (controls and layouts of `nuxtUiRenderers`),
+`WYSIWYG_ICONS`, `BUILDER_ICONS` and their union `LIBRARY_ICONS`.
+
+```ts
+import { CONTROL_ICONS } from '@ficsysfr/jsonforms_builder/icons'
+
+export default defineNuxtConfig({
+  modules: ['@nuxt/ui'],
+  icon: {
+    clientBundle: { icons: [...CONTROL_ICONS] },
+  },
+})
+```
+
+Add Nuxt UI's own component icons (`appConfig.ui.icons`) and the icons your UI schemas name
+(`leadingIcon`, `trailingIcon`).
+
 ## Known upstream issue — `subTree`
 
 `@vueuse/core` 14.4.0 has an unguarded access to `vm.$` inside `onClickOutside`. After an unmount, a click reaching a surviving listener can throw `Cannot read properties of null (reading 'subTree')`.

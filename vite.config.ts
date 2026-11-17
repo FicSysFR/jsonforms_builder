@@ -23,9 +23,19 @@ export default defineConfig({
     outDir: './dist',
 
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: {
+        'json-formbuilder': resolve(__dirname, 'src/index.ts'),
+        // Dependency-free data, importable from a build configuration (`nuxt.config`).
+        icons: resolve(__dirname, 'src/icons.ts'),
+      },
       name: 'JsonFormBuilder',
-      fileName: (format) => `json-formbuilder.${format}.js`,
+      // The package is `"type": "module"`, so Node reads `*.js` as ESM: a CommonJS file that
+      // Node must load (`icons`) needs the `.cjs` extension. The root CJS build keeps its
+      // historical name; it targets bundlers, since it imports Nuxt UI SFCs anyway.
+      fileName: (format, entryName) =>
+        format === 'cjs' && entryName !== 'json-formbuilder'
+          ? `${entryName}.cjs`
+          : `${entryName}.${format}.js`,
       // No UMD in v2: renderers import `@nuxt/ui` SFCs that do not exist as browser
       // globals. The library now requires a bundler.
       formats: ['es', 'cjs'],
