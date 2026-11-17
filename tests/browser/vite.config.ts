@@ -85,9 +85,13 @@ export default defineConfig({
     vue(),
   ],
   resolve: {
-    alias: {
-      '@ficsysfr/jsonforms_builder': resolve(root, 'dist/json-formbuilder.es.js'),
-    },
+    // The published `./core` entry: the page must load without any Tiptap code.
+    alias: [
+      {
+        find: /^@ficsysfr\/jsonforms_builder\/core$/,
+        replacement: resolve(root, 'dist/core.es.js'),
+      },
+    ],
     dedupe: ['vue', '@tiptap/core', '@tiptap/pm', '@tiptap/vue-3'],
   },
   optimizeDeps: { exclude: ['@nuxt/ui', '@nuxt/icon'] },

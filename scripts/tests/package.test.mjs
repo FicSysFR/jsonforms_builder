@@ -83,3 +83,15 @@ test('third-party notices cover every package bundled into dist', () => {
   assert.ok(BUNDLED_THIRD_PARTY_PACKAGES.includes('dayjs'))
   assert.throws(() => validateThirdPartyNotices(notices.replaceAll('dayjs', 'removed')), /dayjs/)
 })
+
+test('library manifest declares tree-shakable entry points', () => {
+  assert.doesNotThrow(() => validateLibraryManifest(libraryManifest()))
+
+  const withSideEffects = libraryManifest()
+  withSideEffects.sideEffects = true
+  assert.throws(() => validateLibraryManifest(withSideEffects), /sideEffects/)
+
+  const withoutCore = libraryManifest()
+  delete withoutCore.exports['./core']
+  assert.throws(() => validateLibraryManifest(withoutCore), /exports\["\.\/core"\]/)
+})

@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto'
+import { readdirSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { type Browser, expect, type Page, test } from '@playwright/test'
 
 type Violation = { directive: string; blocked: string; sample: string; source: string }
@@ -336,4 +338,13 @@ test.describe('read-only recipe', () => {
       expect(await watcher.violations()).toEqual([])
     })
   }
+})
+
+test('the ./core entry ships no Tiptap or ProseMirror code', () => {
+  const assets = fileURLToPath(new URL('./.dist/assets/', import.meta.url))
+  const bundle = readdirSync(assets)
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => readFileSync(`${assets}${file}`, 'utf8'))
+    .join('\n')
+  expect(bundle).not.toMatch(/@tiptap\/|prosemirror/i)
 })

@@ -1,7 +1,7 @@
 import './main.css'
 import type { ValidationMode } from '@jsonforms/core'
 import { JsonForms } from '@jsonforms/vue'
-import { nuxtUiRenderers, strictCspRenderers } from '@ficsysfr/jsonforms_builder'
+import { nuxtUiRenderers, strictCspRenderers } from '@ficsysfr/jsonforms_builder/core'
 import UApp from '@nuxt/ui/components/App.vue'
 import ui from '@nuxt/ui/vue-plugin'
 import { createApp, defineComponent, h, markRaw, shallowRef } from 'vue'

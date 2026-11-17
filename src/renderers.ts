@@ -1,9 +1,6 @@
 import { additionalsRenderers } from './additional'
 import { controlsRenderers, FileUploadControlRenderer } from './controls'
 import { layoutsRenderers } from './layouts'
-import { advancedRenderers } from './advanced'
-
-export { advancedRenderers }
 
 /**
  * Default renderer set: controls, layouts, and additional elements.
@@ -26,9 +23,3 @@ const STRICT_CSP_EXCLUDED: ReadonlySet<unknown> = new Set([FileUploadControlRend
 export const strictCspRenderers = nuxtUiRenderers.filter(
   (entry) => !STRICT_CSP_EXCLUDED.has(entry.renderer),
 )
-
-/**
- * Adds the advanced renderers (rich text editor). Separated from `nuxtUiRenderers` so that
- * forms without rich text do not pull in Tiptap.
- */
-export const allRenderers = [...nuxtUiRenderers, ...advancedRenderers]

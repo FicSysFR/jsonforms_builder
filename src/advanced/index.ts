@@ -1,4 +1,5 @@
 import { rendererEntry } from '../rendererEntry'
+import { nuxtUiRenderers } from '../renderers'
 
 import WysiwygControlRenderer, { entry as wysiwygControlRendererEntry } from './wysiwyg.vue'
 
@@ -50,3 +51,9 @@ export {
 export const advancedRenderers = [
   rendererEntry(wysiwygControlRendererEntry, WysiwygControlRenderer),
 ]
+
+/**
+ * Adds the advanced renderers (rich text editor) to `nuxtUiRenderers`. Kept apart so that forms
+ * without rich text, imported from `@ficsysfr/jsonforms_builder/core`, do not pull in Tiptap.
+ */
+export const allRenderers = [...nuxtUiRenderers, ...advancedRenderers]

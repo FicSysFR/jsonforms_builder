@@ -23,8 +23,15 @@ export default defineConfig({
     outDir: './dist',
 
     lib: {
+      // `json-formbuilder` (the root) keeps re-exporting everything. The other entries let a
+      // host load only what it uses: `core` never imports Tiptap, `advanced` holds the WYSIWYG
+      // renderer, `builder` the visual builder. Shared code goes to hashed chunks (`*.js` for ES,
+      // `*.cjs` for CommonJS, as Vite names them in a `"type": "module"` package).
       entry: {
         'json-formbuilder': resolve(__dirname, 'src/index.ts'),
+        core: resolve(__dirname, 'src/core.ts'),
+        advanced: resolve(__dirname, 'src/advanced/index.ts'),
+        builder: resolve(__dirname, 'src/builder/index.ts'),
         // Dependency-free data, importable from a build configuration (`nuxt.config`).
         icons: resolve(__dirname, 'src/icons.ts'),
       },

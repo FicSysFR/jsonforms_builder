@@ -38,6 +38,21 @@
       "import": "./dist/json-formbuilder.es.js",
       "require": "./dist/json-formbuilder.cjs.js"
     },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.es.js",
+      "require": "./dist/core.cjs"
+    },
+    "./advanced": {
+      "types": "./dist/advanced.d.ts",
+      "import": "./dist/advanced.es.js",
+      "require": "./dist/advanced.cjs"
+    },
+    "./builder": {
+      "types": "./dist/builder.d.ts",
+      "import": "./dist/builder.es.js",
+      "require": "./dist/builder.cjs"
+    },
     "./icons": {
       "types": "./dist/icons.d.ts",
       "import": "./dist/icons.es.js",
@@ -45,6 +60,7 @@
     },
     "./source": "./src/index.ts"
   },
+  "sideEffects": false,
   "files": [
     "dist/**/*",
     "src/**/*",

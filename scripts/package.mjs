@@ -31,9 +31,11 @@ export const PACKAGE_SPECS = [
       'dist/index.d.ts',
       'dist/json-formbuilder.es.js',
       'dist/json-formbuilder.cjs.js',
-      'dist/icons.d.ts',
-      'dist/icons.es.js',
-      'dist/icons.cjs',
+      ...['core', 'advanced', 'builder', 'icons'].flatMap((entry) => [
+        `dist/${entry}.d.ts`,
+        `dist/${entry}.es.js`,
+        `dist/${entry}.cjs`,
+      ]),
       'src/index.ts',
     ],
     forbidden: [
@@ -153,6 +155,9 @@ export function validatePackResult(result, spec, expectedVersion) {
  */
 export const TYPESCRIPT_PEER_RANGE = '^5 || ^6 || ^7'
 
+/** Entry points besides the root: each ships ESM, CommonJS (`.cjs`) and declarations. */
+export const LIBRARY_SUBPATHS = ['./core', './advanced', './builder', './icons']
+
 /**
  * Third-party packages compiled into `dist/` rather than left external in `vite.config.ts`.
  * Their licenses require the notice to travel with every copy, so each one needs a section in
@@ -171,6 +176,15 @@ export function validateThirdPartyNotices(notices) {
 
 export function validateLibraryManifest(manifest) {
   const errors = []
+  if (manifest.sideEffects !== false) {
+    errors.push('sideEffects must be false so that hosts tree-shake unused entries')
+  }
+  for (const subpath of LIBRARY_SUBPATHS) {
+    const target = manifest.exports?.[subpath]
+    if (!target?.import || !target?.require?.endsWith('.cjs') || !target?.types) {
+      errors.push(`exports["${subpath}"] needs import, a .cjs require and types`)
+    }
+  }
   if (!manifest.files?.includes('THIRD_PARTY_NOTICES.md')) {
     errors.push('files must publish THIRD_PARTY_NOTICES.md')
   }
@@ -214,9 +228,11 @@ function validateManifests() {
     library.exports?.['.']?.import,
     library.exports?.['.']?.require,
     library.exports?.['.']?.types,
-    library.exports?.['./icons']?.import,
-    library.exports?.['./icons']?.require,
-    library.exports?.['./icons']?.types,
+    ...LIBRARY_SUBPATHS.flatMap((subpath) => [
+      library.exports?.[subpath]?.import,
+      library.exports?.[subpath]?.require,
+      library.exports?.[subpath]?.types,
+    ]),
     library.exports?.['./source'],
   ]) {
     if (!target || !existsSync(join(root, target))) {
@@ -361,6 +377,13 @@ const cjs = require.resolve('@ficsysfr/jsonforms_builder')
 if (!esm.endsWith('json-formbuilder.es.js')) throw new Error('ESM export mismatch: ' + esm)
 if (!cjs.endsWith('json-formbuilder.cjs.js')) throw new Error('CJS export mismatch: ' + cjs)
 if (!source.endsWith(join('src', 'index.ts'))) throw new Error('source export mismatch: ' + source)
+for (const entry of ['core', 'advanced', 'builder']) {
+  const esmEntry = fileURLToPath(import.meta.resolve('@ficsysfr/jsonforms_builder/' + entry))
+  const cjsEntry = require.resolve('@ficsysfr/jsonforms_builder/' + entry)
+  if (!esmEntry.endsWith(entry + '.es.js') || !cjsEntry.endsWith(entry + '.cjs')) {
+    throw new Error(entry + ' export mismatch: ' + esmEntry + ' / ' + cjsEntry)
+  }
+}
 const packageRoot = dirname(dirname(esm))
 const manifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
 if (manifest.version !== '${version}') throw new Error('installed version mismatch')

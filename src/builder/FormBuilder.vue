@@ -231,7 +231,7 @@ import {
   readFormDraft,
   writeFormDraft,
 } from './persistForm'
-import { allRenderers } from '../renderers'
+import { allRenderers } from '../advanced'
 import { getElementAt, type ElementPath } from './tree'
 
 /**
