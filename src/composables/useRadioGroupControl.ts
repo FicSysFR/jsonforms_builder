@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { isEmpty } from 'radash'
+import { isEmpty } from '../utils/lang'
 import { useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 

@@ -1,4 +1,4 @@
-import { isObject } from 'radash'
+import { isObject } from '../utils/lang'
 import type { Theme } from './theme'
 
 /**

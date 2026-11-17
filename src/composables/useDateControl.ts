@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useUiControl } from '../utils'
 import type { useJsonFormsControl } from '@jsonforms/vue'
-import { isEmpty } from 'radash'
+import { isEmpty } from '../utils/lang'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import type { ManipulateType } from 'dayjs'

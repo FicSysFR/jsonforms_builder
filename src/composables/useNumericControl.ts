@@ -1,6 +1,6 @@
 import type { JsonSchema } from '@jsonforms/core'
 import { computed } from 'vue'
-import { isEmpty } from 'radash'
+import { isEmpty } from '../utils/lang'
 import { useUiControl, type Options } from '../utils'
 
 export const resolveNumericStep = (schema: JsonSchema | undefined, options?: Options): number => {

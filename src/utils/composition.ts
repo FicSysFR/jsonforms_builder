@@ -7,7 +7,7 @@ import {
   type JsonSchema,
   type UISchemaElement,
 } from '@jsonforms/core'
-import { debounce, get, isObject } from 'radash'
+import { debounce, get, isObject } from './lang'
 import { defu } from 'defu'
 import { computed, type ComputedRef, inject, ref, watch } from 'vue'
 import { useTheme } from '../theme'

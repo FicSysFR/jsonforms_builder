@@ -1,5 +1,5 @@
 import { ref, watchEffect, onMounted, onBeforeUnmount, type Ref } from 'vue'
-import { assign, shake } from 'radash'
+import { assign, shake } from '../utils/lang'
 
 export type HashState = Record<string, string | undefined>
 

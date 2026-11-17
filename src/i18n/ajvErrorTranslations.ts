@@ -11,7 +11,7 @@
 
 export type AjvErrorLocale = 'en' | 'fr'
 
-/** Flat or nested message map compatible with radash `get(dict, key)`. */
+/** Flat or nested message map read through dotted keys (`error.required`). */
 export type AjvErrorMessageDict = {
   error: Record<string, string>
   /** JSON Forms rewrites required errors to this key when shown next to the control. */

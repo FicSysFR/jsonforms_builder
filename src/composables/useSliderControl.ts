@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { isNumber } from 'radash'
+import { isNumber } from '../utils/lang'
 import {
   and,
   or,

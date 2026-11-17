@@ -83,7 +83,7 @@ import UStepper from '@nuxt/ui/components/Stepper.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import { useUiLayout } from '../utils'
 import { useCategoryState } from '../composables'
-import { get, isString } from 'radash'
+import { get, isString } from '../utils/lang'
 
 const DEFAULT_QUERY_KEY = 'tab'
 const DEFAULT_DEFAULT_TAB = '0'

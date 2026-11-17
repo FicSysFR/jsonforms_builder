@@ -10,7 +10,7 @@ import {
   type RankedTester,
 } from '@jsonforms/core'
 import { computed } from 'vue'
-import { isArray, isEmpty, isString } from 'radash'
+import { isArray, isEmpty, isString } from '../utils/lang'
 import { determineClearValue, useUiControl } from '../utils'
 import type { useJsonFormsEnumControl } from '@jsonforms/vue'
 

@@ -4,7 +4,7 @@
 ships with the npm package and reproduces the notices of the third-party code it contains.
 
 Every other runtime dependency (Vue, JSON Forms, Nuxt UI, Tiptap, `@internationalized/date`,
-`defu`, `radash`) stays external: it is installed by the host application and keeps its own
+`defu`) stays external: it is installed by the host application and keeps its own
 license file in `node_modules`.
 
 ## JSON Forms (MIT License, derived source)

@@ -1,4 +1,4 @@
-import { get } from 'radash'
+import { get } from '../utils/lang'
 import type { Translator } from '@jsonforms/core'
 import {
   getAjvErrorTranslations,
@@ -29,7 +29,7 @@ export type CreateJsonFormsTranslatorOptions = {
 
 /**
  * Builds a JSON Forms `translate` function that:
- * 1. Resolves keys from `messages` (nested paths via radash `get`)
+ * 1. Resolves keys from `messages` (nested dotted paths)
  * 2. Falls back to built-in AJV error messages for the locale
  * 3. Interpolates `{{param}}` from `error.params`
  * 4. Returns `undefined` when neither a translation nor a default exists

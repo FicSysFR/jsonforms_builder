@@ -61,10 +61,9 @@ export default defineConfig({
         // ProseMirror plugins stay identity-stable (and WYSIWYG image extensions resolve).
         /^@tiptap\//,
         // Externalized to avoid shipping a duplicate: Nuxt UI already provides
-        // `@internationalized/date`, and `defu`/`radash` are plain ESM with no interop trap.
+        // `@internationalized/date`, and `defu` is plain ESM with no interop trap.
         '@internationalized/date',
         'defu',
-        'radash',
         // `dayjs` is deliberately *included* in the bundle: it is CommonJS, and leaving
         // it external would force every host app to list it in `optimizeDeps.include`
         // so its default export is exposed. ~7 KB.

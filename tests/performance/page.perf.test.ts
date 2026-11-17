@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { get } from 'radash'
+import { get } from '../../src/utils/lang'
 import { createAjv } from '../../src/utils/validator'
 import {
   buildFlatObjectData,
