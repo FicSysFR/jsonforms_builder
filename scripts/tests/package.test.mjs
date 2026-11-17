@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import {
   BUNDLED_THIRD_PARTY_PACKAGES,
+  findUndeclaredImports,
   PACKAGE_SPECS,
   validateLibraryManifest,
   validatePackResult,
@@ -94,4 +95,12 @@ test('library manifest declares tree-shakable entry points', () => {
   const withoutCore = libraryManifest()
   delete withoutCore.exports['./core']
   assert.throws(() => validateLibraryManifest(withoutCore), /exports\["\.\/core"\]/)
+})
+
+test('every package the sources import at runtime is declared', () => {
+  assert.deepEqual(findUndeclaredImports(libraryManifest()), [])
+
+  const manifest = libraryManifest()
+  delete manifest.peerDependencies['@tiptap/core']
+  assert.deepEqual(findUndeclaredImports(manifest), ['@tiptap/core'])
 })

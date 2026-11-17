@@ -5,6 +5,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -165,6 +166,36 @@ export const LIBRARY_SUBPATHS = ['./core', './advanced', './builder', './icons']
  */
 export const BUNDLED_THIRD_PARTY_PACKAGES = ['dayjs']
 
+function sourceFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) return sourceFiles(path)
+    return /\.(?:ts|vue)$/.test(entry.name) && !entry.name.endsWith('.d.ts') ? [path] : []
+  })
+}
+
+/**
+ * Packages imported at runtime by `src/` (type-only imports excluded) that the manifest declares
+ * neither as dependencies nor as peers: a strict installer (pnpm) cannot resolve them for hosts.
+ * Packages bundled into `dist/` need no declaration.
+ */
+export function findUndeclaredImports(manifest, sourceRoot = join(root, 'src')) {
+  const declared = new Set([
+    ...Object.keys(manifest.dependencies ?? {}),
+    ...Object.keys(manifest.peerDependencies ?? {}),
+    ...BUNDLED_THIRD_PARTY_PACKAGES,
+  ])
+  const imported = new Set()
+  for (const file of sourceFiles(sourceRoot)) {
+    const code = readFileSync(file, 'utf8')
+    for (const match of code.matchAll(/^\s*import\s+(?!type\s)[^'"]*?from\s+'([^'.#][^']*)'/gm)) {
+      const parts = match[1].split('/')
+      imported.add(match[1].startsWith('@') ? parts.slice(0, 2).join('/') : parts[0])
+    }
+  }
+  return [...imported].filter((name) => !declared.has(name)).sort()
+}
+
 export function validateThirdPartyNotices(notices) {
   const missing = BUNDLED_THIRD_PARTY_PACKAGES.filter(
     (name) => !new RegExp(`^## .*\\(\`${name}\`, `, 'm').test(notices),
@@ -220,6 +251,10 @@ function validateManifests() {
 
   const library = manifests[0].manifest
   validateLibraryManifest(library)
+  const undeclared = findUndeclaredImports(library)
+  if (undeclared.length > 0) {
+    throw new Error(`src imports undeclared packages: ${undeclared.join(', ')}`)
+  }
   validateThirdPartyNotices(readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8'))
   for (const target of [
     library.main,

@@ -12,6 +12,11 @@ unchanged apart from the import path.
 `typescript` is an **optional** peerDependency (`^5 || ^6 || ^7`): it only matters for the
 host’s type-checking or the `./source` export, never at runtime.
 
+The WYSIWYG renderer (`./advanced`) imports `@tiptap/core`, `@tiptap/pm`, `@tiptap/vue-3` and
+`@tiptap/extension-image`, which Nuxt UI already provides: they are optional peerDependencies
+(`^3.30.5`). With strict pnpm, declare them in the application to share Nuxt UI's instance.
+`./core` does not need them.
+
 ## Entry points
 
 | Import | Content |
