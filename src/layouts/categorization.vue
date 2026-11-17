@@ -82,7 +82,7 @@ import UTabs from '@nuxt/ui/components/Tabs.vue'
 import UStepper from '@nuxt/ui/components/Stepper.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import { useUiLayout } from '../utils'
-import { useHashState } from '../composables'
+import { useCategoryState } from '../composables'
 import { get, isString } from 'radash'
 
 const DEFAULT_QUERY_KEY = 'tab'
@@ -95,8 +95,9 @@ const DEFAULT_DEFAULT_TAB = '0'
  * as a step-by-step wizard (`UStepper`) — the latter variant was declared in the v1 theme
  * but had never been implemented.
  *
- * The active category is persisted in the URL hash (`#tab=…`), making long forms
- * shareable and resilient to reload.
+ * The active category stays in memory. With `options.urlHash: true` (or the same key in the
+ * JSON Forms `config`), it is persisted in the URL hash (`#tab=…`), making long forms shareable
+ * and resilient to reload.
  */
 const layoutRenderer = defineComponent({
   name: 'categorization-renderer',
@@ -110,8 +111,8 @@ const layoutRenderer = defineComponent({
     ...rendererProps<Layout>(),
   },
   setup(props: RendererProps<Layout>) {
-    const { state, set } = useHashState()
     const renderedProps = useUiLayout(useJsonFormsCategorization(props))
+    const { state, set } = useCategoryState(renderedProps.appliedOptions.value?.urlHash === true)
     const queryKey = get(renderedProps.layout.value, 'uischema.options.queryKey', DEFAULT_QUERY_KEY)
     const defaultTab = get(
       renderedProps.layout.value,

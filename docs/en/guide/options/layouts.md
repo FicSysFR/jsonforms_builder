@@ -41,7 +41,8 @@ The Group’s `label` becomes the card title.
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `variant` | `"stepper"` | tabs | `"stepper"` → `UStepper` wizard; otherwise `UTabs`. |
-| `queryKey` | `String` | `"tab"` | Hash / query key used to remember the active tab. |
+| `urlHash` | `Boolean` | `false` | Remembers the active tab in `location.hash` (`#tab=…`), so that it survives a reload or a shared link. Without it, the tab stays in memory and the URL is never modified. Also read from the JSON Forms `config`. |
+| `queryKey` | `String` | `"tab"` | Hash key when `urlHash` is on. |
 | `defaultTab` | `String` | `"0"` | Initial tab identifier. |
 | `tabs` | `Object` | — | Pass-through → `UTabs`. |
 | `stepper` | `Object` | — | Pass-through → `UStepper`. |
@@ -50,7 +51,7 @@ The Group’s `label` becomes the card title.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `queryId` | `String` | index | Stable identifier for the URL hash. |
+| `queryId` | `String` | index | Stable tab identifier (in the hash with `urlHash`). |
 
 ### Examples
 
@@ -59,7 +60,7 @@ Tabs:
 ```json
 {
   "type": "Categorization",
-  "options": { "queryKey": "section", "defaultTab": "basic" },
+  "options": { "urlHash": true, "queryKey": "section", "defaultTab": "basic" },
   "elements": [
     {
       "type": "Category",
