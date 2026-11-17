@@ -26,6 +26,12 @@ yarn add @ficsysfr/jsonforms_builder @jsonforms/core @jsonforms/vue @nuxt/ui
 
 `@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue`, and `vue` are **peerDependencies**: the library does not ship any Nuxt UI components; it imports them from the host app installation.
 
+`typescript` is an **optional** peerDependency (`^5 || ^6 || ^7`): it only matters for the
+host's type-checking or the `./source` export, never at runtime.
+
+The package is BSD-3-Clause licensed (`LICENSE`) and ships `THIRD_PARTY_NOTICES.md` (MIT notices
+of the JSON Forms derived code and of the bundled Day.js): reproduce both when redistributing.
+
 ## Usage
 
 ```vue

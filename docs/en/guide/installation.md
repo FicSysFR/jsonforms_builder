@@ -9,6 +9,16 @@ unchanged apart from the import path.
 
 `@nuxt/ui`, `@jsonforms/core`, `@jsonforms/vue` and `vue` are **peerDependencies**: the library bundles no Nuxt UI component of its own; it imports them from the host application’s installation.
 
+`typescript` is an **optional** peerDependency (`^5 || ^6 || ^7`): it only matters for the
+host’s type-checking or the `./source` export, never at runtime.
+
+## Licenses
+
+The library is BSD-3-Clause licensed (`LICENSE`). The npm package also ships
+`THIRD_PARTY_NOTICES.md`: the MIT notices of the code derived from JSON Forms and of Day.js, which
+is bundled into `dist/`. An application that redistributes the library reproduces both files in
+its third-party notices.
+
 ## Requirements
 
 - Node.js ≥ 22
