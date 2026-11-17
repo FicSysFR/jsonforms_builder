@@ -17,6 +17,7 @@ Contrôles segmentés (`UInputDate` / `UInputTime`) ou calendrier déplié (`UCa
 |---|---|---|---|
 | `format` | `"date"` \| `"time"` \| `"date-time"` | (schema) | Type de contrôle si le schema n’a pas de `format`. |
 | `pattern` | `String` | selon format | Format dayjs de stockage / affichage (`YYYY-MM-DD`, `HH:mm`, `YYYY.MM`, `YYYY`, …). |
+| `dateTimeOffset` | `"local"` \| `"none"` | `"local"` | `date-time` sans `pattern` : décalage écrit sur une nouvelle valeur (`local` : celui du navigateur à cette heure ; `none` : valeur naïve). |
 | `locale` | `String` | `"fr-FR"` | Locale du calendrier popover. |
 | `months` | `Number` | — | Nombre de mois affichés dans le popover. |
 | `weekNumbers` | `Boolean` | — | Affiche les numéros de semaine. |
@@ -31,6 +32,14 @@ Contrôles segmentés (`UInputDate` / `UInputTime`) ou calendrier déplié (`UCa
 | `calendar` | `Object` | — | Pass-through → calendrier du popover. |
 | `calendarCard` | `Object` | — | Pass-through carte calendrier. |
 | `timeCard` / `timeHour` / `timeMinute` / `timeSecond` | `Object` | — | Pass-through parties heure. |
+
+### Décalage horaire (`date-time`)
+
+Sans `pattern` personnalisé, un `date-time` RFC 3339 garde son décalage :
+`2026-11-17T10:30:00+05:30` s'affiche `10:30` suivi de `UTC+05:30`, et une modification est réécrite
+avec `+05:30` ; une valeur `Z` reste en UTC. Une valeur naïve (`2026-11-17T10:30:00`) reste naïve.
+Une nouvelle valeur reçoit le décalage du navigateur à cette date et heure, heure d'été comprise,
+sauf avec `dateTimeOffset: "none"`. Avec un `pattern`, ce motif reste le seul contrat.
 
 ### Exemples
 

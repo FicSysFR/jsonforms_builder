@@ -17,6 +17,7 @@ Segmented controls (`UInputDate` / `UInputTime`) or an inline calendar (`UCalend
 |---|---|---|---|
 | `format` | `"date"` \| `"time"` \| `"date-time"` | (schema) | Control type when the schema has no `format`. |
 | `pattern` | `String` | per format | dayjs storage / display format (`YYYY-MM-DD`, `HH:mm`, `YYYY.MM`, `YYYY`, …). |
+| `dateTimeOffset` | `"local"` \| `"none"` | `"local"` | `date-time` without `pattern`: offset written on a new value (`local`: the browser's at that time; `none`: naive value). |
 | `locale` | `String` | `"fr-FR"` | Locale of the popover calendar. |
 | `months` | `Number` | — | Number of months shown in the popover. |
 | `weekNumbers` | `Boolean` | — | Shows week numbers. |
@@ -31,6 +32,14 @@ Segmented controls (`UInputDate` / `UInputTime`) or an inline calendar (`UCalend
 | `calendar` | `Object` | — | Pass-through → the popover calendar. |
 | `calendarCard` | `Object` | — | Pass-through to the calendar card. |
 | `timeCard` / `timeHour` / `timeMinute` / `timeSecond` | `Object` | — | Pass-through to the time parts. |
+
+### Time zone offset (`date-time`)
+
+Without a custom `pattern`, an RFC 3339 `date-time` keeps its offset: `2026-11-17T10:30:00+05:30`
+shows `10:30` followed by `UTC+05:30`, and an edit is written back with `+05:30`; a `Z` value stays
+in UTC. A naive value (`2026-11-17T10:30:00`) stays naive. A new value gets the browser's offset at
+that date and time, daylight saving included, unless `dateTimeOffset: "none"`. With a `pattern`,
+that pattern remains the sole contract.
 
 ### Examples
 

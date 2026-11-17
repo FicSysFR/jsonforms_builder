@@ -71,6 +71,7 @@
       @blur="handleBlur"
     )
       template(#trailing)
+        span.me-1.text-xs.text-muted(v-if="dateTimeOffsetLabel") {{ dateTimeOffsetLabel }}
         u-popover(
           v-if="!isDisabled && !isReadonly"
           v-model:open="pickerOpen"
@@ -231,6 +232,13 @@ const controlRenderer: Component = defineComponent({
         : 'Ouvrir le calendrier',
     )
 
+    /** The wall time is shown in the stored offset: name it (`UTC`, `UTC+05:30`). */
+    const dateTimeOffsetLabel = computed(() => {
+      const offset = control.dateTimeOffset.value
+      if (!offset) return undefined
+      return offset === 'Z' ? 'UTC' : `UTC${offset}`
+    })
+
     const showSeconds = computed(() => {
       const pattern = control.optionPattern.value
       return typeof pattern === 'string' && pattern.includes('s')
@@ -360,6 +368,7 @@ const controlRenderer: Component = defineComponent({
       onMinuteChange,
       onSecondChange,
       onCalendarSelect,
+      dateTimeOffsetLabel,
     }
   },
 })
