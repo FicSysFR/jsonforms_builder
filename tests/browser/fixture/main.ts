@@ -1,7 +1,11 @@
 import './main.css'
 import type { ValidationMode } from '@jsonforms/core'
 import { JsonForms } from '@jsonforms/vue'
-import { nuxtUiRenderers, strictCspRenderers } from '@ficsysfr/jsonforms_builder/core'
+import {
+  createJsonFormsTranslator,
+  nuxtUiRenderers,
+  strictCspRenderers,
+} from '@ficsysfr/jsonforms_builder/core'
 import UApp from '@nuxt/ui/components/App.vue'
 import ui from '@nuxt/ui/vue-plugin'
 import { createApp, defineComponent, h, markRaw, shallowRef } from 'vue'
@@ -20,7 +24,8 @@ declare global {
  * - `readonly=form|config`: `<json-forms readonly>` or `config.readonly`;
  * - `rule=schema`: schema-based SHOW condition instead of a LEAF one;
  * - `serverErrors`: a host error on `text` (filtered before touch locally), cleared by the
- *   host once `text` changes, as a server round trip would.
+ *   host once `text` changes, as a server round trip would;
+ * - `locale=en`: interface texts through `createJsonFormsTranslator({ locale: 'en' })`.
  */
 const params = new URLSearchParams(location.search)
 const validationMode = (params.get('validation') ?? 'NoValidation') as ValidationMode
@@ -28,6 +33,8 @@ const readonlySource = params.get('readonly')
 const registry = params.get('registry') === 'full' ? nuxtUiRenderers : strictCspRenderers
 const uischema = buildUischema({ schemaRule: params.get('rule') === 'schema' })
 const withServerErrors = params.has('serverErrors')
+const locale = params.get('locale')
+const i18n = locale ? { locale, translate: createJsonFormsTranslator({ locale }) } : undefined
 
 const SERVER_ERROR = {
   instancePath: '/text',
@@ -64,6 +71,7 @@ const Recipe = defineComponent({
               readonly: readonlySource === 'form',
               config,
               additionalErrors: additionalErrors.value,
+              i18n,
               onChange: (event: { data: Record<string, unknown> }) => {
                 if (event.data.text !== data.value.text) additionalErrors.value = []
                 data.value = event.data

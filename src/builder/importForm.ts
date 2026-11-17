@@ -1,4 +1,5 @@
 import { Generate, type JsonSchema, type UISchemaElement } from '@jsonforms/core'
+import { createUiText, type UiText } from '../i18n/ui'
 import { createEmptyDefinition, type FormDefinition } from './useFormBuilder'
 
 export class FormImportError extends Error {
@@ -59,22 +60,24 @@ export interface FormImportResult extends FormDefinition {
  * - `{ schema, uischema, data? }`
  * - a bare JSON Schema (`type` / `properties` / combinators) — uischema is generated
  * - `{ schema }` alone — uischema is generated
+ *
+ * Error messages are resolved through `t` (French by default).
  */
-export const parseFormImport = (raw: string): FormImportResult => {
+export const parseFormImport = (raw: string, t: UiText = createUiText()): FormImportResult => {
   const trimmed = raw.trim()
   if (!trimmed) {
-    throw new FormImportError('Le JSON est vide.')
+    throw new FormImportError(t('jsonformsBuilder.builder.import.error.empty'))
   }
 
   let parsed: unknown
   try {
     parsed = JSON.parse(trimmed) as unknown
   } catch {
-    throw new FormImportError('JSON invalide : impossible de le parser.')
+    throw new FormImportError(t('jsonformsBuilder.builder.import.error.invalidJson'))
   }
 
   if (!isPlainObject(parsed)) {
-    throw new FormImportError('Le document doit être un objet JSON.')
+    throw new FormImportError(t('jsonformsBuilder.builder.import.error.notObject'))
   }
 
   const empty = createEmptyDefinition()
@@ -90,9 +93,7 @@ export const parseFormImport = (raw: string): FormImportResult => {
   }
 
   if (looksLikeUiSchema(parsed) && !looksLikeSchema(parsed)) {
-    throw new FormImportError(
-      'Un UI Schema seul ne suffit pas : fournissez `{ "schema": …, "uischema": … }` ou un JSON Schema.',
-    )
+    throw new FormImportError(t('jsonformsBuilder.builder.import.error.uiSchemaOnly'))
   }
 
   if (looksLikeSchema(parsed)) {
@@ -104,7 +105,5 @@ export const parseFormImport = (raw: string): FormImportResult => {
     }
   }
 
-  throw new FormImportError(
-    'Format non reconnu. Attendu : `{ "schema": …, "uischema": … }` ou un JSON Schema.',
-  )
+  throw new FormImportError(t('jsonformsBuilder.builder.import.error.unknownFormat'))
 }

@@ -19,7 +19,7 @@
     //- hiding them would suggest the form shows everything, when a record may carry
     //- fields outside the schema.
     .space-y-1(v-if="extraProperties.length")
-      p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Propriétés hors schéma
+      p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed {{ t('jsonformsBuilder.object.additionalProperties') }}
       dl.grid.grid-cols-1.gap-1(class="sm:grid-cols-2")
         .flex.items-baseline.gap-2(v-for="entry in extraProperties" :key="entry.key")
           dt.text-xs.font-medium.text-muted(v-text="entry.key")
@@ -43,6 +43,7 @@ import {
   type RendererProps,
 } from '@jsonforms/vue'
 import { isRenderableObjectSchema, useObjectControl } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * ObjectControlRenderer
@@ -71,7 +72,10 @@ const controlRenderer = defineComponent({
      * usable `properties`, the generated layout describes only the object itself,
      * and redispatching would loop back here forever. Cf. `hasRenderableControl`.
      */
-    return useObjectControl({ jsonFormsControl: useJsonFormsControl(props) })
+    return {
+      ...useObjectControl({ jsonFormsControl: useJsonFormsControl(props) }),
+      t: useUiText(),
+    }
   },
 })
 

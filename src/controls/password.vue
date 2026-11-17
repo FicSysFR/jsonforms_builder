@@ -25,7 +25,7 @@
       template(#trailing)
         u-button(
           :icon="passwordVisible ? 'i-lucide-eye-off' : 'i-lucide-eye'"
-          :aria-label="passwordVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          :aria-label="t(passwordVisible ? 'jsonformsBuilder.password.hide' : 'jsonformsBuilder.password.show')"
           :aria-pressed="passwordVisible"
           color="neutral"
           variant="link"
@@ -51,6 +51,7 @@ import UButton from '@nuxt/ui/components/Button.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
 import { usePasswordControl } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * PasswordControlRenderer
@@ -75,11 +76,14 @@ const controlRenderer = defineComponent({
     const jsonFormsControl = useJsonFormsControl(props)
     const clearValue = determineClearValue(undefined)
 
-    return usePasswordControl({
-      jsonFormsControl,
-      clearValue,
-      debounceWait: 100,
-    })
+    return {
+      ...usePasswordControl({
+        jsonFormsControl,
+        clearValue,
+        debounceWait: 100,
+      }),
+      t: useUiText(),
+    }
   },
 })
 

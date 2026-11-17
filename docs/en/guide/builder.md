@@ -27,4 +27,8 @@ Accepted import formats:
 - `{ "schema": …, "uischema": …, "data"?: … }` (`data` feeds the preview);
 - a standalone **JSON Schema** — the UI Schema is generated automatically.
 
+The `locale` prop (`fr`, `en`, `en-GB`…) sets the interface language of the builder (palette, inspector, import, confirmations, default labels of new fields) and of its preview, through `createJsonFormsTranslator({ locale })`: `form-builder(v-model="definition" locale="en")`. Without `locale` or `translate`, the texts stay in French.
+
+The `translate` prop takes a JSON Forms translator (`createJsonFormsTranslator({ locale, messages })`, a vue-i18n bridge…) and wins over `locale`. It is asked for the `jsonformsBuilder.builder.*` keys (listed in `UI_MESSAGES`); a key it returns `undefined` for keeps its French text. The preview gets the same translator.
+
 You can also open it from the playground through **Open builder** (route `#/builder`, with `?return=` to get back to the gallery).

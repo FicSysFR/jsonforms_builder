@@ -5,8 +5,8 @@
         u-button(
           :disabled="!canUndo"
           icon="i-lucide-undo-2"
-          label="Précédent"
-          aria-label="Précédent"
+          :label="t('jsonformsBuilder.builder.toolbar.undo')"
+          :aria-label="t('jsonformsBuilder.builder.toolbar.undo')"
           color="neutral"
           variant="ghost"
           size="sm"
@@ -15,8 +15,8 @@
         u-button(
           :disabled="!canRedo"
           icon="i-lucide-redo-2"
-          label="Suivant"
-          aria-label="Suivant"
+          :label="t('jsonformsBuilder.builder.toolbar.redo')"
+          :aria-label="t('jsonformsBuilder.builder.toolbar.redo')"
           color="neutral"
           variant="ghost"
           size="sm"
@@ -24,7 +24,7 @@
         )
         u-button(
           icon="i-lucide-upload"
-          label="Importer"
+          :label="t('jsonformsBuilder.builder.toolbar.import')"
           color="neutral"
           variant="outline"
           size="sm"
@@ -51,7 +51,7 @@
     .grid.grid-cols-1.gap-3(v-if="view === 'edit'" class="lg:grid-cols-[16rem_1fr_20rem]")
       u-card(:ui="{ body: 'p-3' }")
         .space-y-4
-          .space-y-2(v-for="group in fieldGroups" :key="group.name")
+          .space-y-2(v-for="group in fieldGroups" :key="group.key")
             p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="group.name")
             .grid.grid-cols-2.gap-1
               button.flex.items-center.rounded.border.border-default.text-left.text-xs.cursor-grab(
@@ -67,7 +67,7 @@
                 span.truncate(v-text="field.label")
 
           .space-y-2
-            p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Conteneurs
+            p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.palette.containers')")
             .grid.grid-cols-2.gap-1
               button.flex.items-center.rounded.border.border-dashed.border-default.text-left.text-xs.cursor-grab(
                 v-for="container in containers"
@@ -83,7 +83,7 @@
 
       u-card(:ui="{ body: 'p-3' }")
         .space-y-1(@click="select(null)")
-          p.text-xs.text-dimmed.mb-2 Glissez un champ depuis la palette, ou cliquez pour l'ajouter en fin de formulaire.
+          p.text-xs.text-dimmed.mb-2(v-text="t('jsonformsBuilder.builder.canvas.hint')")
 
           builder-node(
             v-for="(element, index) in rootElements"
@@ -105,7 +105,7 @@
             @dragover.prevent="isRootDropActive = true"
             @dragleave="isRootDropActive = false"
             @drop.prevent="onRootDrop"
-          ) {{ rootElements.length ? 'Déposer en fin de formulaire' : 'Déposez ici votre premier champ' }}
+          ) {{ t(rootElements.length ? 'jsonformsBuilder.builder.canvas.dropAtEnd' : 'jsonformsBuilder.builder.canvas.dropFirst') }}
 
       u-card(:ui="{ body: 'p-3' }")
         builder-inspector(
@@ -128,6 +128,7 @@
         :schema="definition.schema"
         :uischema="definition.uischema"
         :renderers="renderers"
+        :i18n="previewI18n"
         validation-mode="ValidateAndShow"
         @change="previewData = $event.data"
       )
@@ -136,7 +137,7 @@
     .grid.grid-cols-1.gap-3(v-if="view === 'json'" class="md:grid-cols-2 xl:grid-cols-3")
       u-card(:ui="{ body: 'p-0' }")
         template(#header)
-          span.text-xs.font-semibold.uppercase.tracking-wide.text-muted Data
+          span.text-xs.font-semibold.uppercase.tracking-wide.text-muted(v-text="t('jsonformsBuilder.builder.json.data')")
         pre.overflow-x-auto.p-3.text-xs(v-text="dataJson")
       u-card(:ui="{ body: 'p-0' }")
         template(#header)
@@ -149,7 +150,7 @@
 
     confirm-dialog(
       :open="pendingRemovePath !== null"
-      title="Supprimer cet élément ?"
+      :title="t('jsonformsBuilder.builder.remove.title')"
       :description="removeDescription"
       @update:open="cancelRemove"
       @confirm="confirmRemove"
@@ -158,8 +159,8 @@
     //- Nuxt UI: default slot = DialogTrigger; body content must use `#body`.
     u-modal(
       v-model:open="importOpen"
-      title="Importer un formulaire"
-      description="Collez un JSON `{ schema, uischema, data? }` (ou un JSON Schema seul), ou chargez un fichier."
+      :title="t('jsonformsBuilder.builder.import.title')"
+      :description="t('jsonformsBuilder.builder.import.description')"
       :ui="{ content: 'sm:max-w-2xl' }"
     )
       template(#body)
@@ -167,7 +168,7 @@
           .flex.flex-wrap.items-center.gap-2
             u-button(
               icon="i-lucide-file-up"
-              label="Charger un fichier…"
+              :label="t('jsonformsBuilder.builder.import.loadFile')"
               color="neutral"
               variant="outline"
               size="sm"
@@ -179,7 +180,7 @@
               accept="application/json,.json"
               @change="onImportFile"
             )
-            p.text-xs.text-muted Fichier .json — remplace le formulaire courant
+            p.text-xs.text-muted(v-text="t('jsonformsBuilder.builder.import.fileHint')")
 
           u-form-field(label="JSON" :error="importError || undefined")
             u-textarea(
@@ -193,13 +194,13 @@
       template(#footer)
         .flex.w-full.items-center.justify-end.gap-2
           u-button(
-            label="Annuler"
+            :label="t('jsonformsBuilder.builder.import.cancel')"
             color="neutral"
             variant="ghost"
             @click="importOpen = false"
           )
           u-button(
-            label="Importer"
+            :label="t('jsonformsBuilder.builder.import.submit')"
             color="primary"
             :disabled="!importText.trim()"
             @click="applyImport"
@@ -207,8 +208,22 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, ref, watch, type PropType } from 'vue'
-import type { JsonFormsRendererRegistryEntry, UISchemaElement } from '@jsonforms/core'
+import {
+  computed,
+  defineComponent,
+  inject,
+  nextTick,
+  provide,
+  ref,
+  watch,
+  type PropType,
+} from 'vue'
+import type {
+  JsonFormsI18nState,
+  JsonFormsRendererRegistryEntry,
+  Translator,
+  UISchemaElement,
+} from '@jsonforms/core'
 import { JsonForms } from '@jsonforms/vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCard from '@nuxt/ui/components/Card.vue'
@@ -220,7 +235,13 @@ import UTextarea from '@nuxt/ui/components/Textarea.vue'
 import BuilderInspector from './BuilderInspector.vue'
 import { ConfirmDialog } from '../common'
 import BuilderNode from './BuilderNode.vue'
-import { PALETTE_CONTAINERS, PALETTE_FIELDS } from './palette'
+import {
+  createPaletteContainers,
+  createPaletteFields,
+  paletteGroupLabel,
+  type PaletteField,
+  type PaletteGroup,
+} from './palette'
 import { readDragPayload, writeDragPayload, type DropEvent } from './drag'
 import { useFormBuilder, type FormDefinition } from './useFormBuilder'
 import { FormImportError, parseFormImport } from './importForm'
@@ -232,6 +253,8 @@ import {
   writeFormDraft,
 } from './persistForm'
 import { allRenderers } from '../advanced'
+import { createJsonFormsTranslator } from '../i18n/createJsonFormsTranslator'
+import { createUiText, UiTranslatorKey } from '../i18n/ui'
 import { getElementAt, type ElementPath } from './tree'
 
 /**
@@ -247,6 +270,8 @@ import { getElementAt, type ElementPath } from './tree'
  * Nothing is persisted by default. With `storage-key` (a key, or `true` for the historical one),
  * the in-progress form (`schema`, `uischema`, preview `data`) is saved to `localStorage` so a
  * refresh keeps the draft.
+ *
+ * Interface texts are French unless `locale` or `translate` is set; both also reach the preview.
  *
  * @example
  * <form-builder v-model="definition" />
@@ -285,9 +310,42 @@ export default defineComponent({
       type: [String, Boolean] as PropType<string | boolean>,
       default: false,
     },
+    /**
+     * Interface language (`fr`, `en`, `en-GB`…) of the builder and its preview, resolved with
+     * `createJsonFormsTranslator({ locale })`. French texts when neither `locale` nor `translate`
+     * is set.
+     */
+    locale: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
+    /** JSON Forms translator for the interface texts and the preview; wins over `locale`. */
+    translate: {
+      type: Function as PropType<Translator | undefined>,
+      default: undefined,
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    const inheritedTranslator = inject(UiTranslatorKey, undefined)
+    const ownTranslator = computed<Translator | undefined>(
+      () =>
+        props.translate ??
+        (props.locale ? createJsonFormsTranslator({ locale: props.locale }) : undefined),
+    )
+    // Stable wrapper reading the current props, so a locale change reaches every child.
+    const uiTranslator = ((id: string, defaultMessage?: string, values?: unknown) => {
+      const active = ownTranslator.value ?? inheritedTranslator
+      return active ? active(id, defaultMessage, values) : defaultMessage
+    }) as Translator
+    provide(UiTranslatorKey, uiTranslator)
+    const t = createUiText(uiTranslator)
+
+    /** The preview follows the same language; untouched when neither prop is set. */
+    const previewI18n = computed<JsonFormsI18nState | undefined>(() =>
+      ownTranslator.value ? { locale: props.locale, translate: ownTranslator.value } : undefined,
+    )
+
     const draftStorage = getBrowserFormDraftStorage()
     const resolvedStorageKey = computed(() => resolveFormBuilderStorageKey(props.storageKey))
 
@@ -300,14 +358,18 @@ export default defineComponent({
       ? props.modelValue
       : (storedDraft ?? props.modelValue)
 
-    const builder = useFormBuilder(initialDefinition)
+    const builder = useFormBuilder(initialDefinition, t)
 
     const view = ref<'edit' | 'preview' | 'json'>('edit')
-    const viewItems = [
-      { value: 'edit', label: 'Éditeur', icon: 'i-lucide-pencil-ruler' },
-      { value: 'preview', label: 'Aperçu', icon: 'i-lucide-eye' },
+    const viewItems = computed(() => [
+      {
+        value: 'edit',
+        label: t('jsonformsBuilder.builder.view.edit'),
+        icon: 'i-lucide-pencil-ruler',
+      },
+      { value: 'preview', label: t('jsonformsBuilder.builder.view.preview'), icon: 'i-lucide-eye' },
       { value: 'json', label: 'JSON', icon: 'i-lucide-braces' },
-    ]
+    ])
 
     // Preview `data` is internal (not part of `v-model`): always rehydrate it from the
     // draft when present so remounts (playground mode switch, page reload) keep values.
@@ -355,14 +417,20 @@ export default defineComponent({
     )
 
     const fieldGroups = computed(() => {
-      const groups = new Map<string, typeof PALETTE_FIELDS>()
+      const groups = new Map<PaletteGroup, PaletteField[]>()
 
-      for (const field of PALETTE_FIELDS) {
+      for (const field of createPaletteFields(t)) {
         groups.set(field.group, [...(groups.get(field.group) ?? []), field])
       }
 
-      return [...groups].map(([name, fields]) => ({ name, fields }))
+      return [...groups].map(([key, fields]) => ({
+        key,
+        name: paletteGroupLabel(key, t),
+        fields,
+      }))
     })
+
+    const containers = computed(() => createPaletteContainers(t))
 
     const onPaletteDragStart = (event: DragEvent, kind: 'field' | 'container', key: string) => {
       writeDragPayload(event, { kind, key } as never)
@@ -426,8 +494,8 @@ export default defineComponent({
       const children = (element as { elements?: unknown[] } | undefined)?.elements?.length ?? 0
 
       return children
-        ? `Cet élément et ses ${children} enfant(s) seront retirés, ainsi que les propriétés de schéma qu'ils étaient seuls à référencer.`
-        : "L'élément et sa propriété de schéma seront retirés. L'action reste annulable."
+        ? t('jsonformsBuilder.builder.remove.withChildren', { count: children })
+        : t('jsonformsBuilder.builder.remove.single')
     })
 
     const askRemove = (path: ElementPath) => {
@@ -495,7 +563,7 @@ export default defineComponent({
 
     const applyImport = () => {
       try {
-        const next = parseFormImport(importText.value)
+        const next = parseFormImport(importText.value, t)
         builder.reset(next)
         previewData.value = next.data === undefined ? {} : structuredClone(next.data)
         view.value = 'edit'
@@ -503,7 +571,9 @@ export default defineComponent({
         importError.value = ''
       } catch (error) {
         importError.value =
-          error instanceof FormImportError ? error.message : "Impossible d'importer ce formulaire."
+          error instanceof FormImportError
+            ? error.message
+            : t('jsonformsBuilder.builder.import.failed')
       }
     }
 
@@ -520,19 +590,21 @@ export default defineComponent({
         importText.value = await file.text()
         importError.value = ''
       } catch {
-        importError.value = 'Impossible de lire ce fichier.'
+        importError.value = t('jsonformsBuilder.builder.import.readFailed')
       }
     }
 
     return {
       ...builder,
+      t,
+      previewI18n,
       view,
       viewItems,
       previewData,
       previewKey,
       rootElements,
       fieldGroups,
-      containers: PALETTE_CONTAINERS,
+      containers,
       isRootDropActive,
       onPaletteDragStart,
       appendField,

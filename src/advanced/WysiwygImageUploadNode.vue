@@ -21,16 +21,17 @@ import { computed, defineComponent, inject, ref, watch } from 'vue'
 import { nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3'
 import UFileUpload from '@nuxt/ui/components/FileUpload.vue'
 import UAvatar from '@nuxt/ui/components/Avatar.vue'
+import { type UiText, useUiText } from '../i18n/ui'
 import { WysiwygImageUploadKey, type WysiwygImageUploadContext } from './wysiwygImageUpload'
 
-const FALLBACK_CTX: WysiwygImageUploadContext = {
+const fallbackContext = (t: UiText): WysiwygImageUploadContext => ({
   upload: async () => {
-    throw new Error('Upload d’image non configuré')
+    throw new Error(t('jsonformsBuilder.wysiwyg.imageUpload.notConfigured'))
   },
   accept: 'image/*',
-  label: 'Ajouter une image',
-  description: 'PNG, JPG, GIF ou WebP',
-}
+  label: t('jsonformsBuilder.wysiwyg.imageUpload.label'),
+  description: t('jsonformsBuilder.wysiwyg.imageUpload.formats'),
+})
 
 export default defineComponent({
   name: 'WysiwygImageUploadNode',
@@ -41,8 +42,9 @@ export default defineComponent({
   },
   props: nodeViewProps,
   setup(props) {
+    const t = useUiText()
     const injected = inject(WysiwygImageUploadKey, null)
-    const ctx = computed(() => injected?.value ?? FALLBACK_CTX)
+    const ctx = computed(() => injected?.value ?? fallbackContext(t))
 
     const file = ref<File | null>(null)
     const loading = ref(false)
@@ -54,7 +56,9 @@ export default defineComponent({
       error.value = null
       const maxSize = ctx.value.maxSize
       if (typeof maxSize === 'number' && next.size > maxSize) {
-        error.value = `Fichier trop volumineux (max ${Math.round(maxSize / (1024 * 1024))} Mo)`
+        error.value = t('jsonformsBuilder.wysiwyg.imageUpload.tooLarge', {
+          size: Math.round(maxSize / (1024 * 1024)),
+        })
         file.value = null
         return
       }
@@ -72,7 +76,8 @@ export default defineComponent({
           .setImage({ src, alt: next.name })
           .run()
       } catch (err) {
-        error.value = err instanceof Error ? err.message : 'Échec de l’upload'
+        error.value =
+          err instanceof Error ? err.message : t('jsonformsBuilder.wysiwyg.imageUpload.failed')
         file.value = null
       } finally {
         loading.value = false

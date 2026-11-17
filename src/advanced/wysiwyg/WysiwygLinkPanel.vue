@@ -9,12 +9,12 @@
       size="xs"
       icon="i-lucide-link"
       placeholder="https://…"
-      aria-label="Adresse du lien"
+      :aria-label="t('jsonformsBuilder.wysiwyg.linkPanel.address')"
       autofocus
       :color="invalid ? 'error' : undefined"
       :highlight="invalid"
     )
-    u-button(type="submit" size="xs" icon="i-lucide-check" :disabled="!href.trim()") Appliquer
+    u-button(type="submit" size="xs" icon="i-lucide-check" :disabled="!href.trim()") {{ t('jsonformsBuilder.wysiwyg.apply') }}
     u-button(
       v-if="isLink"
       size="xs"
@@ -22,9 +22,16 @@
       variant="outline"
       icon="i-lucide-unlink"
       @click="remove"
-    ) Retirer
-    u-button(size="xs" color="neutral" variant="ghost" icon="i-lucide-x" aria-label="Fermer" @click="$emit('close')")
-    p.w-full.text-xs.text-error(v-if="invalid" role="alert") Adresse non autorisée (http, https, mailto, tel ou relative).
+    ) {{ t('jsonformsBuilder.wysiwyg.linkPanel.remove') }}
+    u-button(
+      size="xs"
+      color="neutral"
+      variant="ghost"
+      icon="i-lucide-x"
+      :aria-label="t('jsonformsBuilder.wysiwyg.close')"
+      @click="$emit('close')"
+    )
+    p.w-full.text-xs.text-error(v-if="invalid" role="alert") {{ t('jsonformsBuilder.wysiwyg.linkPanel.invalid') }}
 </template>
 
 <script lang="ts">
@@ -32,6 +39,7 @@ import { defineComponent, ref, type PropType } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UInput from '@nuxt/ui/components/Input.vue'
+import { useUiText } from '../../i18n/ui'
 import { isSafeWysiwygUrl } from './ai/sanitize'
 
 /** Inline link editor replacing Nuxt UI's `prompt()`; rejects unsafe URL schemes. */
@@ -43,6 +51,7 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const t = useUiText()
     const isLink = props.editor.isActive('link')
     const href = ref<string>((props.editor.getAttributes('link').href as string | undefined) ?? '')
     const invalid = ref(false)
@@ -63,7 +72,7 @@ export default defineComponent({
       emit('close')
     }
 
-    return { href, invalid, isLink, apply, remove }
+    return { t, href, invalid, isLink, apply, remove }
   },
 })
 </script>

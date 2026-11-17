@@ -3,6 +3,8 @@ export {
   DEFAULT_WYSIWYG_AI_ACTION_IDS,
   DEFAULT_WYSIWYG_AI_SLASH_ACTION_IDS,
   DEFAULT_WYSIWYG_AI_LABELS,
+  buildWysiwygAiActions,
+  buildWysiwygAiLabels,
   resolveWysiwygAiActions,
   selectWysiwygAiSlashActions,
 } from './actions'

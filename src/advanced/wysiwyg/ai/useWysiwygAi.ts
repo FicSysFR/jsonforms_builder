@@ -1,5 +1,6 @@
 import type { Editor, EditorEvents } from '@tiptap/core'
 import { computed, ref, shallowRef, type Ref } from 'vue'
+import { createUiText, type UiText } from '../../../i18n/ui'
 import { buildWysiwygAiRequest, resolveWysiwygAiTarget, type WysiwygAiTarget } from './context'
 import { applyWysiwygAiOperation } from './operations'
 import type { ResolvedWysiwygAiOptions } from './options'
@@ -29,17 +30,18 @@ type TrackedTarget = {
   lost: boolean
 }
 
-const STALE_MESSAGE = 'Le texte ciblé a été modifié pendant la génération.'
-
 const isAbortError = (error: unknown) =>
   error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')
 
 /**
  * AI orchestration for one editor: request building, streaming into a detached
  * preview, abort / retry, and explicit acceptance. The document is never touched
- * before `accept()`.
+ * before `accept()`. Its own messages come from `t`.
  */
-export const useWysiwygAi = ({ getEditor, options }: UseWysiwygAiOptions) => {
+export const useWysiwygAi = (
+  { getEditor, options }: UseWysiwygAiOptions,
+  t: UiText = createUiText(),
+) => {
   const status = ref<WysiwygAiStatus>('idle')
   const currentAction = shallowRef<WysiwygAiAction | null>(null)
   const instruction = ref('')
@@ -217,13 +219,13 @@ export const useWysiwygAi = ({ getEditor, options }: UseWysiwygAiOptions) => {
 
     const { target: current } = state
     if (state.lost) {
-      error.value = STALE_MESSAGE
+      error.value = t('jsonformsBuilder.wysiwyg.ai.stale')
       return false
     }
     if (state.docChanged && current.kind !== 'cursor' && mode === 'replace') {
       const text = editor.state.doc.textBetween(current.from, current.to, '\n\n', ' ')
       if (text !== current.text) {
-        error.value = STALE_MESSAGE
+        error.value = t('jsonformsBuilder.wysiwyg.ai.stale')
         return false
       }
     }
@@ -232,7 +234,7 @@ export const useWysiwygAi = ({ getEditor, options }: UseWysiwygAiOptions) => {
     if (mode === 'operations') {
       // Absolute positions are only valid against the document the backend saw.
       if (state.docChanged) {
-        error.value = STALE_MESSAGE
+        error.value = t('jsonformsBuilder.wysiwyg.ai.stale')
         return false
       }
       const absolute = (op: WysiwygAiOperation) =>

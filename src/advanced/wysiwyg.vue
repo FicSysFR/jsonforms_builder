@@ -28,8 +28,8 @@
           )
             span.flex.items-center.gap-1.px-1.text-xs.text-muted
               u-icon.size-4(name="i-lucide-eye")
-              | Aperçu
-            u-button.ms-auto(size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="ui.mode = 'edit'") Modifier
+              | {{ t('jsonformsBuilder.wysiwyg.preview') }}
+            u-button.ms-auto(size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="ui.mode = 'edit'") {{ t('jsonformsBuilder.wysiwyg.edit') }}
           template(v-else)
             u-editor-toolbar.sticky.top-0.z-10.flex-wrap.rounded-t-md.border-b.border-default.bg-default.p-1(
               v-if="resolved.toolbar !== false && ui.mode === 'edit' && editable"
@@ -129,6 +129,7 @@ import UEditorSuggestionMenu from '@nuxt/ui/components/EditorSuggestionMenu.vue'
 import UEditorToolbar from '@nuxt/ui/components/EditorToolbar.vue'
 import UIcon from '@nuxt/ui/components/Icon.vue'
 import { ControlWrapper } from '../common'
+import { useUiText } from '../i18n/ui'
 import { determineClearValue, useUiControl } from '../utils'
 import {
   ImageUpload,
@@ -146,7 +147,7 @@ import { buildWysiwygFeatureExtensions } from './wysiwyg/extensions'
 import { createWysiwygHandlers, type WysiwygUiState } from './wysiwyg/handlers'
 import { WYSIWYG_SLASH_FILTER_FIELDS, buildWysiwygSlashItems } from './wysiwyg/slash/commands'
 import { refreshWysiwygEditorStyles } from './wysiwyg/styles'
-import { WYSIWYG_TABLE_BUBBLE, buildWysiwygTextBubble } from './wysiwyg/toolbar'
+import { buildWysiwygTableBubble, buildWysiwygTextBubble } from './wysiwyg/toolbar'
 import WysiwygFindReplace from './wysiwyg/WysiwygFindReplace.vue'
 import WysiwygLinkPanel from './wysiwyg/WysiwygLinkPanel.vue'
 import WysiwygSourceEditor from './wysiwyg/WysiwygSourceEditor.vue'
@@ -175,6 +176,7 @@ const controlRenderer: Component = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
+    const t = useUiText()
     const clearValue = determineClearValue(undefined)
     const adaptTarget = (value: unknown) => value ?? clearValue
 
@@ -193,6 +195,7 @@ const controlRenderer: Component = defineComponent({
       resolveWysiwygOptions(
         control.appliedOptions.value as Record<string, unknown> | undefined,
         control.control.value.schema?.type,
+        t,
       ),
     )
 
@@ -215,7 +218,7 @@ const controlRenderer: Component = defineComponent({
         maxSize: cfg.maxSize,
         upload: async (file: File) => {
           if (cfg.upload) return cfg.upload(file)
-          return readFileAsDataUrl(file)
+          return readFileAsDataUrl(file, t)
         },
       }
     })
@@ -236,10 +239,13 @@ const controlRenderer: Component = defineComponent({
       () => resolved.value.ai.enabled,
       (enabled) => {
         if (enabled && !ai.value) {
-          ai.value = useWysiwygAi({
-            getEditor: () => currentEditor.value,
-            options: computed(() => resolved.value.ai),
-          })
+          ai.value = useWysiwygAi(
+            {
+              getEditor: () => currentEditor.value,
+              options: computed(() => resolved.value.ai),
+            },
+            t,
+          )
         } else if (!enabled && ai.value) {
           ai.value.dispose()
           ai.value = null
@@ -286,8 +292,8 @@ const controlRenderer: Component = defineComponent({
       [
         {
           icon: 'i-lucide-refresh-cw',
-          'aria-label': 'Remplacer',
-          tooltip: { text: 'Remplacer' },
+          'aria-label': t('jsonformsBuilder.wysiwyg.imageBubble.replace'),
+          tooltip: { text: t('jsonformsBuilder.wysiwyg.imageBubble.replace') },
           onClick: () => {
             const pos = editor.state.selection.from
             const node = editor.state.doc.nodeAt(pos)
@@ -302,8 +308,8 @@ const controlRenderer: Component = defineComponent({
         },
         {
           icon: 'i-lucide-trash-2',
-          'aria-label': 'Supprimer',
-          tooltip: { text: 'Supprimer' },
+          'aria-label': t('jsonformsBuilder.wysiwyg.imageBubble.remove'),
+          tooltip: { text: t('jsonformsBuilder.wysiwyg.imageBubble.remove') },
           onClick: () => {
             const pos = editor.state.selection.from
             const node = editor.state.doc.nodeAt(pos)
@@ -332,15 +338,18 @@ const controlRenderer: Component = defineComponent({
         cfg.ai.enabled && cfg.ai.bubbleMenu
           ? cfg.ai.actions.filter((action) => action.mode !== 'generate')
           : []
-      return buildWysiwygTextBubble({
-        formatting: cfg.bubbleMenu,
-        features: cfg.features,
-        aiActions,
-        aiLabel: cfg.ai.labels.menu,
-      })
+      return buildWysiwygTextBubble(
+        {
+          formatting: cfg.bubbleMenu,
+          features: cfg.features,
+          aiActions,
+          aiLabel: cfg.ai.labels.menu,
+        },
+        t,
+      )
     })
 
-    const tableBubbleItems = WYSIWYG_TABLE_BUBBLE as unknown[][]
+    const tableBubbleItems = computed(() => buildWysiwygTableBubble(t))
 
     const shouldShowTextBubble = ({ editor, state }: { editor: Editor; state: EditorState }) => {
       const { selection } = state
@@ -358,13 +367,16 @@ const controlRenderer: Component = defineComponent({
       const cfg = resolved.value
       const aiActions =
         cfg.ai.enabled && cfg.ai.slashCommands ? selectWysiwygAiSlashActions(cfg.ai.actions) : []
-      return buildWysiwygSlashItems({
-        formatting: cfg.slashCommands,
-        features: cfg.features,
-        imagesEnabled: cfg.imagesEnabled,
-        aiActions,
-        aiLabel: cfg.ai.labels.menu,
-      })
+      return buildWysiwygSlashItems(
+        {
+          formatting: cfg.slashCommands,
+          features: cfg.features,
+          imagesEnabled: cfg.imagesEnabled,
+          aiActions,
+          aiLabel: cfg.ai.labels.menu,
+        },
+        t,
+      )
     })
 
     const closePanel = (editor: Editor) => {
@@ -450,6 +462,7 @@ const controlRenderer: Component = defineComponent({
 
     return {
       ...control,
+      t,
       resolved,
       editorRef,
       rootEl,

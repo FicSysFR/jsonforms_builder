@@ -11,8 +11,8 @@
     )
     u-alert(v-if="error" color="error" variant="subtle" icon="i-lucide-circle-alert" :description="error")
     .flex.items-center.gap-1
-      u-button(v-if="editable" size="xs" icon="i-lucide-check" @click="apply") Appliquer
-      u-button(size="xs" color="neutral" variant="ghost" icon="i-lucide-arrow-left" @click="$emit('close')") Retour à l’éditeur
+      u-button(v-if="editable" size="xs" icon="i-lucide-check" @click="apply") {{ t('jsonformsBuilder.wysiwyg.apply') }}
+      u-button(size="xs" color="neutral" variant="ghost" icon="i-lucide-arrow-left" @click="$emit('close')") {{ t('jsonformsBuilder.wysiwyg.source.back') }}
 </template>
 
 <script lang="ts">
@@ -21,6 +21,7 @@ import type { Editor } from '@tiptap/vue-3'
 import UAlert from '@nuxt/ui/components/Alert.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UTextarea from '@nuxt/ui/components/Textarea.vue'
+import { useUiText } from '../../i18n/ui'
 import type { WysiwygContentType } from '../wysiwygOptions'
 import { parseWysiwygSource, serializeWysiwygSource } from './source'
 
@@ -38,15 +39,22 @@ export default defineComponent({
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const t = useUiText()
     const draft = ref(serializeWysiwygSource(props.editor, props.contentType))
     const error = ref<string | null>(null)
-    const sourceLabel = computed(
-      () =>
-        `Source ${props.contentType === 'json' ? 'JSON' : props.contentType === 'markdown' ? 'Markdown' : 'HTML'}`,
+    const sourceLabel = computed(() =>
+      t('jsonformsBuilder.wysiwyg.source.label', {
+        format:
+          props.contentType === 'json'
+            ? 'JSON'
+            : props.contentType === 'markdown'
+              ? 'Markdown'
+              : 'HTML',
+      }),
     )
 
     const apply = () => {
-      const parsed = parseWysiwygSource(draft.value, props.contentType)
+      const parsed = parseWysiwygSource(draft.value, props.contentType, t)
       if ('error' in parsed) {
         error.value = parsed.error
         return
@@ -68,7 +76,7 @@ export default defineComponent({
       emit('close')
     }
 
-    return { draft, error, sourceLabel, apply }
+    return { t, draft, error, sourceLabel, apply }
   },
 })
 </script>

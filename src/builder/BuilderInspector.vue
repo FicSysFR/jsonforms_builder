@@ -1,6 +1,6 @@
 <template lang="pug">
   .space-y-4
-    p.text-sm.text-muted(v-if="!element") Sélectionnez un élément pour l'éditer.
+    p.text-sm.text-muted(v-if="!element" v-text="t('jsonformsBuilder.builder.inspector.empty')")
 
     template(v-else)
       .flex.flex-wrap.items-center.gap-2
@@ -16,25 +16,25 @@
       //- ── Control path (JSON Forms scope) ──────────────────────────────────
       template(v-if="hasEditableScope")
         u-form-field(
-          label="Chemin"
-          help="Pointeur vers la propriété, ex. properties/adresse/properties/rue"
+          :label="t('jsonformsBuilder.builder.inspector.path')"
+          :help="t('jsonformsBuilder.builder.inspector.pathHelp')"
         )
           u-input(
             :model-value="scopeInput"
             class="w-full font-mono text-xs"
-            placeholder="properties/monChamp"
+            :placeholder="t('jsonformsBuilder.builder.inspector.pathPlaceholder')"
             @update:model-value="onScopeInput"
           )
 
       //- ── Label ────────────────────────────────────────────────────────────
       template(v-if="element.type === 'Label'")
-        u-form-field(label="Texte")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.text')")
           u-input(
             :model-value="element.text ?? ''"
             class="w-full"
             @update:model-value="patchElement({ text: $event })"
           )
-        u-form-field(label="Niveau de titre" help="h1 … h6")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.headingLevel')" help="h1 … h6")
           u-input-number(
             :model-value="Number(options.level ?? 3)"
             :min="1"
@@ -44,13 +44,13 @@
           )
         u-checkbox(
           :model-value="options.separator !== false"
-          label="Séparateur"
+          :label="t('jsonformsBuilder.builder.inspector.labelSeparator')"
           @update:model-value="patchOption('separator', $event)"
         )
 
       //- ── Group / Category label ───────────────────────────────────────────
       template(v-else-if="hasOwnLabel")
-        u-form-field(label="Libellé")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.label')")
           u-input(
             :model-value="element.label ?? ''"
             class="w-full"
@@ -58,7 +58,7 @@
           )
 
         template(v-if="element.type === 'Category'")
-          u-form-field(label="Identifiant d'onglet" help="options.queryId — stable dans l'URL")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.categoryId')" :help="t('jsonformsBuilder.builder.inspector.categoryIdHelp')")
             u-input(
               :model-value="options.queryId ?? ''"
               class="w-full"
@@ -67,20 +67,20 @@
 
       //- ── Categorization ───────────────────────────────────────────────────
       template(v-if="element.type === 'Categorization'")
-        p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — onglets
+        p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.categorization')")
         u-checkbox(
           :model-value="options.variant === 'stepper'"
-          label="Mode stepper (assistant)"
+          :label="t('jsonformsBuilder.builder.inspector.stepper')"
           @update:model-value="patchOption('variant', $event ? 'stepper' : undefined)"
         )
-        u-form-field(label="Clé URL" help="options.queryKey")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.queryKey')" help="options.queryKey")
           u-input(
             :model-value="options.queryKey ?? ''"
             placeholder="tab"
             class="w-full"
             @update:model-value="patchOption('queryKey', $event)"
           )
-        u-form-field(label="Onglet initial" help="options.defaultTab")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.defaultTab')" help="options.defaultTab")
           u-input(
             :model-value="options.defaultTab ?? ''"
             placeholder="0"
@@ -90,14 +90,14 @@
 
       //- ── Schema-backed control / ListWithDetail ───────────────────────────
       template(v-if="propertyPath && schemaProperty")
-        u-form-field(label="Libellé")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.label')")
           u-input(
             :model-value="schemaProperty.title ?? ''"
             class="w-full"
             @update:model-value="patchProperty({ title: $event })"
           )
 
-        u-form-field(label="Description" help="Texte d'aide affiché sous le champ")
+        u-form-field(:label="t('jsonformsBuilder.builder.inspector.description')" :help="t('jsonformsBuilder.builder.inspector.descriptionHelp')")
           u-input(
             :model-value="schemaProperty.description ?? ''"
             class="w-full"
@@ -106,33 +106,33 @@
 
         u-checkbox(
           :model-value="required"
-          label="Champ obligatoire"
+          :label="t('jsonformsBuilder.builder.inspector.required')"
           @update:model-value="$emit('update:required', propertyPath, $event)"
         )
 
         //- Schema constraints
         template(v-if="isNumeric")
           .grid.grid-cols-2.gap-2
-            u-form-field(label="Minimum")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.minimum')")
               u-input-number(
                 :model-value="schemaProperty.minimum"
                 class="w-full"
                 @update:model-value="patchProperty({ minimum: $event ?? undefined })"
               )
-            u-form-field(label="Maximum")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.maximum')")
               u-input-number(
                 :model-value="schemaProperty.maximum"
                 class="w-full"
                 @update:model-value="patchProperty({ maximum: $event ?? undefined })"
               )
-          u-form-field(v-if="controlKind === 'slider'" label="Pas (multipleOf)")
+          u-form-field(v-if="controlKind === 'slider'" :label="t('jsonformsBuilder.builder.inspector.multipleOf')")
             u-input-number(
               :model-value="schemaProperty.multipleOf"
               class="w-full"
               @update:model-value="patchProperty({ multipleOf: $event ?? undefined })"
             )
 
-        u-form-field(v-if="showsMaxLength" label="Longueur maximale")
+        u-form-field(v-if="showsMaxLength" :label="t('jsonformsBuilder.builder.inspector.maxLength')")
           u-input-number(
             :model-value="schemaProperty.maxLength"
             class="w-full"
@@ -141,8 +141,8 @@
 
         u-form-field(
           v-if="showsEnumEditor"
-          label="Options"
-          help="Une valeur par ligne"
+          :label="t('jsonformsBuilder.builder.inspector.enumOptions')"
+          :help="t('jsonformsBuilder.builder.inspector.enumOptionsHelp')"
         )
           u-textarea(
             :model-value="enumText"
@@ -153,21 +153,21 @@
 
         //- ── Options communes ───────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options communes
-          u-form-field(v-if="showsPlaceholder" label="Texte indicatif")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.common')")
+          u-form-field(v-if="showsPlaceholder" :label="t('jsonformsBuilder.builder.inspector.placeholder')")
             u-input(
               :model-value="options.placeholder ?? ''"
               class="w-full"
               @update:model-value="patchOption('placeholder', $event)"
             )
-          u-form-field(label="Icône avant" help="Nom Nuxt Icon, ex. i-lucide-mail")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.leadingIcon')" :help="t('jsonformsBuilder.builder.inspector.leadingIconHelp')")
             u-input(
               :model-value="options.leadingIcon ?? ''"
               placeholder="i-lucide-mail"
               class="w-full"
               @update:model-value="patchOption('leadingIcon', $event || undefined)"
             )
-          u-form-field(label="Icône après" help="Nom Nuxt Icon, ex. i-lucide-check")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.trailingIcon')" :help="t('jsonformsBuilder.builder.inspector.trailingIconHelp')")
             u-input(
               :model-value="options.trailingIcon ?? ''"
               placeholder="i-lucide-check"
@@ -176,71 +176,71 @@
             )
           u-checkbox(
             :model-value="options.iconPlacement === 'inside'"
-            label="Icônes dans le champ (sinon à côté)"
+            :label="t('jsonformsBuilder.builder.inspector.iconsInside')"
             @update:model-value="patchOption('iconPlacement', $event ? 'inside' : undefined)"
           )
           u-checkbox(
             :model-value="!!options.focus"
-            label="Autofocus"
+            :label="t('jsonformsBuilder.builder.inspector.autofocus')"
             @update:model-value="patchOption('focus', $event || undefined)"
           )
           u-checkbox(
             :model-value="!!options.readonly"
-            label="Lecture seule"
+            :label="t('jsonformsBuilder.builder.inspector.readonly')"
             @update:model-value="patchOption('readonly', $event || undefined)"
           )
           u-checkbox(
             :model-value="!!options.hideRequiredAsterisk"
-            label="Masquer l'astérisque requis"
+            :label="t('jsonformsBuilder.builder.inspector.hideRequiredAsterisk')"
             @update:model-value="patchOption('hideRequiredAsterisk', $event || undefined)"
           )
           u-checkbox(
             :model-value="!!options.showUnfocusedDescription"
-            label="Description toujours visible"
+            :label="t('jsonformsBuilder.builder.inspector.showUnfocusedDescription')"
             @update:model-value="patchOption('showUnfocusedDescription', $event || undefined)"
           )
           u-checkbox(
             :model-value="!!options.hideDescription"
-            label="Masquer la description"
+            :label="t('jsonformsBuilder.builder.inspector.hideDescription')"
             @update:model-value="patchOption('hideDescription', $event || undefined)"
           )
           u-checkbox(
             :model-value="options.clearOnHide === false"
-            label="Conserver la valeur si masqué (clearOnHide: false)"
+            :label="t('jsonformsBuilder.builder.inspector.keepValueWhenHidden')"
             @update:model-value="patchOption('clearOnHide', $event ? false : undefined)"
           )
           u-checkbox(
             :model-value="!!options.enableFilterErrorsBeforeTouch"
-            label="Masquer les erreurs avant interaction"
+            :label="t('jsonformsBuilder.builder.inspector.hideErrorsBeforeTouch')"
             @update:model-value="patchOption('enableFilterErrorsBeforeTouch', $event || undefined)"
           )
           u-checkbox(
             v-if="showsClearable"
             :model-value="!!options.clearable"
-            label="Effaçable (clearable)"
+            :label="t('jsonformsBuilder.builder.inspector.clearable')"
             @update:model-value="patchOption('clearable', $event || undefined)"
           )
 
         //- ── String ─────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'string' || controlKind === 'password'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — texte
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.text')")
           u-checkbox(
             :model-value="!!options.restrict"
-            label="Compteur maxLength (restrict)"
+            :label="t('jsonformsBuilder.builder.inspector.restrict')"
             @update:model-value="patchOption('restrict', $event || undefined)"
           )
 
         //- ── Textarea ───────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'textarea'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — texte long
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.textarea')")
           .grid.grid-cols-2.gap-2
-            u-form-field(label="Lignes min")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.minRows')")
               u-input-number(
                 :model-value="asNumber(options.minRows)"
                 class="w-full"
                 @update:model-value="patchOption('minRows', $event ?? undefined)"
               )
-            u-form-field(label="Lignes max")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.maxRows')")
               u-input-number(
                 :model-value="asNumber(options.rows)"
                 class="w-full"
@@ -249,8 +249,8 @@
 
         //- ── Number ─────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'number'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — nombre
-          u-form-field(label="Pas (step)")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.number')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.step')")
             u-input-number(
               :model-value="asNumber(options.step)"
               class="w-full"
@@ -259,20 +259,20 @@
 
         //- ── Boolean ────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'boolean'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — booléen
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.boolean')")
           u-checkbox(
             :model-value="!!options.toggle"
-            label="Interrupteur (toggle → USwitch)"
+            :label="t('jsonformsBuilder.builder.inspector.toggle')"
             @update:model-value="patchOption('toggle', $event || undefined)"
           )
 
         //- ── Enum / radio / select / multi-enum ─────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="isEnumLike")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — choix
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.choice')")
           u-form-field(
             v-if="controlKind !== 'multi-enum'"
-            label="Présentation"
-            help="Défaut = liste avec recherche (USelectMenu)"
+            :label="t('jsonformsBuilder.builder.inspector.presentation')"
+            :help="t('jsonformsBuilder.builder.inspector.presentationHelp')"
           )
             u-select(
               :model-value="enumPresentation"
@@ -283,7 +283,7 @@
             )
           u-form-field(
             v-if="controlKind === 'radio' || controlKind === 'multi-enum'"
-            label="Orientation"
+            :label="t('jsonformsBuilder.builder.inspector.orientation')"
           )
             u-select(
               :model-value="orientationValue"
@@ -295,14 +295,14 @@
 
         //- ── Pin ────────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'pin'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — PIN
-          u-form-field(label="Nombre de cellules")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.pin')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.pinLength')")
             u-input-number(
               :model-value="asNumber(options.length)"
               class="w-full"
               @update:model-value="patchOption('length', $event ?? undefined)"
             )
-          u-form-field(label="Type de saisie")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.pinType')")
             u-select(
               :model-value="options.type === 'number' ? 'number' : 'text'"
               :items="pinTypeItems"
@@ -312,19 +312,19 @@
             )
           u-checkbox(
             :model-value="!!options.mask"
-            label="Masquer les caractères"
+            :label="t('jsonformsBuilder.builder.inspector.mask')"
             @update:model-value="patchOption('mask', $event || undefined)"
           )
           u-checkbox(
             :model-value="!!options.otp"
-            label="Autocomplete OTP SMS"
+            :label="t('jsonformsBuilder.builder.inspector.otp')"
             @update:model-value="patchOption('otp', $event || undefined)"
           )
 
         //- ── Color ──────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'color'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — couleur
-          u-form-field(label="Format de sortie")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.color')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.colorFormat')")
             u-select(
               :model-value="options.colorFormat ?? 'hex'"
               :items="colorFormatItems"
@@ -334,33 +334,33 @@
             )
           u-checkbox(
             :model-value="options.showInput !== false"
-            label="Afficher le champ texte"
+            :label="t('jsonformsBuilder.builder.inspector.showInput')"
             @update:model-value="patchOption('showInput', $event ? undefined : false)"
           )
 
         //- ── File ───────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'file'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — fichier
-          u-form-field(label="Types acceptés (accept)")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.file')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.accept')")
             u-input(
               :model-value="options.accept ?? ''"
               placeholder="image/*,.pdf"
               class="w-full"
               @update:model-value="patchOption('accept', $event)"
             )
-          u-form-field(label="Titre zone de dépôt")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.dropLabel')")
             u-input(
               :model-value="options.dropLabel ?? ''"
               class="w-full"
               @update:model-value="patchOption('dropLabel', $event)"
             )
-          u-form-field(label="Sous-texte zone de dépôt")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.dropDescription')")
             u-input(
               :model-value="options.dropDescription ?? ''"
               class="w-full"
               @update:model-value="patchOption('dropDescription', $event)"
             )
-          u-form-field(label="Layout")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.fileLayout')")
             u-input(
               :model-value="options.layout ?? ''"
               placeholder="list"
@@ -370,21 +370,21 @@
 
         //- ── Rating ─────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'rating'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — note
-          u-form-field(label="Nombre d'icônes")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.rating')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.ratingLength')")
             u-input-number(
               :model-value="asNumber(options.length)"
               class="w-full"
               @update:model-value="patchOption('length', $event ?? undefined)"
             )
-          u-form-field(label="Icône remplie")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.ratingIcon')")
             u-input(
               :model-value="options.icon ?? ''"
               placeholder="i-lucide-star"
               class="w-full"
               @update:model-value="patchOption('icon', $event)"
             )
-          u-form-field(label="Icône vide")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.ratingEmptyIcon')")
             u-input(
               :model-value="options.emptyIcon ?? ''"
               class="w-full"
@@ -392,14 +392,14 @@
             )
           u-checkbox(
             :model-value="!!options.hideValue"
-            label="Masquer la valeur numérique"
+            :label="t('jsonformsBuilder.builder.inspector.hideValue')"
             @update:model-value="patchOption('hideValue', $event || undefined)"
           )
 
         //- ── Tags ───────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'tags'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — étiquettes
-          u-form-field(label="Séparateur" help="Défaut : virgule")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.tags')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.tagsDelimiter')" :help="t('jsonformsBuilder.builder.inspector.tagsDelimiterHelp')")
             u-input(
               :model-value="options.delimiter ?? ''"
               placeholder=","
@@ -409,28 +409,28 @@
 
         //- ── Date / calendar ────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="isDateLike")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — date
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.date')")
           u-checkbox(
             v-if="controlKind === 'calendar'"
             :model-value="!!options.range"
-            label="Sélection de plage (range)"
+            :label="t('jsonformsBuilder.builder.inspector.range')"
             @update:model-value="patchOption('range', $event || undefined)"
           )
-          u-form-field(label="Pattern dayjs")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.datePattern')")
             u-input(
               :model-value="options.pattern ?? ''"
               placeholder="YYYY-MM-DD"
               class="w-full"
               @update:model-value="patchOption('pattern', $event)"
             )
-          u-form-field(label="Locale")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.dateLocale')")
             u-input(
               :model-value="options.locale ?? ''"
-              placeholder="fr-FR"
+              :placeholder="t('jsonformsBuilder.locale')"
               class="w-full"
               @update:model-value="patchOption('locale', $event)"
             )
-          u-form-field(label="Nombre de mois")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.months')")
             u-input-number(
               :model-value="asNumber(options.months)"
               class="w-full"
@@ -438,32 +438,32 @@
             )
           u-checkbox(
             :model-value="!!options.weekNumbers"
-            label="Numéros de semaine"
+            :label="t('jsonformsBuilder.builder.inspector.weekNumbers')"
             @update:model-value="patchOption('weekNumbers', $event || undefined)"
           )
           .grid.grid-cols-2.gap-2
-            u-form-field(label="Date min")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.minDate')")
               u-input(
                 :model-value="options.minDate ?? ''"
                 placeholder="YYYY-MM-DD"
                 class="w-full"
                 @update:model-value="patchOption('minDate', $event)"
               )
-            u-form-field(label="Date max")
+            u-form-field(:label="t('jsonformsBuilder.builder.inspector.maxDate')")
               u-input(
                 :model-value="options.maxDate ?? ''"
                 placeholder="YYYY-MM-DD"
                 class="w-full"
                 @update:model-value="patchOption('maxDate', $event)"
               )
-          u-form-field(label="Jours exclus" help="YYYY-MM-DD, un par ligne")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.disabledDates')" :help="t('jsonformsBuilder.builder.inspector.disabledDatesHelp')")
             u-textarea(
               :model-value="listOptionText('disabledDates')"
               :rows="3"
               class="w-full"
               @update:model-value="patchStringListOption('disabledDates', $event)"
             )
-          u-form-field(label="Jours de semaine exclus" help="0=dim … 6=sam, un par ligne")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.disabledWeekdays')" :help="t('jsonformsBuilder.builder.inspector.disabledWeekdaysHelp')")
             u-textarea(
               :model-value="numberListOptionText('disabledWeekdays')"
               :rows="2"
@@ -473,8 +473,8 @@
 
         //- ── WYSIWYG ────────────────────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'wysiwyg'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — texte riche
-          u-form-field(label="Format stocké" help="options.contentType — adapte aussi le type du schema")
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.wysiwyg')")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.contentType')" :help="t('jsonformsBuilder.builder.inspector.contentTypeHelp')")
             u-select(
               :model-value="options.contentType === 'html' || options.contentType === 'markdown' ? options.contentType : 'json'"
               :items="wysiwygContentItems"
@@ -485,13 +485,13 @@
 
         //- ── Array / ListWithDetail ─────────────────────────────────────────
         .space-y-3.border-t.border-default.pt-3(v-if="controlKind === 'array'")
-          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed Options — liste
+          p.text-xs.font-semibold.uppercase.tracking-wide.text-dimmed(v-text="t('jsonformsBuilder.builder.inspector.section.array')")
           u-checkbox(
             :model-value="!!options.showSortButtons"
-            label="Boutons monter / descendre"
+            :label="t('jsonformsBuilder.builder.inspector.sortButtons')"
             @update:model-value="patchOption('showSortButtons', $event || undefined)"
           )
-          u-form-field(label="Propriété titre d'élément" help="elementLabelProp")
+          u-form-field(:label="t('jsonformsBuilder.builder.inspector.elementLabelProp')" help="elementLabelProp")
             u-input(
               :model-value="options.elementLabelProp ?? ''"
               placeholder="label"
@@ -517,6 +517,7 @@ import {
   type BuilderControlKind,
 } from './controlKind'
 import { formatPropertyPathInput, getSchemaPropertyAtPath, propertyPathFromScope } from './tree'
+import { useUiText } from '../i18n/ui'
 
 /** UISchema types that carry their own label, independent of the schema. */
 const SELF_LABELLED = ['Group', 'Category']
@@ -566,6 +567,8 @@ export default defineComponent({
   },
   emits: ['update:element', 'update:property', 'update:control', 'update:required', 'update:scope'],
   setup(props, { emit }) {
+    const t = useUiText()
+
     /** Prefer `propertyPath`; fall back to legacy root `property` during HMR mismatches. */
     const propertyPath = computed(() =>
       props.propertyPath?.length
@@ -659,11 +662,11 @@ export default defineComponent({
       return (itemsSchema.value?.enum ?? []).map(String).join('\n')
     })
 
-    const enumPresentationItems = [
-      { label: 'Liste (recherche)', value: 'menu' },
-      { label: 'Liste simple', value: 'select' },
-      { label: 'Boutons radio', value: 'radio' },
-    ]
+    const enumPresentationItems = computed(() => [
+      { label: t('jsonformsBuilder.builder.inspector.presentationMenu'), value: 'menu' },
+      { label: t('jsonformsBuilder.builder.inspector.presentationSelect'), value: 'select' },
+      { label: t('jsonformsBuilder.builder.inspector.presentationRadio'), value: 'radio' },
+    ])
 
     const enumPresentation = computed(() => {
       if (controlKind.value === 'radio' || options.value.format === 'radio') return 'radio'
@@ -671,10 +674,10 @@ export default defineComponent({
       return 'menu'
     })
 
-    const orientationItems = [
-      { label: 'Vertical', value: 'vertical' },
-      { label: 'Horizontal', value: 'horizontal' },
-    ]
+    const orientationItems = computed(() => [
+      { label: t('jsonformsBuilder.builder.inspector.orientationVertical'), value: 'vertical' },
+      { label: t('jsonformsBuilder.builder.inspector.orientationHorizontal'), value: 'horizontal' },
+    ])
 
     const orientationValue = computed(() => {
       if (options.value.orientation === 'horizontal' || options.value.vertical === false) {
@@ -683,10 +686,10 @@ export default defineComponent({
       return 'vertical'
     })
 
-    const pinTypeItems = [
-      { label: 'Texte', value: 'text' },
-      { label: 'Nombre', value: 'number' },
-    ]
+    const pinTypeItems = computed(() => [
+      { label: t('jsonformsBuilder.builder.inspector.pinTypeText'), value: 'text' },
+      { label: t('jsonformsBuilder.builder.inspector.pinTypeNumber'), value: 'number' },
+    ])
 
     const colorFormatItems = [
       { label: 'hex', value: 'hex' },
@@ -808,6 +811,7 @@ export default defineComponent({
     }
 
     return {
+      t,
       propertyPath,
       schemaProperty,
       hasEditableScope,

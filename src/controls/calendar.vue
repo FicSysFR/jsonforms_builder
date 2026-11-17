@@ -13,7 +13,7 @@
         :type="calendarType"
         :range="isRange"
         :model-value="calendarValue"
-        :locale="appliedOptions.locale ?? 'fr-FR'"
+        :locale="appliedOptions.locale ?? t('jsonformsBuilder.locale')"
         :disabled="isDisabled || isReadonly"
         :color="control.errors ? 'error' : undefined"
         :number-of-months="appliedOptions.months ?? (isRange ? 2 : undefined)"
@@ -31,7 +31,7 @@
           variant="link"
           size="xs"
           icon="i-lucide-x"
-          label="Effacer"
+          :label="t('jsonformsBuilder.date.clear')"
           @click="onCalendarChange(null)"
         )
 </template>
@@ -53,6 +53,7 @@ import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonfor
 import UButton from '@nuxt/ui/components/Button.vue'
 import UCalendar from '@nuxt/ui/components/Calendar.vue'
 import { ControlWrapper } from '../common'
+import { useUiText } from '../i18n/ui'
 import { determineClearValue } from '../utils'
 import {
   CALENDAR_CONSTRAINT_CELL_UI,
@@ -147,6 +148,7 @@ const controlRenderer: Component = defineComponent({
 
     return {
       ...control,
+      t: useUiText(),
       isRange,
       calendarBind,
       calendarValue,

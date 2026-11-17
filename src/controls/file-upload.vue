@@ -15,7 +15,7 @@
         :accept="accept"
         :multiple="multiple"
         :disabled="isDisabled || isReadonly"
-        :label="appliedOptions.dropLabel ?? 'Déposez un fichier ici'"
+        :label="appliedOptions.dropLabel ?? t('jsonformsBuilder.file.drop')"
         :description="appliedOptions.dropDescription ?? acceptLabel"
         :layout="appliedOptions.layout ?? 'list'"
         :color="control.errors ? 'error' : undefined"
@@ -89,7 +89,9 @@ const controlRenderer = defineComponent({
     })
 
     const acceptLabel = computed(() =>
-      control.accept.value === '*' ? 'ou cliquez pour parcourir' : control.accept.value,
+      control.accept.value === '*'
+        ? control.t('jsonformsBuilder.file.browse')
+        : control.accept.value,
     )
 
     return { ...control, acceptLabel }

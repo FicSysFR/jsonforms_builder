@@ -9,11 +9,11 @@
         color="neutral"
         variant="outline"
         size="sm"
-        label="Ajouter"
+        :label="t('jsonformsBuilder.array.add')"
         @click="addAndSelect"
       )
 
-    p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") Aucun élément.
+    p.text-sm(v-if="!items.length" :class="styles.arrayList.noData") {{ t('jsonformsBuilder.array.empty') }}
 
     //- Master on the left, detail on the right from `md` upward; stacked below, since a
     //- narrow list beside a form is unusable on mobile.
@@ -30,7 +30,7 @@
               u-button(
                 :disabled="!canRemove"
                 icon="i-lucide-trash-2"
-                aria-label="Supprimer l'élément"
+                :aria-label="t('jsonformsBuilder.array.remove')"
                 color="error"
                 variant="ghost"
                 size="xs"
@@ -49,15 +49,15 @@
           :renderers="control.renderers"
           :cells="control.cells"
         )
-        p.text-sm.text-muted(v-else) Sélectionnez un élément pour l'éditer.
+        p.text-sm.text-muted(v-else) {{ t('jsonformsBuilder.listWithDetail.selectItem') }}
 
     p.text-xs.text-muted(v-if="control.description" v-text="control.description")
     p.text-sm.text-error(v-if="control.errors" v-text="control.errors")
 
     confirm-dialog(
       :open="pendingRemoveIndex !== null"
-      :title="`Supprimer ${pendingRemoveLabel} ?`"
-      description="Cette entrée sera retirée de la liste. L'action est irréversible."
+      :title="t('jsonformsBuilder.array.removeTitle', { label: pendingRemoveLabel })"
+      :description="t('jsonformsBuilder.array.removeDescription')"
       @update:open="cancelRemove"
       @confirm="confirmRemove"
     )

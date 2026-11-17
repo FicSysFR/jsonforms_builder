@@ -1,4 +1,5 @@
-import { DEFAULT_WYSIWYG_AI_LABELS, resolveWysiwygAiActions } from './actions'
+import { createUiText, type UiText } from '../../../i18n/ui'
+import { DEFAULT_WYSIWYG_AI_LABELS, buildWysiwygAiLabels, resolveWysiwygAiActions } from './actions'
 import { DEFAULT_AI_MAX_CONTEXT_CHARACTERS } from './context'
 import { createWysiwygAiHttpTransport } from './httpTransport'
 import type {
@@ -48,8 +49,12 @@ export const DISABLED_WYSIWYG_AI: ResolvedWysiwygAiOptions = Object.freeze({
 /**
  * Resolves `options.ai`. Anything but an object with `enabled: true` and a usable
  * transport/endpoint yields the inert `DISABLED_WYSIWYG_AI` (no transport is created).
+ * Default action labels and panel texts come from `t`.
  */
-export const resolveWysiwygAiOptions = (raw: unknown): ResolvedWysiwygAiOptions => {
+export const resolveWysiwygAiOptions = (
+  raw: unknown,
+  t: UiText = createUiText(),
+): ResolvedWysiwygAiOptions => {
   if (!isRecord(raw) || raw.enabled !== true) return DISABLED_WYSIWYG_AI
   const opts = raw as WysiwygAiOptions
 
@@ -63,7 +68,7 @@ export const resolveWysiwygAiOptions = (raw: unknown): ResolvedWysiwygAiOptions 
   return {
     enabled: true,
     transport,
-    actions: resolveWysiwygAiActions(opts.actions),
+    actions: resolveWysiwygAiActions(opts.actions, t),
     bubbleMenu: opts.bubbleMenu !== false,
     slashCommands: opts.slashCommands !== false,
     stream: opts.stream !== false,
@@ -75,6 +80,6 @@ export const resolveWysiwygAiOptions = (raw: unknown): ResolvedWysiwygAiOptions 
     includeJson: opts.includeJson === true,
     format: opts.format === 'html' ? 'html' : 'text',
     ...(isRecord(opts.body) ? { metadata: opts.body } : {}),
-    labels: { ...DEFAULT_WYSIWYG_AI_LABELS, ...(isRecord(opts.labels) ? opts.labels : {}) },
+    labels: { ...buildWysiwygAiLabels(t), ...(isRecord(opts.labels) ? opts.labels : {}) },
   }
 }

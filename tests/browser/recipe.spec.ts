@@ -280,6 +280,23 @@ test.describe('strict CSP recipe (no unsafe-inline, no unsafe-eval, no data: or 
     expect(await watcher.violations()).toEqual([])
   })
 
+  test('interface texts follow the JSON Forms translator', async ({ page }) => {
+    await allowHostStyles(page)
+    const watcher = await watch(page)
+    await open(page, 'validation=NoValidation&locale=en')
+    const form = page.locator('#form')
+
+    await page.getByRole('tab', { name: 'Structures' }).click()
+    await expect(form.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible()
+    await expect(form.getByRole('button', { name: 'Remove item' }).first()).toBeVisible()
+    await page.getByRole('tab', { name: 'Dates' }).click()
+    await expect(form.getByRole('button', { name: 'Open the calendar', exact: true })).toBeVisible()
+    for (const french of ['Ajouter', "Supprimer l'élément", 'Ouvrir le calendrier', 'Effacer']) {
+      await expect(form.getByText(french, { exact: true })).toHaveCount(0)
+    }
+    expect(await watcher.violations()).toEqual([])
+  })
+
   // Counter-tests: the policy is enforced, and these Ajv paths stay outside the recipe.
   test('a rule with a schema condition needs unsafe-eval', async ({ page }) => {
     const watcher = await watch(page)

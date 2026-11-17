@@ -28,14 +28,14 @@
           icon="i-lucide-arrow-left"
           color="neutral"
           variant="outline"
-          label="Précédent"
+          :label="t('jsonformsBuilder.categorization.previous')"
           @click="goToStep(activeIndex - 1)"
         )
         u-button(
           :disabled="activeIndex >= visibleCategories.length - 1"
           :class="styles.categorization.stepperButtonNext"
           trailing-icon="i-lucide-arrow-right"
-          label="Suivant"
+          :label="t('jsonformsBuilder.categorization.next')"
           @click="goToStep(activeIndex + 1)"
         )
 
@@ -83,6 +83,7 @@ import UStepper from '@nuxt/ui/components/Stepper.vue'
 import UButton from '@nuxt/ui/components/Button.vue'
 import { useUiLayout } from '../utils'
 import { useCategoryState } from '../composables'
+import { useUiText } from '../i18n/ui'
 import { get, isString } from '../utils/lang'
 
 const DEFAULT_QUERY_KEY = 'tab'
@@ -209,6 +210,7 @@ const layoutRenderer = defineComponent({
 
     return {
       ...renderedProps,
+      t: useUiText(),
 
       isStepper,
       activeCategory,

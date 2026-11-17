@@ -24,7 +24,7 @@
       @blur="handleBlur"
     )
       template(#empty)
-        span.text-sm.text-muted Aucun résultat
+        span.text-sm.text-muted {{ t('jsonformsBuilder.select.noResults') }}
 </template>
 
 <script lang="ts">
@@ -44,6 +44,7 @@ import USelectMenu from '@nuxt/ui/components/SelectMenu.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue, useJsonForms } from '../utils'
 import { enumSuggestionTester, useEnumSuggestionControl } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * EnumAndSuggestionControlRenderer
@@ -97,10 +98,14 @@ const controlRenderer = defineComponent({
       }))
     })
 
-    // Nuxt UI defaults to English "Search..."; keep UI copy in French like `#empty`.
-    const searchInput = { placeholder: 'Rechercher…', variant: 'none' as const }
+    // Nuxt UI's own placeholder is English-only: use the translated library text.
+    const t = useUiText()
+    const searchInput = computed(() => ({
+      placeholder: t('jsonformsBuilder.select.search'),
+      variant: 'none' as const,
+    }))
 
-    return { ...control, selectItems, searchInput }
+    return { ...control, selectItems, searchInput, t }
   },
 })
 

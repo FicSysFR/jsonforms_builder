@@ -1,3 +1,4 @@
+import { createUiText, type UiText } from '../../../i18n/ui'
 import type { WysiwygAiAction } from '../ai/types'
 import type { ResolvedWysiwygFeatures } from '../features'
 
@@ -14,19 +15,19 @@ type BuildSlashOptions = {
   aiLabel?: string
 }
 
-/** Items for Nuxt UI `UEditorSuggestionMenu`, grouped (one array per group). */
-export const buildWysiwygSlashItems = ({
-  formatting,
-  features,
-  imagesEnabled,
-  aiActions = [],
-  aiLabel = 'IA',
-}: BuildSlashOptions): Item[][] => {
+/**
+ * Items for Nuxt UI `UEditorSuggestionMenu`, grouped (one array per group) and labelled
+ * through `t`.
+ */
+export const buildWysiwygSlashItems = (
+  { formatting, features, imagesEnabled, aiActions = [], aiLabel }: BuildSlashOptions,
+  t: UiText = createUiText(),
+): Item[][] => {
   const groups: Item[][] = []
 
   if (aiActions.length) {
     groups.push([
-      { type: 'label', label: aiLabel },
+      { type: 'label', label: aiLabel ?? t('jsonformsBuilder.wysiwyg.ai.menu') },
       ...aiActions.map((action) => ({
         kind: 'ai',
         action: action.id,
@@ -39,32 +40,78 @@ export const buildWysiwygSlashItems = ({
   }
 
   if (formatting) {
+    const heading = (level: number, icon: string): Item => ({
+      kind: 'heading',
+      level,
+      label: t('jsonformsBuilder.wysiwyg.heading', { level }),
+      icon,
+    })
     groups.push([
-      { type: 'label', label: 'Texte' },
-      { kind: 'paragraph', label: 'Paragraphe', icon: 'i-lucide-pilcrow' },
-      { kind: 'heading', level: 1, label: 'Titre 1', icon: 'i-lucide-heading-1' },
-      { kind: 'heading', level: 2, label: 'Titre 2', icon: 'i-lucide-heading-2' },
-      { kind: 'heading', level: 3, label: 'Titre 3', icon: 'i-lucide-heading-3' },
+      { type: 'label', label: t('jsonformsBuilder.wysiwyg.slash.text') },
+      {
+        kind: 'paragraph',
+        label: t('jsonformsBuilder.wysiwyg.paragraph'),
+        icon: 'i-lucide-pilcrow',
+      },
+      heading(1, 'i-lucide-heading-1'),
+      heading(2, 'i-lucide-heading-2'),
+      heading(3, 'i-lucide-heading-3'),
     ])
 
     const lists: Item[] = [
-      { type: 'label', label: 'Listes' },
-      { kind: 'bulletList', label: 'Liste à puces', icon: 'i-lucide-list' },
-      { kind: 'orderedList', label: 'Liste numérotée', icon: 'i-lucide-list-ordered' },
+      { type: 'label', label: t('jsonformsBuilder.wysiwyg.slash.lists') },
+      {
+        kind: 'bulletList',
+        label: t('jsonformsBuilder.wysiwyg.bulletList'),
+        icon: 'i-lucide-list',
+      },
+      {
+        kind: 'orderedList',
+        label: t('jsonformsBuilder.wysiwyg.orderedList'),
+        icon: 'i-lucide-list-ordered',
+      },
     ]
     if (features.taskList) {
-      lists.push({ kind: 'taskList', label: 'Liste de tâches', icon: 'i-lucide-list-checks' })
+      lists.push({
+        kind: 'taskList',
+        label: t('jsonformsBuilder.wysiwyg.taskList'),
+        icon: 'i-lucide-list-checks',
+      })
     }
     groups.push(lists)
 
     const blocks: Item[] = [
-      { type: 'label', label: 'Insérer' },
-      { kind: 'blockquote', label: 'Citation', icon: 'i-lucide-quote' },
-      { kind: 'codeBlock', label: 'Bloc de code', icon: 'i-lucide-square-code' },
-      { kind: 'horizontalRule', label: 'Filet horizontal', icon: 'i-lucide-minus' },
+      { type: 'label', label: t('jsonformsBuilder.wysiwyg.slash.insert') },
+      {
+        kind: 'blockquote',
+        label: t('jsonformsBuilder.wysiwyg.blockquote'),
+        icon: 'i-lucide-quote',
+      },
+      {
+        kind: 'codeBlock',
+        label: t('jsonformsBuilder.wysiwyg.codeBlock'),
+        icon: 'i-lucide-square-code',
+      },
+      {
+        kind: 'horizontalRule',
+        label: t('jsonformsBuilder.wysiwyg.horizontalRule'),
+        icon: 'i-lucide-minus',
+      },
     ]
-    if (features.table) blocks.push({ kind: 'table', label: 'Tableau', icon: 'i-lucide-table' })
-    if (imagesEnabled) blocks.push({ kind: 'imageUpload', label: 'Image', icon: 'i-lucide-image' })
+    if (features.table) {
+      blocks.push({
+        kind: 'table',
+        label: t('jsonformsBuilder.wysiwyg.slash.table'),
+        icon: 'i-lucide-table',
+      })
+    }
+    if (imagesEnabled) {
+      blocks.push({
+        kind: 'imageUpload',
+        label: t('jsonformsBuilder.wysiwyg.image'),
+        icon: 'i-lucide-image',
+      })
+    }
     groups.push(blocks)
   }
 

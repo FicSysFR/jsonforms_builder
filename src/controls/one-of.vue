@@ -53,6 +53,7 @@ import USelect from '@nuxt/ui/components/Select.vue'
 import { ControlWrapper } from '../common'
 import { useUiControl } from '../utils'
 import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * CombinatorControlRenderer
@@ -78,6 +79,7 @@ const controlRenderer = defineComponent({
   },
   setup(props: RendererProps<ControlElement>) {
     const control = useUiControl(useJsonFormsControl(props))
+    const t = useUiText()
 
     /** Combinator branches, `$ref` resolved. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>
@@ -91,7 +93,10 @@ const controlRenderer = defineComponent({
       // The label may live on the reference (`{ $ref, title }`) or the target:
       // check both rather than losing the title when resolving.
       return variants.value.map((variant, index) => ({
-        label: raw[index]?.title ?? variant.title ?? `Option ${index + 1}`,
+        label:
+          raw[index]?.title ??
+          variant.title ??
+          t('jsonformsBuilder.combinator.option', { index: index + 1 }),
         value: index,
       }))
     })

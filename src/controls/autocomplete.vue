@@ -42,6 +42,7 @@ import UInputMenu from '@nuxt/ui/components/InputMenu.vue'
 import { ControlWrapper } from '../common'
 import { determineClearValue } from '../utils'
 import { useAutocompleteControl } from '../composables'
+import { useUiText } from '../i18n/ui'
 
 /**
  * AutocompleteControlRenderer
@@ -70,10 +71,16 @@ const controlRenderer = defineComponent({
       clearValue,
     })
 
-    const searchHint = computed(
-      () =>
-        `Saisissez au moins ${control.minLength.value} caractère${control.minLength.value > 1 ? 's' : ''}`,
-    )
+    const t = useUiText()
+    const searchHint = computed(() => {
+      const count = control.minLength.value
+      return t(
+        count > 1
+          ? 'jsonformsBuilder.autocomplete.minLength.other'
+          : 'jsonformsBuilder.autocomplete.minLength.one',
+        { count },
+      )
+    })
 
     return { ...control, searchHint }
   },

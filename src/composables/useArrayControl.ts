@@ -12,6 +12,7 @@ import {
   type UISchemaElement,
 } from '@jsonforms/core'
 import type { useJsonFormsArrayControl } from '@jsonforms/vue'
+import { createUiText, type UiText, useUiText } from '../i18n/ui'
 import { useUiControl } from '../utils'
 
 type JsonFormsArrayControl = ReturnType<typeof useJsonFormsArrayControl>
@@ -27,7 +28,12 @@ type UseArrayControlOptions = {
  * ("Dupont" rather than "Élément 3"). Otherwise we fall back to the rank, 1-based
  * because that is what humans read.
  */
-export const resolveArrayItemLabel = (item: unknown, index: number, labelProp?: string): string => {
+export const resolveArrayItemLabel = (
+  item: unknown,
+  index: number,
+  labelProp?: string,
+  t: UiText = createUiText(),
+): string => {
   if (labelProp && item && typeof item === 'object') {
     const value = (item as Record<string, unknown>)[labelProp]
 
@@ -36,7 +42,7 @@ export const resolveArrayItemLabel = (item: unknown, index: number, labelProp?: 
     }
   }
 
-  return `Élément ${index + 1}`
+  return t('jsonformsBuilder.array.item', { index: index + 1 })
 }
 
 const PRIMITIVE_TYPES = ['string', 'number', 'integer', 'boolean']
@@ -206,11 +212,14 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
 
   const childPath = (index: number) => composePaths(control.control.value.path, `${index}`)
 
+  const t = useUiText()
+
   const itemLabel = (index: number) =>
     resolveArrayItemLabel(
       items.value[index],
       index,
       control.appliedOptions.value?.elementLabelProp as string | undefined,
+      t,
     )
 
   // JSONForms dispatchers return a *thunk*: `addItem(path, value)` does nothing until you
@@ -246,6 +255,7 @@ export const useArrayControl = ({ jsonFormsControl }: UseArrayControlOptions) =>
     childUiSchema,
     childPath,
     itemLabel,
+    t,
     addItem,
     removeItem,
     moveUp,
