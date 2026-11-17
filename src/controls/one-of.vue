@@ -46,7 +46,7 @@ import { computed, defineComponent, nextTick, ref, watch } from 'vue'
 import {
   DispatchRenderer,
   rendererProps,
-  useJsonFormsOneOfControl,
+  useJsonFormsControl,
   type RendererProps,
 } from '@jsonforms/vue'
 import USelect from '@nuxt/ui/components/Select.vue'
@@ -61,6 +61,10 @@ import { createVariantValue, detectOneOfVariant, resolveCombinatorBranches } fro
  * the selected branch.
  *
  * Missing in v1, although the theme already declared a `oneOf` slot.
+ *
+ * Uses `useJsonFormsControl` rather than `useJsonFormsOneOfControl`: the latter compiles every
+ * variant with Ajv on each render to find the matching one (`new Function`, refused by a CSP
+ * without `'unsafe-eval'`), whereas `detectOneOfVariant` picks it without validation.
  */
 const controlRenderer = defineComponent({
   name: 'CombinatorControlRenderer',
@@ -73,7 +77,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const control = useUiControl(useJsonFormsOneOfControl(props))
+    const control = useUiControl(useJsonFormsControl(props))
 
     /** Combinator branches, `$ref` resolved. Cf. `resolveCombinatorBranches`. */
     const variants = computed<JsonSchema[]>(() =>

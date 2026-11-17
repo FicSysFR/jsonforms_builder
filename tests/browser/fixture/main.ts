@@ -5,7 +5,7 @@ import { nuxtUiRenderers, strictCspRenderers } from '@ficsysfr/jsonforms_builder
 import UApp from '@nuxt/ui/components/App.vue'
 import ui from '@nuxt/ui/vue-plugin'
 import { createApp, defineComponent, h, markRaw, shallowRef } from 'vue'
-import { data as initialData, schema, uischema } from './cases'
+import { buildUischema, data as initialData, schema } from './cases'
 
 declare global {
   interface Window {
@@ -13,18 +13,41 @@ declare global {
   }
 }
 
+/**
+ * Query parameters:
+ * - `validation`: JSON Forms validation mode (default `NoValidation`);
+ * - `registry=full`: `nuxtUiRenderers` instead of `strictCspRenderers`;
+ * - `readonly=form|config`: `<json-forms readonly>` or `config.readonly`;
+ * - `rule=schema`: schema-based SHOW condition instead of a LEAF one;
+ * - `serverErrors`: a host error on `text` (filtered before touch locally), cleared by the
+ *   host once `text` changes, as a server round trip would.
+ */
 const params = new URLSearchParams(location.search)
 const validationMode = (params.get('validation') ?? 'NoValidation') as ValidationMode
-// `form`: `<json-forms readonly>`; `config`: `config.readonly`, read by each control.
 const readonlySource = params.get('readonly')
 const registry = params.get('registry') === 'full' ? nuxtUiRenderers : strictCspRenderers
+const uischema = buildUischema({ schemaRule: params.get('rule') === 'schema' })
+const withServerErrors = params.has('serverErrors')
+
+const SERVER_ERROR = {
+  instancePath: '/text',
+  schemaPath: '',
+  keyword: 'server',
+  params: {},
+  message: 'Already used on the server',
+}
 
 window.__recipe = { ready: false, data: structuredClone(initialData), changes: 0 }
 
 const Recipe = defineComponent({
   setup() {
-    const data = shallowRef<unknown>(structuredClone(initialData))
+    const data = shallowRef<Record<string, unknown>>(structuredClone(initialData))
+    const additionalErrors = shallowRef(withServerErrors ? [SERVER_ERROR] : [])
     const renderers = markRaw([...registry])
+    const config = {
+      ...(readonlySource === 'config' ? { readonly: true } : {}),
+      ...(withServerErrors ? { enableFilterErrorsBeforeTouch: true } : {}),
+    }
 
     return () =>
       h(UApp, null, {
@@ -37,8 +60,10 @@ const Recipe = defineComponent({
               renderers,
               validationMode,
               readonly: readonlySource === 'form',
-              config: readonlySource === 'config' ? { readonly: true } : {},
-              onChange: (event: { data: unknown }) => {
+              config,
+              additionalErrors: additionalErrors.value,
+              onChange: (event: { data: Record<string, unknown> }) => {
+                if (event.data.text !== data.value.text) additionalErrors.value = []
                 data.value = event.data
                 window.__recipe.data = event.data
                 window.__recipe.changes += 1

@@ -16,6 +16,7 @@ export const STRICT_CSP = [
   "img-src 'self'",
   "font-src 'self'",
   "connect-src 'self'",
+  "worker-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",
@@ -32,8 +33,22 @@ const TYPES = {
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '.dist')
 const port = Number(process.env.RECIPE_PORT ?? 4319)
 
+/** Same-origin endpoint for the autocomplete control (`options.api: { url: '/api/cities' }`). */
+const CITIES = ['Paris', 'Lyon', 'Marseille', 'Toulouse']
+
 createServer((request, response) => {
-  const pathname = new URL(request.url ?? '/', 'http://localhost').pathname
+  const requestUrl = new URL(request.url ?? '/', 'http://localhost')
+  const pathname = requestUrl.pathname
+  if (pathname === '/api/cities') {
+    const query = (requestUrl.searchParams.get('q') ?? '').toLowerCase()
+    const items = CITIES.filter((city) => city.toLowerCase().startsWith(query)).map((city) => ({
+      label: city,
+      value: city.toLowerCase(),
+    }))
+    response.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' })
+    response.end(JSON.stringify(items))
+    return
+  }
   let file = normalize(join(root, pathname === '/' ? 'index.html' : pathname))
   if (!file.startsWith(root) || !existsSync(file) || statSync(file).isDirectory()) {
     file = join(root, 'index.html')

@@ -93,13 +93,11 @@ schemas nomment (`leadingIcon`, `trailingIcon`).
 
 ## CSP stricte
 
-`strictCspRenderers` rend sous une CSP sans `'unsafe-inline'`, sans `'unsafe-eval'` et sans
-`data:` (`script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'`). C'est
-`nuxtUiRenderers` sans les renderers qui exigent plus :
-
-- `oneOf` / `anyOf` et `allOf` de variantes : JSON Forms choisit la variante en compilant chaque
-  sous-schéma avec Ajv à chaque rendu, quel que soit le mode de validation (`'unsafe-eval'`) ;
-- upload de fichier : les aperçus sont des URL `data:` (`img-src data:`).
+`strictCspRenderers` rend sous une CSP sans `'unsafe-inline'`, sans `'unsafe-eval'`, sans `data:`
+ni `blob:` (`script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'`). C'est
+`nuxtUiRenderers` sans l’upload de fichier, dont l’aperçu d’image passe par une URL `blob:`
+(`img-src blob:`). Les combinateurs `oneOf`, `anyOf` et `allOf` choisissent leur variante sans Ajv
+et restent disponibles.
 
 ```vue
 <json-forms
@@ -113,16 +111,28 @@ schemas nomment (`leadingIcon`, `trailingIcon`).
 />
 ```
 
-La validation Ajv compile elle aussi du code : passer `validation-mode="NoValidation"` et fournir
-les erreurs par `additional-errors`. Un `oneOf` de constantes reste disponible : il est rendu par la
-liste de sélection, pas par le renderer de combinateur. Côté hôte, Nuxt UI demande encore :
-déclarer les icônes (section précédente), rendre les icônes en SVG (`icon.mode: 'svg'`, le mode CSS
-de Nuxt Icon injecte un `<style>`), et autoriser par empreinte ou nonce le `<style>` des couleurs de
-Nuxt UI et, s’il est activé, le script anti-flash du mode couleur.
+Deux chemins de JSON Forms compilent du code avec Ajv, refusé sans `'unsafe-eval'` :
+
+- la validation : passer `validation-mode="NoValidation"` et fournir les erreurs par
+  `additional-errors` ;
+- les règles dont la condition porte un `schema` (`{ scope, schema }`) : écrire les règles avec des
+  conditions `LEAF`, `AND`, `OR` ou par fonction.
+
+Côté hôte, Nuxt UI demande encore :
+
+- de déclarer les icônes (section précédente) et de les rendre en SVG (`icon.mode: 'svg'`) : le
+  mode CSS de Nuxt Icon injecte un `<style>` ;
+- d’autoriser par empreinte ou nonce le `<style>` de ses couleurs (`#nuxt-ui-colors`) ; en SPA,
+  Nuxt UI pose aussi un style temporaire pendant l’hydratation, à couvrir de la même façon ;
+- d’autoriser de même le script anti-flash du mode couleur s’il est activé ;
+- d’éviter `content.position: 'item-aligned'` sur les listes de sélection : le viewport de Reka UI
+  injecte alors un `<style>`.
 
 `yarn test:browser` vérifie cette recette dans Chromium : formulaire complet servi sous cette CSP,
-chaque champ édité, aucune violation imputable à la bibliothèque et aucune requête hors origine ;
-deux contre-épreuves montrent que les combinateurs et la validation Ajv exigent `'unsafe-eval'`.
+seule l’empreinte exacte du style de couleurs de Nuxt UI autorisée, chaque type de champ édité,
+zéro violation et aucune requête hors origine, lecture seule et erreurs serveur comprises. Deux
+contre-épreuves montrent que la validation Ajv et une règle à condition `schema` exigent
+`'unsafe-eval'`.
 
 ## Problème amont connu — `subTree`
 

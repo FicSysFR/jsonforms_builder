@@ -1,10 +1,5 @@
 import { additionalsRenderers } from './additional'
-import {
-  AllOfControlRenderer,
-  controlsRenderers,
-  FileUploadControlRenderer,
-  OneOfControlRenderer,
-} from './controls'
+import { controlsRenderers, FileUploadControlRenderer } from './controls'
 import { layoutsRenderers } from './layouts'
 import { advancedRenderers } from './advanced'
 
@@ -16,22 +11,17 @@ export { advancedRenderers }
 export const nuxtUiRenderers = [...controlsRenderers, ...layoutsRenderers, ...additionalsRenderers]
 
 /**
- * Renderers that need a looser CSP than `script-src 'self'; img-src 'self'`:
- * - `oneOf` / `anyOf` and `allOf`: JSON Forms picks the matching variant by compiling every
- *   subschema with Ajv on each render, whatever the validation mode (`new Function`, so
- *   `'unsafe-eval'`);
- * - file upload: previews are `data:` URLs (`img-src data:`).
+ * Renderers that need a looser CSP than `img-src 'self'`: file upload previews images through
+ * `blob:` URLs (`img-src blob:`). No renderer compiles code: `oneOf` / `anyOf` / `allOf` pick
+ * their variant without Ajv.
  */
-const STRICT_CSP_EXCLUDED: ReadonlySet<unknown> = new Set([
-  OneOfControlRenderer,
-  AllOfControlRenderer,
-  FileUploadControlRenderer,
-])
+const STRICT_CSP_EXCLUDED: ReadonlySet<unknown> = new Set([FileUploadControlRenderer])
 
 /**
  * `nuxtUiRenderers` that render under a strict CSP: no `'unsafe-eval'`, no `'unsafe-inline'`,
- * no `data:` (verified by `tests/browser`). Pair it with `validation-mode="NoValidation"`, since
- * Ajv validation compiles code, and pass server errors through `additional-errors`.
+ * no `data:` or `blob:` (verified by `tests/browser`). Pair it with `validation-mode="NoValidation"`
+ * and rules without `condition.schema`, since both make Ajv compile code, and pass server errors
+ * through `additional-errors`.
  */
 export const strictCspRenderers = nuxtUiRenderers.filter(
   (entry) => !STRICT_CSP_EXCLUDED.has(entry.renderer),
