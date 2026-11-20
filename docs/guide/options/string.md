@@ -318,8 +318,9 @@ Nécessite `allRenderers` (pas seulement `nuxtUiRenderers`).
 | `toolbar` | `Array` \| `false` | barre intégrée | Remplace la barre d’outils (`EditorToolbarItem[][]`) ou la masque. |
 | `placeholder` | `String` | — | Placeholder de l’éditeur. |
 | `features` | `false` \| `Object` | tout activé | Tableaux, listes de tâches, alignement, couleurs, surlignage, lien, rechercher/remplacer, source, aperçu. |
-| `bubbleMenu` | `Boolean` | `false` | Bulle de mise en forme sur sélection. |
-| `slashCommands` | `Boolean` | `false` | Palette de commandes `/`. |
+| `bubbleMenu` | `Boolean` | `false` (`true` avec `blockEditor`) | Bulle de mise en forme sur sélection. |
+| `slashCommands` | `Boolean` | `false` (`true` avec `blockEditor`) | Palette de commandes `/`. |
+| `blockEditor` | `Boolean` \| `Object` | `false` | Édition par blocs façon Notion : poignée `+` / glisser / menu du bloc, indices par bloc, sans barre fixe ni bordure. Voir [Édition par blocs](/guide/wysiwyg-ai#edition-par-blocs). |
 | `ai` | `Object` | — | Assistant IA optionnel (`enabled`, `endpoint` ou `transport`, `actions`…). |
 | `editor` | `Object` | — | Pass-through → `UEditor`. |
 
@@ -373,4 +374,5 @@ d'une image redimensionnée n'a pas d'équivalent Markdown et n'est pas conserv�
 - [File Upload](/playground#/?section=docs&example=nuxt-file-upload)
 - [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete)
 - [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg)
+- [WYSIWYG par blocs](/playground#/?section=docs&example=nuxt-wysiwyg-blocks)
 - [WYSIWYG + IA](/playground#/?section=docs&example=nuxt-wysiwyg-ai)

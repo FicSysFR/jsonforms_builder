@@ -21,14 +21,54 @@ off by default.
 | `features.findReplace` | `Boolean` | `true` | Find & replace (optional case sensitivity). |
 | `features.sourceMode` | `Boolean` | `true` | Raw HTML or JSON editing; applied content goes through the Tiptap schema. |
 | `features.preview` | `Boolean` | `true` | Read-only preview. |
-| `bubbleMenu` | `Boolean` | `false` | Formatting bubble on text selection. |
-| `slashCommands` | `Boolean` | `false` | `/` command palette. |
+| `bubbleMenu` | `Boolean` | `false` (`true` with `blockEditor`) | Formatting bubble on text selection. |
+| `slashCommands` | `Boolean` | `false` (`true` with `blockEditor`) | `/` command palette. |
+| `blockEditor` | `Boolean` \| `Object` | `false` | Block editing (see below). |
 | `ai` | `WysiwygAiOptions` | — | AI assistant (see below). |
 
 A host extension passed through `options.extensions` (e.g. its own `Table`) wins over the
 built-in extension of the same name. A custom `toolbar` is never altered; its items can use
 the built-in `kind`s: `textColor`, `highlight`, `table`, `tableAction`, `findReplace`,
 `sourceMode`, `preview`, `ai`.
+
+## Block editing
+
+`blockEditor: true` turns the field into a page edited block by block, Notion style:
+
+- on hover, a handle shows in the left gutter of every block: `+` adds a block below (and
+  opens the `/` palette when it is on), the `⋮⋮` grip is **dragged** to move the block or
+  **clicked** to open its menu: *Turn into* (paragraph, headings, lists, quote, code),
+  *Clear formatting*, *Duplicate*, *Copy text*, *Move up*, *Move down*, *Delete*;
+- the empty block holding the cursor shows a hint (`Heading 2` on a heading, "type '/'"
+  elsewhere); the host `placeholder` stays while the document is empty;
+- the fixed toolbar gives way to the formatting bubble and the `/` palette;
+- the page loses its border and keeps a left gutter for the handle (hidden below `sm`).
+
+The handle acts on top-level blocks: a list or a table moves as a whole. It relies on
+ProseMirror alone and adds no dependency (no `@tiptap/y-tiptap`, unlike `UEditorDragHandle`).
+
+Tiptap's Markdown shortcuts stay on (`# `, `- `, `1. `, `[ ] `, `> `, ` ``` `). Every explicit
+option wins: `toolbar`, `bubbleMenu`, `slashCommands`, `density`, `padding`, `minHeight` and
+`blockSpacing`. Locked (read-only, disabled) or in preview, the editor shows neither handle
+nor hint.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `blockEditor` | `Boolean` \| `Object` | `false` | Turns block editing on. |
+| `blockEditor.dragHandle` | `Boolean` | `true` | Gutter handle: `+`, drag and drop, block menu. |
+| `blockEditor.placeholders` | `Boolean` | `true` | Hint on the empty block holding the cursor. |
+| `blockEditor.bordered` | `Boolean` | `false` | Keeps the field border around the page. |
+
+```json
+{
+  "type": "Control",
+  "scope": "#/properties/page",
+  "options": { "wysiwyg": true, "contentType": "json", "blockEditor": true }
+}
+```
+
+No new node type is added: the content stays the same in `json`, `html` or `markdown` and
+reads back with or without `blockEditor`.
 
 ## AI assistant
 

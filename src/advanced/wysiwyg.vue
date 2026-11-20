@@ -6,18 +6,19 @@
     :show-description="showDescription()"
     :hide-required-asterisk="!!appliedOptions.hideRequiredAsterisk"
   )
-    .relative(ref="rootEl")
+    //- Block mode: contain the gutter handle's z-index so portalled menus stay above it.
+    .relative(ref="rootEl" :class="{ isolate: resolved.blockEditor.dragHandle }")
       u-editor(
         ref="editorRef"
         v-bind="uiProps('editor')"
         :model-value="control.data"
         :content-type="resolved.contentType"
         :editable="editable"
-        :placeholder="resolved.placeholder"
+        :placeholder="editorPlaceholder"
         :image="false"
         :extensions="editorExtensions"
         :handlers="editorHandlers"
-        :class="[styles.control.input, 'rounded-md border border-default']"
+        :class="[styles.control.input, resolved.blockEditor.bordered ? 'rounded-md border border-default' : 'rounded-md']"
         :ui="editorUi"
         @update:model-value="onChange"
       )
@@ -55,6 +56,12 @@
               @close="closePanel(editor)"
             )
           template(v-if="editable && ui.mode === 'edit'")
+            wysiwyg-block-handle(
+              v-if="resolved.blockEditor.dragHandle"
+              :editor="editor"
+              :features="resolved.features"
+              :slash-commands="resolved.slashCommands"
+            )
             u-editor-toolbar(
               v-if="resolved.imageBubble"
               :editor="editor"
@@ -121,7 +128,7 @@ import {
 } from 'vue'
 import { rendererProps, useJsonFormsControl, type RendererProps } from '@jsonforms/vue'
 import type { Editor } from '@tiptap/vue-3'
-import type { EditorState } from '@tiptap/pm/state'
+import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import { CellSelection } from '@tiptap/pm/tables'
 import UButton from '@nuxt/ui/components/Button.vue'
 import UEditor from '@nuxt/ui/components/Editor.vue'
@@ -143,11 +150,13 @@ import { refreshWysiwygImageResizeStyles } from './wysiwygImageResizeStyles'
 import { selectWysiwygAiSlashActions } from './wysiwyg/ai/actions'
 import { useWysiwygAi, type WysiwygAiController } from './wysiwyg/ai/useWysiwygAi'
 import WysiwygAiResult from './wysiwyg/ai/WysiwygAiResult.vue'
+import { createWysiwygBlockPlaceholder } from './wysiwyg/block'
 import { buildWysiwygFeatureExtensions } from './wysiwyg/extensions'
 import { createWysiwygHandlers, type WysiwygUiState } from './wysiwyg/handlers'
 import { WYSIWYG_SLASH_FILTER_FIELDS, buildWysiwygSlashItems } from './wysiwyg/slash/commands'
 import { refreshWysiwygEditorStyles } from './wysiwyg/styles'
 import { buildWysiwygTableBubble, buildWysiwygTextBubble } from './wysiwyg/toolbar'
+import WysiwygBlockHandle from './wysiwyg/WysiwygBlockHandle.vue'
 import WysiwygFindReplace from './wysiwyg/WysiwygFindReplace.vue'
 import WysiwygLinkPanel from './wysiwyg/WysiwygLinkPanel.vue'
 import WysiwygSourceEditor from './wysiwyg/WysiwygSourceEditor.vue'
@@ -168,6 +177,7 @@ const controlRenderer: Component = defineComponent({
     UEditorToolbar,
     UIcon,
     WysiwygAiResult,
+    WysiwygBlockHandle,
     WysiwygFindReplace,
     WysiwygLinkPanel,
     WysiwygSourceEditor,
@@ -276,6 +286,20 @@ const controlRenderer: Component = defineComponent({
       ]
     })
 
+    // Block mode: hint on the empty block holding the cursor (`UEditor` reads it at creation).
+    const editorPlaceholder = computed(() => {
+      const cfg = resolved.value
+      if (!cfg.blockEditor.placeholders) return cfg.placeholder
+      return {
+        placeholder: createWysiwygBlockPlaceholder(
+          { hostPlaceholder: cfg.placeholder, slashCommands: cfg.slashCommands },
+          t,
+        ),
+        mode: 'everyLine',
+        showOnlyWhenEditable: true,
+      }
+    })
+
     const editorHandlers = computed(() => {
       const cfg = resolved.value
       const base = cfg.imagesEnabled ? { imageUpload: imageUploadHandler } : {}
@@ -354,7 +378,9 @@ const controlRenderer: Component = defineComponent({
     const shouldShowTextBubble = ({ editor, state }: { editor: Editor; state: EditorState }) => {
       const { selection } = state
       if (ai.value?.isOpen.value) return false
+      // A node selection is a selected block (block menu, image…), not text to format.
       if (selection.empty || selection instanceof CellSelection) return false
+      if (selection instanceof NodeSelection) return false
       if (!state.doc.textBetween(selection.from, selection.to).trim()) return false
       return !editor.isActive('image') && !editor.isActive('codeBlock')
     }
@@ -473,6 +499,7 @@ const controlRenderer: Component = defineComponent({
       editorUi,
       editorExtensions,
       editorHandlers,
+      editorPlaceholder,
       imageBubbleItems,
       shouldShowImageBubble,
       textBubbleItems,

@@ -21,14 +21,56 @@ sont désactivés par défaut.
 | `features.findReplace` | `Boolean` | `true` | Rechercher / remplacer (sensible à la casse en option). |
 | `features.sourceMode` | `Boolean` | `true` | Édition brute du HTML ou du JSON ; le contenu appliqué passe par le schéma Tiptap. |
 | `features.preview` | `Boolean` | `true` | Aperçu en lecture seule. |
-| `bubbleMenu` | `Boolean` | `false` | Bulle de mise en forme sur sélection de texte. |
-| `slashCommands` | `Boolean` | `false` | Palette de commandes `/`. |
+| `bubbleMenu` | `Boolean` | `false` (`true` avec `blockEditor`) | Bulle de mise en forme sur sélection de texte. |
+| `slashCommands` | `Boolean` | `false` (`true` avec `blockEditor`) | Palette de commandes `/`. |
+| `blockEditor` | `Boolean` \| `Object` | `false` | Édition par blocs (voir ci-dessous). |
 | `ai` | `WysiwygAiOptions` | — | Assistant IA (voir ci-dessous). |
 
 Une extension fournie par l'hôte via `options.extensions` (par exemple sa propre `Table`)
 prend le pas sur l'extension intégrée du même nom. Une `toolbar` personnalisée n'est jamais
 modifiée ; ses éléments peuvent utiliser les `kind` intégrés : `textColor`, `highlight`,
 `table`, `tableAction`, `findReplace`, `sourceMode`, `preview`, `ai`.
+
+## Édition par blocs
+
+`blockEditor: true` transforme le champ en page éditée bloc par bloc, à la manière de Notion :
+
+- au survol, une poignée apparaît dans la marge gauche de chaque bloc : `+` ajoute un bloc en
+  dessous (et ouvre la palette `/` si elle est active), la poignée `⋮⋮` se **glisse** pour
+  déplacer le bloc ou se **clique** pour ouvrir son menu : *Transformer en* (paragraphe,
+  titres, listes, citation, code), *Effacer la mise en forme*, *Dupliquer*, *Copier le texte*,
+  *Monter*, *Descendre*, *Supprimer* ;
+- le bloc vide qui porte le curseur affiche un indice (`Titre 2` sur un titre, « tapez « / » »
+  ailleurs) ; le `placeholder` de l'hôte reste affiché tant que le document est vide ;
+- la barre d'outils fixe disparaît au profit de la bulle de mise en forme et de la palette `/` ;
+- la page n'a plus de bordure et garde une marge gauche pour la poignée (masquée sous `sm`).
+
+La poignée agit sur les blocs de premier niveau : une liste ou un tableau se déplace en entier.
+Elle ne repose que sur ProseMirror et n'ajoute aucune dépendance (pas de `@tiptap/y-tiptap`,
+contrairement à `UEditorDragHandle`).
+
+Les raccourcis Markdown de Tiptap restent actifs (`# `, `- `, `1. `, `[ ] `, `> `, ` ``` `).
+Chaque option explicite l'emporte : `toolbar`, `bubbleMenu`, `slashCommands`, `density`,
+`padding`, `minHeight` et `blockSpacing`. Verrouillé (lecture seule, désactivé) ou en aperçu,
+l'éditeur n'affiche ni poignée ni indice.
+
+| Option | Type | Défaut | Description |
+|---|---|---|---|
+| `blockEditor` | `Boolean` \| `Object` | `false` | Active l'édition par blocs. |
+| `blockEditor.dragHandle` | `Boolean` | `true` | Poignée de marge : `+`, glisser-déposer, menu du bloc. |
+| `blockEditor.placeholders` | `Boolean` | `true` | Indice sur le bloc vide qui porte le curseur. |
+| `blockEditor.bordered` | `Boolean` | `false` | Garde la bordure du champ autour de la page. |
+
+```json
+{
+  "type": "Control",
+  "scope": "#/properties/page",
+  "options": { "wysiwyg": true, "contentType": "json", "blockEditor": true }
+}
+```
+
+Aucun nouveau type de nœud n'est ajouté : le contenu reste identique en `json`, `html` ou
+`markdown` et se relit avec ou sans `blockEditor`.
 
 ## Assistant IA
 

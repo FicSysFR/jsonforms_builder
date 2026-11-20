@@ -7,6 +7,13 @@ import {
 } from './wysiwyg/ai/options'
 import type { WysiwygAiOptions } from './wysiwyg/ai/types'
 import {
+  DISABLED_WYSIWYG_BLOCK_EDITOR,
+  WYSIWYG_BLOCK_LAYOUT,
+  resolveWysiwygBlockEditor,
+  type ResolvedWysiwygBlockEditor,
+  type WysiwygBlockEditorOptions,
+} from './wysiwyg/block'
+import {
   resolveWysiwygFeatures,
   type ResolvedWysiwygFeatures,
   type WysiwygFeatures,
@@ -103,6 +110,12 @@ export type WysiwygOptions = {
   slashCommands?: boolean
   /** AI writing assistant, inert unless `ai.enabled === true`. */
   ai?: WysiwygAiOptions
+  /**
+   * Block editing, page-like (Notion style): gutter handle to insert, drag and transform
+   * blocks, per-block placeholders, borderless page. Turns the fixed toolbar off and the
+   * bubble menu and `/` palette on, unless those options are set explicitly. Default: `false`.
+   */
+  blockEditor?: boolean | WysiwygBlockEditorOptions
 }
 
 export type ResolvedWysiwygOptions = {
@@ -132,6 +145,7 @@ export type ResolvedWysiwygOptions = {
   bubbleMenu: boolean
   slashCommands: boolean
   ai: ResolvedWysiwygAiOptions
+  blockEditor: ResolvedWysiwygBlockEditor
 }
 
 const DENSITY_PRESETS: Record<
@@ -164,8 +178,16 @@ export const resolveWysiwygOptions = (
   t: UiText = createUiText(),
 ): ResolvedWysiwygOptions => {
   const opts = (raw ?? {}) as WysiwygOptions
+  const blockEditor =
+    opts.blockEditor === undefined
+      ? { ...DISABLED_WYSIWYG_BLOCK_EDITOR }
+      : resolveWysiwygBlockEditor(opts.blockEditor)
   const density = opts.density ?? 'compact'
-  const preset = DENSITY_PRESETS[density] ?? DENSITY_PRESETS.compact
+  // The block mode has its own page layout, unless the host picks a density.
+  const preset =
+    blockEditor.enabled && opts.density === undefined
+      ? WYSIWYG_BLOCK_LAYOUT
+      : (DENSITY_PRESETS[density] ?? DENSITY_PRESETS.compact)
 
   const explicitContent = opts.contentType
   const contentType: WysiwygContentType =
@@ -211,7 +233,7 @@ export const resolveWysiwygOptions = (
   const ai = opts.ai === undefined ? DISABLED_WYSIWYG_AI : resolveWysiwygAiOptions(opts.ai, t)
 
   const toolbar =
-    opts.toolbar === false
+    opts.toolbar === false || (blockEditor.enabled && opts.toolbar === undefined)
       ? false
       : Array.isArray(opts.toolbar)
         ? opts.toolbar
@@ -249,8 +271,10 @@ export const resolveWysiwygOptions = (
     extensions: Array.isArray(opts.extensions) ? opts.extensions : [],
     handlers: opts.handlers,
     features,
-    bubbleMenu: opts.bubbleMenu === true,
-    slashCommands: opts.slashCommands === true,
+    bubbleMenu: typeof opts.bubbleMenu === 'boolean' ? opts.bubbleMenu : blockEditor.enabled,
+    slashCommands:
+      typeof opts.slashCommands === 'boolean' ? opts.slashCommands : blockEditor.enabled,
     ai,
+    blockEditor,
   }
 }

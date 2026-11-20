@@ -99,7 +99,8 @@ WYSIWYG options (`options.wysiwyg: true`):
 | `image` | `false` to disable, or `{ upload, accept, maxSize, resize, bubble, … }` |
 | `extensions` / `handlers` | extra TipTap extensions / Nuxt UI handlers (host versions win) |
 | `features` | tables, task lists, alignment, colors, highlight, link panel, find & replace, source mode, preview — all on; `false` or `{ table: false, … }` to opt out |
-| `bubbleMenu` / `slashCommands` | formatting bubble on selection / `/` palette (default `false`) |
+| `bubbleMenu` / `slashCommands` | formatting bubble on selection / `/` palette (default `false`, `true` with `blockEditor`) |
+| `blockEditor` | Notion-style block editing: gutter `+` / drag / block menu, per-block hints, no fixed toolbar nor border (default `false`) |
 | `ai` | optional AI assistant, inert unless `ai.enabled === true` |
 
 ```ts

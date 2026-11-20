@@ -46,6 +46,20 @@ export {
 } from './wysiwyg/toolbar'
 export { WYSIWYG_SLASH_FILTER_FIELDS, buildWysiwygSlashItems } from './wysiwyg/slash/commands'
 export {
+  DISABLED_WYSIWYG_BLOCK_EDITOR,
+  WYSIWYG_BLOCK_LAYOUT,
+  buildWysiwygBlockMenu,
+  createWysiwygBlockPlaceholder,
+  findWysiwygBlockAt,
+  insertWysiwygBlockAfter,
+  resolveWysiwygBlockEditor,
+  runWysiwygBlockAction,
+  type ResolvedWysiwygBlockEditor,
+  type WysiwygBlockAction,
+  type WysiwygBlockType,
+  type WysiwygBlockEditorOptions,
+} from './wysiwyg/block'
+export {
   WYSIWYG_TABLE_ACTIONS,
   createWysiwygHandlers,
   type WysiwygEditorHandler,
