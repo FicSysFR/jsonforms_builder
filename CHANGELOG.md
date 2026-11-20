@@ -27,7 +27,7 @@ versioning follows [SemVer](https://semver.org/).
 - Guides (FR/EN): block editing section, `blockEditor` option, `nuxt-wysiwyg-blocks` playground
   example.
 
-## [2.2.0](https://github.com/FicSysFR/jsonforms_builder/compare/2.1.1...2.2.0) - 2026-11-17
+## [2.2.0](https://github.com/FicSysFR/jsonforms_builder/compare/2.1.0...2.2.0) - 2026-11-20
 
 ### ⚠️ Behavior changes
 
@@ -87,31 +87,6 @@ versioning follows [SemVer](https://semver.org/).
   (`b07990b`).
 - The WYSIWYG renderer's imports of `@tiptap/core`, `pm`, `vue-3` and `extension-image` are
   declared as optional `^3.30.5` peers, so strict installers can resolve them (`3baad2c`).
-
-### 📝 Documentation
-
-- Guides (FR/EN): interface language, strict CSP, offline icons, entry points, read-only sources,
-  local and server errors, time zone offsets, `config.apiPolicy`, Categorization `urlHash`,
-  builder `storage-key`, `locale` and `translate`.
-
-### 🔧 Internal
-
-- Tiptap floor raised to `^3.30.5`, every `@tiptap` and `prosemirror` package relocked on one
-  version (`1123073`).
-- `radash` (unpublished since 2025-06-18) replaced by internal helpers with the same contracts
-  (`7fca010`).
-- CI matrix: Nuxt UI 4.10 and 4.12 × TypeScript 5.9 and 6.0, each cell running type-check, build,
-  unit tests and the Chromium recipe (strict CSP, read-only, server errors, `./core` without
-  Tiptap) (`a8096e8`, `9c7ad17`).
-- The package audit checks entry points, `sideEffects` and that every runtime import of `src` is
-  declared (`99cdf5e`, `3baad2c`); size budgets raised to 900 kB packed and 4.25 MB unpacked for
-  the per-entry chunks and the two catalogs (`4eb690a`).
-- The Chromium recipe also renders the form in English (`d3f3340`).
-
-## [2.1.1](https://github.com/FicSysFR/jsonforms_builder/compare/2.1.0...2.1.1) - 2026-11-17
-
-### 🐛 Fixes
-
 - The `typescript` peer dependency is now optional and accepts `^5 || ^6 || ^7`: TypeScript is only
   needed to type-check the host or to consume `./source`, and the former required `^5` peer made
   TypeScript 6 hosts fail strict peer resolution (`23170e1`).
@@ -122,14 +97,26 @@ versioning follows [SemVer](https://semver.org/).
 
 ### 📝 Documentation
 
+- Guides (FR/EN): interface language, strict CSP, offline icons, entry points, read-only sources,
+  local and server errors, time zone offsets, `config.apiPolicy`, Categorization `urlHash`,
+  builder `storage-key`, `locale` and `translate`.
 - Installation guide (FR/EN) and README: optional `typescript` peer and license notices to
   reproduce when redistributing the library.
 
 ### 🔧 Internal
 
-- CI type-checks and builds the library under TypeScript 5.9 and 6.0; the package audit enforces
-  the optional `typescript` peer and a notice section for every bundled third-party package
-  (`49ebe1a`, `87dd86a`).
+- Tiptap floor raised to `^3.30.5`, every `@tiptap` and `prosemirror` package relocked on one
+  version (`1123073`).
+- `radash` (unpublished since 2025-06-18) replaced by internal helpers with the same contracts
+  (`7fca010`).
+- CI matrix: Nuxt UI 4.10 and 4.12 × TypeScript 5.9 and 6.0, each cell running type-check, build,
+  unit tests and the Chromium recipe (strict CSP, read-only, server errors, `./core` without
+  Tiptap) (`a8096e8`, `9c7ad17`).
+- The package audit checks entry points, `sideEffects`, that every runtime import of `src` is
+  declared, the optional `typescript` peer and a notice section for every bundled third-party
+  package (`99cdf5e`, `3baad2c`, `49ebe1a`, `87dd86a`); size budgets raised to 900 kB packed and 4.25 MB unpacked for
+  the per-entry chunks and the two catalogs (`4eb690a`).
+- The Chromium recipe also renders the form in English (`d3f3340`).
 
 ## [2.1.0](https://github.com/FicSysFR/jsonforms_builder/compare/2.0.2...2.1.0) - 2026-10-19
 
