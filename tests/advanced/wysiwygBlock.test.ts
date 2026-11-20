@@ -12,6 +12,7 @@ import {
   insertWysiwygBlockAfter,
   resolveWysiwygBlockEditor,
   runWysiwygBlockAction,
+  type WysiwygBlockAction,
   type WysiwygBlockType,
 } from '../../src/advanced/wysiwyg/block'
 import { DEFAULT_WYSIWYG_FEATURES } from '../../src/advanced/wysiwyg/features'
@@ -97,6 +98,10 @@ describe('resolveWysiwygOptions with blockEditor', () => {
       resolveWysiwygOptions({ blockEditor: { bordered: true }, toolbar: undefined }, 'object')
         .toolbar,
     ).toBe(false)
+    // An unknown density still beats the block layout and falls back to `compact`.
+    expect(
+      resolveWysiwygOptions({ blockEditor: true, density: 'huge' as 'compact' }, 'object').padding,
+    ).toBe('p-3')
     expect(resolveWysiwygOptions({ blockEditor: false }, 'object').toolbar).toEqual(
       buildWysiwygToolbar({ features: DEFAULT_WYSIWYG_FEATURES, imagesEnabled: true }),
     )
@@ -135,6 +140,14 @@ describe('createWysiwygBlockPlaceholder', () => {
     expect(host({ editor, node: editor.state.doc.child(1) })).toBe(
       'Écrivez, ou tapez « / » pour les commandes…',
     )
+  })
+
+  it('falls back to level 1 for a heading without level', () => {
+    editor = createTestEditor('<p></p>')
+    const heading = editor.schema.nodes.heading?.create({ level: null })
+    if (!heading) throw new Error('heading node missing')
+    const hint = createWysiwygBlockPlaceholder({ slashCommands: true })
+    expect(hint({ editor, node: heading })).toBe('Titre 1')
   })
 
   it('leaves code blocks without hint', () => {
@@ -248,6 +261,8 @@ describe('runWysiwygBlockAction', () => {
     expect(types(editor)).toEqual(['paragraph', 'h2', 'paragraph'])
     expect(turn({ type: 'bulletList' })).toBe(true)
     expect(types(editor)).toEqual(['paragraph', 'bulletList', 'paragraph'])
+    expect(turn({ type: 'orderedList' })).toBe(true)
+    expect(types(editor)).toEqual(['paragraph', 'orderedList', 'paragraph'])
     expect(turn({ type: 'taskList' })).toBe(true)
     expect(types(editor)).toEqual(['paragraph', 'taskList', 'paragraph'])
     expect(turn({ type: 'blockquote' })).toBe(true)
@@ -273,9 +288,23 @@ describe('runWysiwygBlockAction', () => {
     expect(runWysiwygBlockAction(editor, blockPos(editor, 1), { action: 'moveDown' })).toBe(false)
     expect(runWysiwygBlockAction(editor, 1, { action: 'delete' })).toBe(false)
     expect(runWysiwygBlockAction(editor, 999, { action: 'delete' })).toBe(false)
+    expect(runWysiwygBlockAction(editor, -1, { action: 'delete' })).toBe(false)
+    expect(runWysiwygBlockAction(editor, 0.5, { action: 'delete' })).toBe(false)
     expect(runWysiwygBlockAction(editor, 0, { action: 'turnInto', to: { type: 'taskList' } })).toBe(
       false,
     )
+  })
+
+  it('ignores unknown actions and conversions', () => {
+    editor = createTestEditor('<p>Un</p>')
+    const unknownAction = { action: 'archive' } as unknown as WysiwygBlockAction
+    const unknownType = {
+      action: 'turnInto',
+      to: { type: 'text' },
+    } as unknown as WysiwygBlockAction
+    expect(runWysiwygBlockAction(editor, 0, unknownAction)).toBe(false)
+    expect(runWysiwygBlockAction(editor, 0, unknownType)).toBe(false)
+    expect(editor.getHTML()).toBe('<p>Un</p>')
   })
 })
 
@@ -318,5 +347,11 @@ describe('findWysiwygBlockAt', () => {
     expect(findWysiwygBlockAt(editor.view, 27)).toBe(blockPos(editor, 1))
     expect(findWysiwygBlockAt(editor.view, 200)).toBe(blockPos(editor, 2))
     expect(findWysiwygBlockAt(editor.view, -50)).toBe(0)
+  })
+
+  it('skips blocks without rendered element', () => {
+    editor = createTestEditor('<p>Un</p>')
+    const view = { state: editor.state, nodeDOM: () => null } as unknown as Editor['view']
+    expect(findWysiwygBlockAt(view, 0)).toBeNull()
   })
 })
