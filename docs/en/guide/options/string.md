@@ -317,8 +317,9 @@ Requires `allRenderers` (not just `nuxtUiRenderers`).
 | `toolbar` | `Array` \| `false` | built-in toolbar | Replaces the toolbar (`EditorToolbarItem[][]`) or hides it. |
 | `placeholder` | `String` | — | Editor placeholder. |
 | `features` | `false` \| `Object` | all on | Tables, task lists, alignment, colors, highlight, link, find & replace, source, preview. |
-| `bubbleMenu` | `Boolean` | `false` | Formatting bubble on selection. |
-| `slashCommands` | `Boolean` | `false` | `/` command palette. |
+| `bubbleMenu` | `Boolean` | `false` (`true` with `blockEditor`) | Formatting bubble on selection. |
+| `slashCommands` | `Boolean` | `false` (`true` with `blockEditor`) | `/` command palette. |
+| `blockEditor` | `Boolean` \| `Object` | `false` | Notion-style block editing: `+` / drag / block menu handle, per-block hints, no fixed toolbar nor border. See [Block editing](/en/guide/wysiwyg-ai#block-editing). |
 | `ai` | `Object` | — | Optional AI assistant (`enabled`, `endpoint` or `transport`, `actions`…). |
 | `editor` | `Object` | — | Pass-through → `UEditor`. |
 
@@ -372,3 +373,4 @@ image has no Markdown equivalent and is not kept. Source mode then edits the raw
 - [Autocomplete API](/en/playground#/?section=docs&example=nuxt-autocomplete)
 - [WYSIWYG](/en/playground#/?section=docs&example=nuxt-wysiwyg)
 - [WYSIWYG + AI](/en/playground#/?section=docs&example=nuxt-wysiwyg-ai)
+- [Block WYSIWYG](/en/playground#/?section=docs&example=nuxt-wysiwyg-blocks)

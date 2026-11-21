@@ -608,12 +608,18 @@ const WYSIWYG: ApiPropGroup = {
     {
       name: 'bubbleMenu',
       type: 'Boolean',
-      description: 'Bulle de mise en forme sur sélection (défaut false).',
+      description: 'Bulle de mise en forme sur sélection (défaut false, true avec blockEditor).',
     },
     {
       name: 'slashCommands',
       type: 'Boolean',
-      description: 'Palette de commandes / (défaut false).',
+      description: 'Palette de commandes / (défaut false, true avec blockEditor).',
+    },
+    {
+      name: 'blockEditor',
+      type: 'Boolean | Object',
+      description:
+        'Édition par blocs façon page : poignée + / glisser / menu du bloc, placeholders par bloc, sans barre fixe ni bordure (dragHandle, placeholders, bordered).',
     },
     {
       name: 'ai',
@@ -731,6 +737,7 @@ export const API_BY_EXAMPLE: Record<string, ApiPropGroup[]> = {
   'nuxt-array': [COMMON_OPTIONS, ARRAY],
   'nuxt-wysiwyg': [COMMON_OPTIONS, WYSIWYG],
   'nuxt-wysiwyg-ai': [COMMON_OPTIONS, WYSIWYG],
+  'nuxt-wysiwyg-blocks': [COMMON_OPTIONS, WYSIWYG],
   'nuxt-layouts': [COMMON_OPTIONS, LAYOUTS],
   'nuxt-pin-input': [COMMON_OPTIONS, PIN],
   'nuxt-color': [COMMON_OPTIONS, COLOR],

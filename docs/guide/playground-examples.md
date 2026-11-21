@@ -30,6 +30,7 @@ Tout exemple dont le `name` commence par `nuxt-` atterrit automatiquement dans *
 | [Autocomplete API](/playground#/?section=docs&example=nuxt-autocomplete) | `UInputMenu` | `api.*`, `minLength`, `suggestion` |
 | [WYSIWYG](/playground#/?section=docs&example=nuxt-wysiwyg) | `UEditor` | `wysiwyg`, `contentType` (`json` \| `html`) |
 | [WYSIWYG + IA](/playground#/?section=docs&example=nuxt-wysiwyg-ai) | `UEditor` + IA | `bubbleMenu`, `slashCommands`, `ai` (transport local) |
+| [WYSIWYG par blocs](/playground#/?section=docs&example=nuxt-wysiwyg-blocks) | `UEditor` (mode bloc) | `blockEditor` |
 
 ### Nombres & booléens
 
